@@ -1,0 +1,6 @@
+[submodule "slaves/base"]
+	path = slaves/base
+	url = git@gitlab.ci.gsnet.corp:serenity-alm/serenity-alm-jslave-base.git
+[submodule "slaves/deployer"]
+	path = slaves/deployer
+	url = git@gitlab.ci.gsnet.corp:serenity-alm/serenity-alm-jslave-deployer.git
