@@ -1,2 +1,9 @@
 Jenkins server for Serenity ALM
 
+Build:
+
+docker build -t serenity/jenkins:0.1 .
+
+Run:
+
+docker run -p 8080:8080 -d serenity/jenkins:0.1
