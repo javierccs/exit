@@ -1,0 +1,7 @@
+#plugin_id:version
+token-macro:1.12.1
+ssh-slaves:1.10
+durable-task:1.7
+ssh-credentials:1.11
+credentials:1.24
+docker-plugin:0.16.0
