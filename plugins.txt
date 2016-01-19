@@ -5,3 +5,10 @@ durable-task:1.7
 ssh-credentials:1.11
 credentials:1.24
 docker-plugin:0.16.0
+
+#git
+scm-api:1.0
+git-client:1.19.0
+matrix-project:1.6
+mailer:1.16
+git:2.4.1
