@@ -10,13 +10,12 @@ USER root
 RUN chmod +x /usr/local/bin/plugins.sh
 
 USER jenkins
+
+# Install plugins
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 
-# remove executors in master
-COPY master-executors.groovy /usr/share/jenkins/ref/init.groovy.d/
+# Static config files
+COPY config/ /var/jenkins_home/
 
-# Configure git
-COPY git-config.groovy /usr/share/jenkins/ref/init.groovy.d/
-
-# Configure docker cloud
-COPY docker-config.groovy /usr/share/jenkins/ref/init.groovy.d/
+# Init groovy scripts
+COPY init-scripts/ /usr/share/jenkins/ref/init.groovy.d/

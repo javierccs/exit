@@ -50,15 +50,15 @@ println 'Added docker cloud credentials.'
 /////////////////////////////////////////////////////:
 // Docker Cloud config per-se
 /////////////////////////////////////////////////////:
-// def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
-// assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
+def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
+assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 
 def docker_settings = [:]
 docker_settings =
 [
     [
         name: 'swarm',
-        serverUrl: 'swarmMasterUrl',
+        serverUrl: swarmMasterUrl,
         containerCapStr: '100',
         connectionTimeout: 5,
         readTimeout: 15,
