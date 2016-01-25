@@ -10,4 +10,12 @@ USER root
 RUN chmod +x /usr/local/bin/plugins.sh
 
 USER jenkins
+
+# Install plugins
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
+
+# Static config files
+COPY config/ /var/jenkins_home/
+
+# Init groovy scripts
+COPY init-scripts/ /usr/share/jenkins/ref/init.groovy.d/
