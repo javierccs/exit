@@ -50,75 +50,78 @@ println 'Added docker cloud credentials.'
 /////////////////////////////////////////////////////:
 // Docker Cloud config per-se
 /////////////////////////////////////////////////////:
-def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
-assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
+def CLOUD_NAME = 'cloud'
+if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
+  def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
+  assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 
-def docker_settings = [:]
-docker_settings =
-[
+  def docker_settings = [:]
+  docker_settings =
+  [
     [
-        name: 'swarm',
-        serverUrl: swarmMasterUrl,
-        containerCapStr: '100',
-        connectionTimeout: 5,
-        readTimeout: 15,
-        credentialsId: '', // dockerCertificatesDirectoryCredentialsId,
-        version: '',
-        templates: [
-            [
-                image: 'batmat/jenkins-ssh-slave',
-                labelString: 'some label for demo',
-                remoteFs: '',
-                credentialsId: jenkinsSlaveCredentialsId,
-                idleTerminationMinutes: '5',
-                sshLaunchTimeoutMinutes: '1',
-                jvmOptions: '',
-                javaPath: '',
-                memoryLimit: 2500,
-                memorySwap: 0,
-                cpuShares: 0,
-                prefixStartSlaveCmd: '',
-                suffixStartSlaveCmd: '',
-                instanceCapStr: '100',
-                dnsString: '',
-                dockerCommand: '',
-                volumesString: '',
-                volumesFromString: '',
-                hostname: '',
-                bindPorts: '',
-                bindAllPorts: false,
-                privileged: false,
-                tty: false,
-                macAddress: ''
-            ]
+      name: CLOUD_NAME,
+      serverUrl: swarmMasterUrl,
+      containerCapStr: '10',
+      connectionTimeout: 5,
+      readTimeout: 15,
+      credentialsId: '', // dockerCertificatesDirectoryCredentialsId,
+      version: '',
+      templates: [
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:0.1',
+          labelString: 'wordpress',
+          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '5',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 1024,
+          memorySwap: 0,
+          cpuShares: 1,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '1',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: true,
+          tty: false,
+          macAddress: ''
         ]
+      ]
     ]
-]
+  ]
 
-def dockerClouds = []
-docker_settings.each { cloud ->
+  def dockerClouds = []
+  docker_settings.each { cloud ->
 
-  def templates = []
-  cloud.templates.each { template ->
+    def templates = []
+    cloud.templates.each { template ->
       def dockerTemplateBase =
-          new DockerTemplateBase(
-             template.image,
-             template.dnsString,
-             template.dockerCommand,
-             template.volumesString,
-             template.volumesFromString,
-             template.environmentsString,
-             template.lxcConfString,
-             template.hostname,
-             template.memoryLimit,
-             template.memorySwap,
-             template.cpuShares,
-             template.bindPorts,
-             template.bindAllPorts,
-             template.privileged,
-             template.tty,
-             template.macAddress
-      )
+        new DockerTemplateBase(
+          template.image,
+          template.dnsString,
+          template.dockerCommand,
+          template.volumesString,
+          template.volumesFromString,
+          template.environmentsString,
+          template.lxcConfString,
+          template.hostname,
+          template.memoryLimit,
+          template.memorySwap,
+          template.cpuShares,
+          template.bindPorts,
+          template.bindAllPorts,
+          template.privileged,
+          template.tty,
+          template.macAddress
+        )
 
       def dockerTemplate =
         new DockerTemplate(
@@ -135,17 +138,17 @@ docker_settings.each { cloud ->
 
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
 
-      dockerTemplate.setMode(Node.Mode.NORMAL)
+      dockerTemplate.setMode(Node.Mode.EXCLUSIVE)
       dockerTemplate.setNumExecutors(1)
       dockerTemplate.setRemoveVolumes(true)
       dockerTemplate.setRetentionStrategy(new DockerOnceRetentionStrategy(10))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
 
       templates.add(dockerTemplate)
-  }
+    }
 
-  dockerClouds.add(
-    new DockerCloud(cloud.name,
+    dockerClouds.add(
+      new DockerCloud(cloud.name,
                     templates,
                     cloud.serverUrl,
                     cloud.containerCapStr,
@@ -153,9 +156,10 @@ docker_settings.each { cloud ->
                     cloud.readTimeout ?: 15,    // Two for the show
                     cloud.credentialsId,
                     cloud.version
+      )
     )
-  )
-}
+  }
 
-Jenkins.instance.clouds.addAll(dockerClouds)
-println 'Configured docker cloud.'
+  Jenkins.instance.clouds.addAll(dockerClouds)
+  println 'Configured docker cloud.'
+}

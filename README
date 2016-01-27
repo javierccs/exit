@@ -5,5 +5,13 @@ Build:
 docker build -t serenity/jenkins:0.1 .
 
 Run:
+docker run -d \
+	-e JENKINS_EMAIL=%EMAIL%   
+	-e SMTP_HOST=%SMTP_HOST%
+	-e SMTP_PORT=%SMTP_PORT%
+	-e GITLAB_URL=%GITLAB_URL%  #For merge requests
+	-e GITLAB_API_TOKEN=%GITLAB_API_TOKEN%  # For merge requests
+	-e SWARM_MASTER_URL=http://oclubunc026.isbcloud.isban.corp:2375 #Docker cloud url
+	 --name jenkinsdev -p 8080:8080 -p 50000:50000
+	-v /var/jenkins_home serenity/jenkins   #Jenkins volume
 
-docker run -p 8080:8080 -d serenity/jenkins:0.1
