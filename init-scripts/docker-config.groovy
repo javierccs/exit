@@ -79,7 +79,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           javaPath: '',
           memoryLimit: 1024,
           memorySwap: 0,
-          cpuShares: 1,
+          cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
           instanceCapStr: '1',
@@ -139,9 +139,9 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
 
       dockerTemplate.setMode(Node.Mode.EXCLUSIVE)
-      dockerTemplate.setNumExecutors(1)
+      dockerTemplate.setNumExecutors(2)
       dockerTemplate.setRemoveVolumes(true)
-      dockerTemplate.setRetentionStrategy(new DockerOnceRetentionStrategy(10))
+      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(60))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
 
       templates.add(dockerTemplate)
