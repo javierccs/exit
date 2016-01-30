@@ -15,7 +15,7 @@ USER jenkins
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 
 # Static config files
-COPY config/ /var/jenkins_home/
+COPY config/ /usr/share/jenkins/ref/
 
 # Init groovy scripts
 COPY init-scripts/ /usr/share/jenkins/ref/init.groovy.d/
