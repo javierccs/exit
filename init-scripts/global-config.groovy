@@ -10,7 +10,7 @@ def public_key = (System.getenv("JENKINS_PUBLIC_KEY") == null)? "" : System.gete
 println "--> setting jenkins security"
 def realm = Jenkins.getInstance().getSecurityRealm()
 if (realm instanceof hudson.security.HudsonPrivateSecurityRealm) {
-  def adminUser = realm.createAccount("admin",passwd")
+  def adminUser = realm.createAccount("admin",passwd)
   adminUser.setFullName("Administrator")
   adminUser.addProperty(new hudson.tasks.Mailer.UserProperty(email))
   if (public_key != "" ) {
