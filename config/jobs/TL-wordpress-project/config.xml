@@ -4,12 +4,6 @@
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <com.nirima.jenkins.plugins.docker.DockerJobProperty plugin="docker-plugin@0.16.0">
-      <tagOnCompletion>false</tagOnCompletion>
-      <additionalTag></additionalTag>
-      <pushOnSuccess>false</pushOnSuccess>
-      <cleanImages>true</cleanImages>
-    </com.nirima.jenkins.plugins.docker.DockerJobProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -36,7 +30,8 @@
     </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -52,13 +47,13 @@ def _GITLAB_URL_ = &quot;${GITLAB_URL}&quot;.trim()
 def _MAIL_LIST_ = &quot;${MAIL_LIST}&quot;.trim()
 def _BRANCH_ = &quot;${GIT_BRANCH}&quot;.trim()
 
-def _PROJECT_TYPE_ = &quot;wordpress&quot;
+def _PROJECT_TYPE_ = &quot;docker&quot;
 def inst = Jenkins.getInstance()
 def gitlab = inst.getDescriptor(&quot;com.dabsquared.gitlabjenkins.GitLabPushTrigger&quot;)
 def _GITLAB_SERVER_ = gitlab.getGitlabHostUrl()
 def _GITLAB_API_TOKEN_ = gitlab.getGitlabApiToken()
 def _GITLAB_PROJECT_ = _GITLAB_URL_.minus(_GITLAB_SERVER_+&apos;/&apos;)
-def JOB_NAME = &quot;wp-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}-&quot; + _BRANCH_
+def JOB_NAME = &quot;wp-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}&quot;
 
 def _REPOSITORY_=&apos;${ENV,var=\&quot;REPOSITORY\&quot;}&apos;
 
@@ -75,11 +70,13 @@ for (c in creds) {
     }
   }
 
-job (JOB_NAME) {
+// Build job
+job (JOB_NAME+&apos;-build&apos;) {
 	println &quot;JOB: ${JOB_NAME}&quot;
     label(_PROJECT_TYPE_)
+    deliveryPipelineConfiguration(&apos;CI&apos;, &apos;Build Image&apos;)
 
-	logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
                 
 		// Gives permission for the special authenticated group to see the workspace of the job
 /*	authorization {
@@ -119,19 +116,9 @@ job (JOB_NAME) {
 					// Sets the remote URL.
 				url(_GITLAB_URL_)
 			} //remote
-  /*        
-          	remote {
-					// Sets credentials for authentication with the remote repository.
-				credentials(credentialsId)
-					// Sets a name for the remote.
-				name(&apos;${gitlabSourceRepoName}&apos;)
-					// Sets the remote URL.
-				url(&apos;${gitlabSourceRepoURL}&apos;)
-			} //remote
           
             wipeOutWorkspace(true)
             mergeOptions(&apos;origin&apos;, &apos;${gitlabTargetBranch}&apos;)
-*/	
 	} //git
 	} //scm
 
@@ -226,18 +213,43 @@ job (JOB_NAME) {
                 create()
             }
         }
+        downstream(JOB_NAME+&apos;-dev-deploy&apos;, &apos;SUCCESS&apos;)
     } //publishers
 
 } //job
 
-/*
+job (JOB_NAME+&apos;-dev-deploy&apos;) {
+    deliveryPipelineConfiguration(&apos;Dev&apos;, &apos;Deploy image&apos;)
+    steps {
+        shell(&apos;echo Hello!&apos;)
+    }
+}
+
+deliveryPipelineView(PROJECT_NAME) {
+    allowPipelineStart()
+	allowRebuild()
+    columns(3)
+    enableManualTriggers()
+    pipelineInstances(3)
+    showAggregatedPipeline()
+    showAvatars()
+    showChangeLog()
+	showDescription()
+	showPromotions()
+	showTotalBuildTime()
+    updateInterval(10)   
+    pipelines {
+        component(PROJECT_NAME, JOB_NAME+&apos;-build&apos;)
+    }
+} // deliveryPipelineView
+
 def url = new URL(_GITLAB_SERVER_+&quot;/api/v3/projects/&quot;+java.net.URLEncoder.encode(_GITLAB_PROJECT_)+&quot;/hooks?&quot;+
                   &quot;private_token=&quot;+_GITLAB_API_TOKEN_+
                   &quot;&amp;url=&quot;+inst.getRootUrl()+&quot;project/&quot;+JOB_NAME+
                   &quot;&amp;merge_requests_events=true&amp;push_events=true&quot;)
 println &quot;Create hook: &quot;+url
 
-def connection = url.openConnection()
+/*def connection = url.openConnection()
 connection.setRequestMethod(&quot;POST&quot;)
 connection.doOutput = true
 connection.connect()
