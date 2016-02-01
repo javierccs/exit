@@ -6,13 +6,13 @@ def _GITLAB_URL_ = "${GITLAB_URL}".trim()
 def _MAIL_LIST_ = "${MAIL_LIST}".trim()
 def _BRANCH_ = "${GIT_BRANCH}".trim()
 
-def _PROJECT_TYPE_ = "wordpress"
+def _PROJECT_TYPE_ = "docker"
 def inst = Jenkins.getInstance()
 def gitlab = inst.getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def _GITLAB_SERVER_ = gitlab.getGitlabHostUrl()
 def _GITLAB_API_TOKEN_ = gitlab.getGitlabApiToken()
 def _GITLAB_PROJECT_ = _GITLAB_URL_.minus(_GITLAB_SERVER_+'/')
-def JOB_NAME = "wp-${_PROJECT_NAME_.replace(" ","_")}-" + _BRANCH_
+def JOB_NAME = "wp-${_PROJECT_NAME_.replace(" ","_")}"
 
 def _REPOSITORY_='${ENV,var=\"REPOSITORY\"}'
 
@@ -29,11 +29,13 @@ for (c in creds) {
     }
   }
 
-job (JOB_NAME) {
+// Build job
+job (JOB_NAME+'-build') {
 	println "JOB: ${JOB_NAME}"
     label(_PROJECT_TYPE_)
+    deliveryPipelineConfiguration('CI', 'Build Image')
 
-	logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
                 
 		// Gives permission for the special authenticated group to see the workspace of the job
 /*	authorization {
@@ -73,19 +75,9 @@ job (JOB_NAME) {
 					// Sets the remote URL.
 				url(_GITLAB_URL_)
 			} //remote
-  /*        
-          	remote {
-					// Sets credentials for authentication with the remote repository.
-				credentials(credentialsId)
-					// Sets a name for the remote.
-				name('${gitlabSourceRepoName}')
-					// Sets the remote URL.
-				url('${gitlabSourceRepoURL}')
-			} //remote
           
             wipeOutWorkspace(true)
             mergeOptions('origin', '${gitlabTargetBranch}')
-*/	
 	} //git
 	} //scm
 
@@ -121,15 +113,15 @@ job (JOB_NAME) {
 'GROUP_GITLAB=\$(echo \$REMOTE_REPO|sed \"s|.git .*||\" | sed \"s|\$IMAGE_NAME||\" | sed \"s|/\$||\" | sed \"s|.*/||\")\n'+
 'IMAGE_NAME_BASE=\"\$(grep -HR \"image:\" \$FILE_DOCKER_COMPOSE | cut -f3 -d\':\'| head -n1)\";\n'+
 'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE#\"\${IMAGE_NAME_BASE%%[![:space:]]*}\"}\";   # elimina los espacios por delante\n'+
-'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE%\"\${IMAGE_NAME_BASE##*[![:space:]]}\"}\";  # elimina los espacios por detr·s\n'+
+'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE%\"\${IMAGE_NAME_BASE##*[![:space:]]}\"}\";  # elimina los espacios por detr√°n'+
 'if [ \"\$IMAGE_NAME\" == \"\" ]; then\n'+
-'        echo \"[ERROR] Name Docker Image doesn¥t exist\"\n'+
+'        echo \"[ERROR] Name Docker Image doesn¬¥t exist\"\n'+
 '        exit 1;\n'+
 'fi;\n'+
 'echo \"BASE IMAGE NAME:\"\$IMAGE_NAME_BASE\n'+
 'IMAGE_VERSION=\"\$(grep -HR \"image:\" \$FILE_DOCKER_COMPOSE | cut -f4 -d\':\'| head -n1)\";\n'+
 'IMAGE_VERSION=\"\${IMAGE_VERSION#\"\${IMAGE_VERSION%%[![:space:]]*}\"}\";   # elimina los espacios por delante\n'+
-'IMAGE_VERSION=\"\${IMAGE_VERSION%\"\${IMAGE_VERSION##*[![:space:]]}\"}\";  # elimina los espacios por detr·s\n'+
+'IMAGE_VERSION=\"\${IMAGE_VERSION%\"\${IMAGE_VERSION##*[![:space:]]}\"}\";  # elimina los espacios por detr√°n'+
 'if [ \"\$IMAGE_VERSION\" == \"\" ]; then\n'+
 '        IMAGE_VERSION=\"latest\";\n'+
 'fi;\n'+
@@ -180,18 +172,43 @@ job (JOB_NAME) {
                 create()
             }
         }
+        downstream(JOB_NAME+'-dev-deploy', 'SUCCESS')
     } //publishers
 
 } //job
 
-/*
+job (JOB_NAME+'-dev-deploy') {
+    deliveryPipelineConfiguration('Dev', 'Deploy image')
+    steps {
+        shell('echo Hello!')
+    }
+}
+
+deliveryPipelineView(PROJECT_NAME) {
+    allowPipelineStart()
+	allowRebuild()
+    columns(3)
+    enableManualTriggers()
+    pipelineInstances(3)
+    showAggregatedPipeline()
+    showAvatars()
+    showChangeLog()
+	showDescription()
+	showPromotions()
+	showTotalBuildTime()
+    updateInterval(10)   
+    pipelines {
+        component(PROJECT_NAME, JOB_NAME+'-build')
+    }
+} // deliveryPipelineView
+
 def url = new URL(_GITLAB_SERVER_+"/api/v3/projects/"+java.net.URLEncoder.encode(_GITLAB_PROJECT_)+"/hooks?"+
                   "private_token="+_GITLAB_API_TOKEN_+
                   "&url="+inst.getRootUrl()+"project/"+JOB_NAME+
                   "&merge_requests_events=true&push_events=true")
 println "Create hook: "+url
 
-def connection = url.openConnection()
+/*def connection = url.openConnection()
 connection.setRequestMethod("POST")
 connection.doOutput = true
 connection.connect()
