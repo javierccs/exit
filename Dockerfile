@@ -1,5 +1,5 @@
 FROM jenkins:1.625.2
-MAINTAINER Adrián Lizano <adrian.lizano@ext.produban.com>
+MAINTAINER serenity-alm <noreply@serenity-alm.corp>
 
 COPY plugins.txt /usr/share/jenkins/ref/
 

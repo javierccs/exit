@@ -4,28 +4,22 @@
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <com.nirima.jenkins.plugins.docker.DockerJobProperty plugin="docker-plugin@0.16.0">
-      <tagOnCompletion>false</tagOnCompletion>
-      <additionalTag></additionalTag>
-      <pushOnSuccess>false</pushOnSuccess>
-      <cleanImages>true</cleanImages>
-    </com.nirima.jenkins.plugins.docker.DockerJobProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>PROJECT_NAME</name>
           <description></description>
-          <defaultValue>myname</defaultValue>
+          <defaultValue>TEST</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>GITLAB_URL</name>
           <description></description>
-          <defaultValue>http://islingip01.scisb.isban.corp/AT-DevOps/spring-petclinic</defaultValue>
+          <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>GIT_BRANCH</name>
           <description></description>
-          <defaultValue>master</defaultValue>
+          <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>MAIL_LIST</name>
@@ -36,7 +30,8 @@
     </hudson.model.ParametersDefinitionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <canRoam>true</canRoam>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -52,13 +47,15 @@ def _GITLAB_URL_ = &quot;${GITLAB_URL}&quot;.trim()
 def _MAIL_LIST_ = &quot;${MAIL_LIST}&quot;.trim()
 def _BRANCH_ = &quot;${GIT_BRANCH}&quot;.trim()
 
-def _PROJECT_TYPE_ = &quot;wordpress&quot;
+def _PROJECT_TYPE_ = &quot;docker&quot;
 def inst = Jenkins.getInstance()
 def gitlab = inst.getDescriptor(&quot;com.dabsquared.gitlabjenkins.GitLabPushTrigger&quot;)
 def _GITLAB_SERVER_ = gitlab.getGitlabHostUrl()
 def _GITLAB_API_TOKEN_ = gitlab.getGitlabApiToken()
 def _GITLAB_PROJECT_ = _GITLAB_URL_.minus(_GITLAB_SERVER_+&apos;/&apos;)
-def JOB_NAME = &quot;wp-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}-master&quot;
+def JOB_NAME = &quot;wp-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}&quot;
+
+def _REPOSITORY_=&apos;${ENV,var=\&quot;REPOSITORY\&quot;}&apos;
 
 def credentialsId
 def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
@@ -73,11 +70,13 @@ for (c in creds) {
     }
   }
 
-job (JOB_NAME) {
+// Build job
+job (JOB_NAME+&apos;-build&apos;) {
 	println &quot;JOB: ${JOB_NAME}&quot;
     label(_PROJECT_TYPE_)
+    deliveryPipelineConfiguration(&apos;CI&apos;, &apos;Build Image&apos;)
 
-	logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
                 
 		// Gives permission for the special authenticated group to see the workspace of the job
 /*	authorization {
@@ -94,7 +93,7 @@ job (JOB_NAME) {
     parameters {
 		// Defines a simple text parameter, where users can enter a string value.
 		stringParam(&apos;gitlabActionType&apos;, &apos;PUSH&apos;, null)
-  		stringParam(&apos;gitlabSourceRepoURL&apos;, _GITLAB_URL_+&apos;.git&apos;, null)
+  		stringParam(&apos;gitlabSourceRepoURL&apos;, _GITLAB_URL_, null)
   		stringParam(&apos;gitlabSourceRepoName&apos;, &apos;origin&apos;, null)
   		stringParam(&apos;gitlabSourceBranch&apos;, _BRANCH_, null)
   		stringParam(&apos;gitlabTargetBranch&apos;, _BRANCH_, null)
@@ -115,21 +114,12 @@ job (JOB_NAME) {
 					// Sets a name for the remote.
 				name(&apos;origin&apos;)
 					// Sets the remote URL.
-				url(_GITLAB_URL_+&apos;.git&apos;)
-			} //remote
-          
-          	remote {
-					// Sets credentials for authentication with the remote repository.
-				credentials(credentialsId)
-					// Sets a name for the remote.
-				name(&apos;${gitlabSourceRepoName}&apos;)
-					// Sets the remote URL.
-				url(&apos;${gitlabSourceRepoURL}&apos;)
+				url(_GITLAB_URL_)
 			} //remote
           
             wipeOutWorkspace(true)
             mergeOptions(&apos;origin&apos;, &apos;${gitlabTargetBranch}&apos;)
-		} //git
+	} //git
 	} //scm
 
 	triggers {
@@ -143,48 +133,122 @@ job (JOB_NAME) {
 	} //triggers
   
     steps {
-      shell(&apos;#echo off\n\nexport HOST_CHECKING=\&quot; -o StrictHostKeyChecking=no\&quot;\nexport FILE_DOCKER_COMPOSE=\&quot;docker-compose.yml\&quot;\n&apos;+
-            &apos;export DOCKER_FILE=\&quot;DockerFile\&quot;\n\nexport HOST_REGISTRY_BASE_IP=registry.lvtc.gsnet.corp\nexport REGISTRY_BASE_LOGIN=registry.lvtc.gsnet.corp/\n&apos;+
-            &apos;export REGISTRY_BASE_URL=https://registry.lvtc.gsnet.corp\n\nexport DATE=`date +%Y-%m-%d:%H:%M:%S`\n\n#Need Parameters\n# JOB_NAME\n\n# JOB_INSTANCE\n\n&apos;+
-            &apos;export TAG_GIT=0.$BUILD_TAG-$DATE-SNAPSHOT;\n\n\n# IMAGE MUST BE THE NAME OF GITLAB PROJECT\nREMOTE_REPO=\&quot;$(git remote -v|tail -n1)\&quot;\n&apos;+
-            &apos;# GITLAB project\nIMAGE_NAME=$(echo $REMOTE_REPO| sed \&quot;s|.git .*||\&quot; |sed \&quot;s|.*/||\&quot;)\n# Group GITLAB\n&apos;+
-            &apos;GROUP_GITLAB=$(echo $REMOTE_REPO|sed \&quot;s|.git .*||\&quot; | sed \&quot;s|$IMAGE_NAME||\&quot; | sed \&quot;s|/$||\&quot; | sed \&quot;s|.*/||\&quot;)\n\n&apos;+
-            &apos;IMAGE_NAME_BASE=\&quot;$(grep -HR \&quot;image:\&quot; $FILE_DOCKER_COMPOSE | cut -f3 -d\&apos;:\&apos;| head -n1)\&quot;;\n&apos;+
-            &apos;IMAGE_NAME_BASE=\&quot;${IMAGE_NAME_BASE#\&quot;${IMAGE_NAME_BASE%%[![:space:]]*}\&quot;}\&quot;;   # elimina los espacios por delante\n&apos;+
-            &apos;IMAGE_NAME_BASE=\&quot;${IMAGE_NAME_BASE%\&quot;${IMAGE_NAME_BASE##*[![:space:]]}\&quot;}\&quot;;  # elimina los espacios por detr\u00e1s\n\n&apos;+
-            &apos;if [ \&quot;$IMAGE_NAME\&quot; == \&quot;\&quot; ]; then\n\necho \&quot;[ERROR] Name Docker Image doesn\u00b4t exist\&quot;\n\nexit 1;\nfi;\n\n&apos;+
-            &apos;echo \&quot;BASE IMAGE NAME:\&quot;$IMAGE_NAME_BASE\n\nIMAGE_VERSION=\&quot;$(grep -HR \&quot;image:\&quot; $FILE_DOCKER_COMPOSE | cut -f4 -d\&apos;:\&apos;| head -n1)\&quot;;\n&apos;+
-            &apos;IMAGE_VERSION=\&quot;${IMAGE_VERSION#\&quot;${IMAGE_VERSION%%[![:space:]]*}\&quot;}\&quot;;   # elimina los espacios por delante\n&apos;+
-            &apos;IMAGE_VERSION=\&quot;${IMAGE_VERSION%\&quot;${IMAGE_VERSION##*[![:space:]]}\&quot;}\&quot;;  # elimina los espacios por detr\u00e1s\n\n\n&apos;+
-            &apos;if [ \&quot;$IMAGE_VERSION\&quot; == \&quot;\&quot; ]; then\n\n#echo \&quot;[ERROR] Version docker image doesn\u00b4t exist\&quot;\n\n#exit 1;\n\n&apos;+
-            &apos;IMAGE_VERSION=\&quot;latest\&quot;;\n\nfi;\n\necho \&quot;version_imagen:\&quot;$IMAGE_VERSION\n# moviendo ficheros del workspace al temporal\n\n&apos;+
-            &apos;if [-a \&quot;$DOCKER_FILE\&quot;] # Review if void\nthen\necho \&quot;Docker file alerady exist\&quot;;\nexport WORDPRESS_DOCKERFILE=\&quot;$(cat $DOCKER_FILE)\&quot;\n&apos;+
-            &apos;else\nexport WORDPRESS_DOCKERFILE=\&quot;FROM $IMAGE_NAME_BASE:$IMAGE_VERSION \\n COPY ./wp-content /var/www/html/wp-content\&quot;\nfi\n\n&apos;+
-            &apos;echo \&quot;DOCKER_FILE:\&quot;$WORDPRESS_DOCKERFILE\necho -e $WORDPRESS_DOCKERFILE &gt;; Dockerfile\n\n\n\nexport REPOSITORY=$GROUP_GITLAB/$IMAGE_NAME\n&apos;+
-            &apos;echo \&quot;REPOSITORY=\&quot;$REPOSITORY &gt;; env.properties\necho \&quot;TAG_GIT=\&quot;$TAG_GIT &gt;;&gt;; env.properties\necho \&quot;REPOSITORY:\&quot;$REPOSITORY\necho \&quot;TAG_GIT:\&quot;$TAG_GIT&apos;)
-      environmentVariables {
-	    propertiesFile(&apos;env.properties&apos;)
-	  }
+      shell(
+&apos;#!/bin/bash\n&apos;+
+&apos;#echo off\n&apos;+
+&apos;export HOST_CHECKING=\&quot; -o StrictHostKeyChecking=no\&quot;\n&apos;+
+&apos;export FILE_DOCKER_COMPOSE=\&quot;docker-compose.yml\&quot;\n&apos;+
+&apos;export DOCKER_FILE=\&quot;DockerFile\&quot;\n&apos;+
+&apos;export HOST_REGISTRY_BASE_IP=registry.lvtc.gsnet.corp\n&apos;+
+&apos;export REGISTRY_BASE_LOGIN=registry.lvtc.gsnet.corp/\n&apos;+
+&apos;export REGISTRY_BASE_URL=https://registry.lvtc.gsnet.corp\n&apos;+
+&apos;#Need Parameters\n&apos;+
+&apos;# JOB_NAME\n&apos;+
+&apos;# JOB_INSTANCE\n&apos;+
+&apos;export TAG_GIT=0.\\$BUILD_TAG-SNAPSHOT;\n&apos;+
+&apos;# IMAGE MUST BE THE NAME OF GITLAB PROJECT\n&apos;+
+&apos;REMOTE_REPO=\&quot;\$(git remote -v|tail -n1)\&quot;\n&apos;+
+&apos;# GITLAB project\n&apos;+
+&apos;IMAGE_NAME=\$(echo \$REMOTE_REPO| sed \&quot;s|.git .*||\&quot; |sed \&quot;s|.*/||\&quot;)\n&apos;+
+&apos;# Group GITLAB\n&apos;+
+&apos;GROUP_GITLAB=\$(echo \$REMOTE_REPO|sed \&quot;s|.git .*||\&quot; | sed \&quot;s|\$IMAGE_NAME||\&quot; | sed \&quot;s|/\$||\&quot; | sed \&quot;s|.*/||\&quot;)\n&apos;+
+&apos;IMAGE_NAME_BASE=\&quot;\$(grep -HR \&quot;image:\&quot; \$FILE_DOCKER_COMPOSE | cut -f3 -d\&apos;:\&apos;| head -n1)\&quot;;\n&apos;+
+&apos;IMAGE_NAME_BASE=\&quot;\${IMAGE_NAME_BASE#\&quot;\${IMAGE_NAME_BASE%%[![:space:]]*}\&quot;}\&quot;;   # elimina los espacios por delante\n&apos;+
+&apos;IMAGE_NAME_BASE=\&quot;\${IMAGE_NAME_BASE%\&quot;\${IMAGE_NAME_BASE##*[![:space:]]}\&quot;}\&quot;;  # elimina los espacios por detrás\n&apos;+
+&apos;if [ \&quot;\$IMAGE_NAME\&quot; == \&quot;\&quot; ]; then\n&apos;+
+&apos;        echo \&quot;[ERROR] Name Docker Image doesn´t exist\&quot;\n&apos;+
+&apos;        exit 1;\n&apos;+
+&apos;fi;\n&apos;+
+&apos;echo \&quot;BASE IMAGE NAME:\&quot;\$IMAGE_NAME_BASE\n&apos;+
+&apos;IMAGE_VERSION=\&quot;\$(grep -HR \&quot;image:\&quot; \$FILE_DOCKER_COMPOSE | cut -f4 -d\&apos;:\&apos;| head -n1)\&quot;;\n&apos;+
+&apos;IMAGE_VERSION=\&quot;\${IMAGE_VERSION#\&quot;\${IMAGE_VERSION%%[![:space:]]*}\&quot;}\&quot;;   # elimina los espacios por delante\n&apos;+
+&apos;IMAGE_VERSION=\&quot;\${IMAGE_VERSION%\&quot;\${IMAGE_VERSION##*[![:space:]]}\&quot;}\&quot;;  # elimina los espacios por detrás\n&apos;+
+&apos;if [ \&quot;\$IMAGE_VERSION\&quot; == \&quot;\&quot; ]; then\n&apos;+
+&apos;        IMAGE_VERSION=\&quot;latest\&quot;;\n&apos;+
+&apos;fi;\n&apos;+
+&apos;echo \&quot;version_imagen:\&quot;\$IMAGE_VERSION\n&apos;+
+&apos;# moviendo ficheros del workspace al temporal\n&apos;+
+&apos;if [-a \&quot;\$DOCKER_FILE\&quot;] # Review if void\n&apos;+
+&apos;        then\n&apos;+
+&apos;                echo \&quot;Docker file alerady exist\&quot;;\n&apos;+
+&apos;                export WORDPRESS_DOCKERFILE=\&quot;\$(cat \$DOCKER_FILE)\&quot;\n&apos;+
+&apos;        else\n&apos;+
+&apos;                export WORDPRESS_DOCKERFILE=\&quot;FROM \$IMAGE_NAME_BASE:\$IMAGE_VERSION \\n COPY ./wp-content /var/www/html/wp-content\&quot;\n&apos;+
+&apos;fi\n&apos;+
+&apos;echo \&quot;DOCKER_FILE:\&quot;\$WORDPRESS_DOCKERFILE\n&apos;+
+&apos;echo -e \$WORDPRESS_DOCKERFILE &gt; Dockerfile\n&apos;+
+&apos;export REPOSITORY=\$GROUP_GITLAB/\$IMAGE_NAME\n&apos;+
+&apos;export DOCKER_HOST=\&quot;unix:///var/run/docker.sock\&quot;\n&apos;+
+&apos;echo \&quot;REPOSITORY=\&quot;\$REPOSITORY &gt; env.properties\n&apos;+
+&apos;echo \&quot;TAG_GIT=\&quot;\$TAG_GIT &gt;&gt; env.properties\n&apos;+
+&apos;echo \&quot;DOCKER_HOST=\&quot;\$DOCKER_HOST &gt;&gt; env.properties\n&apos;+
+&apos;echo \&quot;REPOSITORY:\&quot;\$REPOSITORY\n&apos;+
+&apos;echo \&quot;TAG_GIT:\&quot;\$TAG_GIT\n&apos;+
+&apos;echo \&quot;DOCKER_HOST:\&quot;\$DOCKER_HOST\n&apos;+
+&apos;echo \&quot;\$(docker ps)\&quot;\n&apos;+
+&apos;echo \&quot;\$(id)\&quot; &apos;
+			)
+			
+		environmentVariables {
+            propertiesFile(&apos;env.properties&apos;)
+        }	
+		
+	 
       dockerBuildAndPublish {
-            repositoryName(_GITLAB_PROJECT_)
-            tag(&apos;${BUILD_TIMESTAMP}-${GIT_REVISION,length=7}&apos;)
-            registryCredentials(&apos;docker-hub&apos;)
+			dockerRegistryURL(&quot;https://registry.lvtc.gsnet.corp&quot;)
+            repositoryName(_REPOSITORY_)
+            tag(&apos;0.$BUILD_TAG-SNAPSHOT&apos;)
+            registryCredentials(credentialsId)
             forcePull(false)
             createFingerprints(false)
             skipDecorate()
         }
-      shell(&apos;git tag -t $TAG_GIT\ngit push --follow-tags&apos;)
       
-    }
+    }// steps
+	 publishers {
+         git {
+            pushOnlyIfSuccess()
+            tag(&apos;origin&apos;, &apos;0.$BUILD_TAG-SNAPSHOT&apos;) {
+                message(&apos;DOCKER IMAGE TAG&apos;)
+                create()
+            }
+        }
+        downstream(JOB_NAME+&apos;-dev-deploy&apos;, &apos;SUCCESS&apos;)
+    } //publishers
 
 } //job
 
+job (JOB_NAME+&apos;-dev-deploy&apos;) {
+    deliveryPipelineConfiguration(&apos;Dev&apos;, &apos;Deploy image&apos;)
+    steps {
+        shell(&apos;echo Hello!&apos;)
+    }
+}
+
+deliveryPipelineView(PROJECT_NAME) {
+    allowPipelineStart()
+	allowRebuild()
+    columns(3)
+    enableManualTriggers()
+    pipelineInstances(3)
+    showAggregatedPipeline()
+    showAvatars()
+    showChangeLog()
+	showDescription()
+	showPromotions()
+	showTotalBuildTime()
+    updateInterval(10)   
+    pipelines {
+        component(PROJECT_NAME, JOB_NAME+&apos;-build&apos;)
+    }
+} // deliveryPipelineView
 
 def url = new URL(_GITLAB_SERVER_+&quot;/api/v3/projects/&quot;+java.net.URLEncoder.encode(_GITLAB_PROJECT_)+&quot;/hooks?&quot;+
                   &quot;private_token=&quot;+_GITLAB_API_TOKEN_+
                   &quot;&amp;url=&quot;+inst.getRootUrl()+&quot;project/&quot;+JOB_NAME+
                   &quot;&amp;merge_requests_events=true&amp;push_events=true&quot;)
 println &quot;Create hook: &quot;+url
+
 /*def connection = url.openConnection()
 connection.setRequestMethod(&quot;POST&quot;)
 connection.doOutput = true

@@ -15,6 +15,11 @@ matrix-auth:1.2
 matrix-project:1.6
 monitoring:1.58.0
 
+# delivery pipeline
+jquery:1.11.2-0
+parameterized-trigger:2.30
+delivery-pipeline-plugin:0.9.8
+
 #job dsl
 config-file-provider:2.10.0
 managed-scripts:1.2.1
