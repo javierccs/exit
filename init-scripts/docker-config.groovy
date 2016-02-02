@@ -93,6 +93,33 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           privileged: true,
           tty: false,
           macAddress: ''
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          labelString: 'ose3-deploy',
+          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '5',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 512,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '1',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: ''
         ]
       ]
     ]
