@@ -68,8 +68,8 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:0.1',
-          labelString: 'wordpress',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket',
+          labelString: 'docker',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -85,7 +85,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           instanceCapStr: '1',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '/var/run/docker.sock:/var/run/docker.sock',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/local/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
