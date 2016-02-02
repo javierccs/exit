@@ -113,9 +113,9 @@ job (JOB_NAME+'-build') {
 'GROUP_GITLAB=\$(echo \$REMOTE_REPO|sed \"s|.git .*||\" | sed \"s|\$IMAGE_NAME||\" | sed \"s|/\$||\" | sed \"s|.*/||\")\n'+
 'IMAGE_NAME_BASE=\"\$(grep -HR \"image:\" \$FILE_DOCKER_COMPOSE | cut -f3 -d\':\'| head -n1)\";\n'+
 'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE#\"\${IMAGE_NAME_BASE%%[![:space:]]*}\"}\";   # elimina los espacios por delante\n'+
-'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE%\"\${IMAGE_NAME_BASE##*[![:space:]]}\"}\";  # elimina los espacios por detrán'+
+'IMAGE_NAME_BASE=\"\${IMAGE_NAME_BASE%\"\${IMAGE_NAME_BASE##*[![:space:]]}\"}\";  # elimina los espacios por detrán\n'+
 'if [ \"\$IMAGE_NAME\" == \"\" ]; then\n'+
-'        echo \"[ERROR] Name Docker Image doesn´t exist\"\n'+
+'        echo \"[ERROR] Name Docker Image doesnt exist\"\n'+
 '        exit 1;\n'+
 'fi;\n'+
 'echo \"BASE IMAGE NAME:\"\$IMAGE_NAME_BASE\n'+
@@ -126,13 +126,23 @@ job (JOB_NAME+'-build') {
 '        IMAGE_VERSION=\"latest\";\n'+
 'fi;\n'+
 'echo \"version_imagen:\"\$IMAGE_VERSION\n'+
+'WPRESS_DATA_HOME=/tmp/data\n'+
 '# moviendo ficheros del workspace al temporal\n'+
-'if [-a \"\$DOCKER_FILE\"] # Review if void\n'+
+'if [ -a \"\$DOCKER_FILE\" ] # Review if void\n'+
 '        then\n'+
 '                echo \"Docker file alerady exist\";\n'+
 '                export WORDPRESS_DOCKERFILE=\"\$(cat \$DOCKER_FILE)\"\n'+
 '        else\n'+
-'                export WORDPRESS_DOCKERFILE=\"FROM \$IMAGE_NAME_BASE:\$IMAGE_VERSION \\n COPY ./wp-content /var/www/html/wp-content\"\n'+
+'                export WORDPRESS_DOCKERFILE=\"FROM \$IMAGE_NAME_BASE:\$IMAGE_VERSION \\\n'+
+'                \\n MAINTAINER serenity-alm@serenity.com \\\n'+
+'                \\n ENV WPRESS_DATA_HOME  \$WPRESS_DATA_HOME \\\n'+
+'                \\n\\nRUN mkdir \$WPRESS_DATA_HOME \\\n'+
+'                \\n ADD ./wp-content \$WPRESS_DATA_HOME \\\n'+
+'                \\n RUN if ls \$WPRESS_DATA_HOME/plugins; then cp -rd \$WPRESS_DATA_HOME/plugins/* /usr/src/wordpress/wp-content/plugins/; fi \\\n'+
+'                \\n RUN if ls \$WPRESS_DATA_HOME/themes; then cp -rd \$WPRESS_DATA_HOME/themes/* /usr/src/wordpress/wp-content/themes/; fi \\\n'+
+'                \\n RUN mkdir -p /usr/src/wordpress/uploads \\\n'+
+'                \\n RUN if ls \$WPRESS_DATA_HOME/uploads; then cp -rd \$WPRESS_DATA_HOME/uploads/* /usr/src/wordpress/wp-content/uploads; fi \\\n'+
+'                \\n RUN chown -R www-data:www-data /usr/src/wordpress\"\n'+
 'fi\n'+
 'echo \"DOCKER_FILE:\"\$WORDPRESS_DOCKERFILE\n'+
 'echo -e \$WORDPRESS_DOCKERFILE > Dockerfile\n'+
