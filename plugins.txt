@@ -1,5 +1,12 @@
 #plugin_id:version
 
+managed-scripts:1.2.1
+config-file-provider:2.10.0
+workflow-step-api:1.13
+plain-credentials:1.1
+credentials-binding:1.6
+sidebar-link:1.7
+
 #common
 token-macro:1.12.1
 ssh-slaves:1.10
@@ -42,16 +49,10 @@ gitlab-plugin:1.1.28
 #sonarqube integration
 #sonar:2.3
 
-#openshift integration
-openshift-pipeline:1.0.6
-
 #greenballs
 greenballs:latest
 
 #disk-usage:0.28
-
-#warnings:4.51
-#analysis-core:1.75
 
 build-timeout:1.15
 envinject:1.92.1
