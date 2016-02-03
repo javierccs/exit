@@ -199,7 +199,6 @@ job (JOB_NAME+&apos;-build&apos;) {
             trigger(JOB_NAME+&apos;-dev-deploy&apos;) {
                 condition(&apos;SUCCESS&apos;)
                 parameters {
-                  currentBuild()
                   predefinedProp(&apos;OSE3_PROJECT_NAME&apos;, OSE3_PROJECT_NAME)
                   predefinedProp(&apos;OSE3_CREDENTIAL&apos;, GREENLIGHT_CREDENTIAL)
                 }
@@ -219,6 +218,7 @@ job (JOB_NAME+&apos;-dev-deploy&apos;) {
             type(&apos;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&apos;)
             required()
             description(&apos;Username/password for deploying images into Openshift3&apos;)
+            defaultValue(GREENLIGHT_CREDENTIAL)
         }
       stringParam(&apos;PIPELINE_VERSION&apos;,&apos;&apos;,&apos;&apos;)
     }
