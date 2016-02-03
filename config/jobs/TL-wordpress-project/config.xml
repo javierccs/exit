@@ -149,7 +149,7 @@ job (JOB_NAME+&apos;-build&apos;) {
 &apos;                \\n ADD ./wp-content \$WPRESS_DATA_HOME \\\n&apos;+
 &apos;                \\n RUN if ls \$WPRESS_DATA_HOME/plugins; then cp -rd \$WPRESS_DATA_HOME/plugins/* /usr/src/wordpress/wp-content/plugins/; fi \\\n&apos;+
 &apos;                \\n RUN if ls \$WPRESS_DATA_HOME/themes; then cp -rd \$WPRESS_DATA_HOME/themes/* /usr/src/wordpress/wp-content/themes/; fi \\\n&apos;+
-&apos;                \\n RUN mkdir -p /usr/src/wordpress/uploads \\\n&apos;+
+&apos;                \\n RUN mkdir -p /usr/src/wordpress/wp-content/uploads \\\n&apos;+
 &apos;                \\n RUN if ls \$WPRESS_DATA_HOME/uploads; then cp -rd \$WPRESS_DATA_HOME/uploads/* /usr/src/wordpress/wp-content/uploads; fi \\\n&apos;+
 &apos;                \\n RUN chown -R www-data:www-data /usr/src/wordpress \\\n&apos;+
 &apos;                \\n LABEL com.serenity.imageowner=\\\&quot;Serenity-ALM\\\&quot; \\\n&apos;+
