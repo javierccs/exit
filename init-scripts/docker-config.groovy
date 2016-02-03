@@ -68,7 +68,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:latest',
           labelString: 'docker',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
