@@ -85,7 +85,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           instanceCapStr: '1',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '/var/run/docker.sock:/var/run/docker.sock',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/local/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
