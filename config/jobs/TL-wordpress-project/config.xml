@@ -264,13 +264,13 @@ def url = new URL(GITLAB_SERVER+&quot;/api/v3/projects/&quot;+java.net.URLEncode
                   &quot;&amp;merge_requests_events=true&amp;push_events=true&quot;)
 println &quot;Create hook: &quot;+url
 
-/* def connection = url.openConnection()
+def connection = url.openConnection()
 connection.setRequestMethod(&quot;POST&quot;)
 connection.doOutput = true
 connection.connect()
 	
 println connection.content.text
-assert connection.responseCode == 201*/</scriptText>
+assert connection.responseCode == 201</scriptText>
       <usingScriptText>true</usingScriptText>
       <ignoreExisting>false</ignoreExisting>
       <removedJobAction>IGNORE</removedJobAction>

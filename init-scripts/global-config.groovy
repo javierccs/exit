@@ -6,6 +6,9 @@ def email = (System.getenv("JENKINS_EMAIL") == null)? "jenkins@serenity.corp":Sy
 def passwd = (System.getenv("JENKINS_PASSWORD") == null)? "admin" : System.getenv("JENKINS_PASSWORD")
 def public_key = (System.getenv("JENKINS_PUBLIC_KEY") == null)? "" : System.getenv("JENKINS_PUBLIC_KEY")
 
+// set_root_url
+JenkinsLocationConfiguration.get().setUrl(System.getenv("JENKINS_URL"))
+
 // set_security
 println "--> setting jenkins security"
 def realm = Jenkins.getInstance().getSecurityRealm()
