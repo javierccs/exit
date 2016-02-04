@@ -68,7 +68,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:DEMO-1',
           labelString: 'docker',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -95,7 +95,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:DEMO-1',
           labelString: 'ose3-deploy',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -168,7 +168,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       dockerTemplate.setMode(Node.Mode.EXCLUSIVE)
       dockerTemplate.setNumExecutors(2)
       dockerTemplate.setRemoveVolumes(true)
-      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(60))
+      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(5))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
 
       templates.add(dockerTemplate)

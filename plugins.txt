@@ -41,7 +41,7 @@ docker-build-publish:1.1
 email-ext:2.40.5
 
 #gitlab integration
-scm-api:latest
+scm-api:1.0
 git-client:1.19.0
 git:2.4.1
 gitlab-plugin:1.1.28
@@ -50,7 +50,7 @@ gitlab-plugin:1.1.28
 #sonar:2.3
 
 #greenballs
-greenballs:latest
+greenballs:1.15
 
 #disk-usage:0.28
 
