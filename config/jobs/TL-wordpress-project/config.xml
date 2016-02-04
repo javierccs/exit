@@ -22,7 +22,7 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
-          <name>GREENLIGHT_CREDENTIAL</name>
+          <name>SERENITY_CREDENTIAL</name>
           <description>GreenLight LDAP username/password</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
@@ -47,7 +47,7 @@
 def GITLAB_PROJECT = &quot;${GITLAB_PROJECT}&quot;.trim()
 def GIT_BRANCH = &quot;${GIT_BRANCH}&quot;.trim()
 def OSE3_PROJECT_NAME = &quot;${OSE3_PROJECT_NAME}&quot;.trim()
-def GREENLIGHT_CREDENTIAL = &quot;${GREENLIGHT_CREDENTIAL}&quot;
+def SERENITY_CREDENTIAL = &quot;${SERENITY_CREDENTIAL}&quot;
 
 // Static values
 def inst = Jenkins.getInstance()
@@ -88,7 +88,7 @@ job (JOB_NAME+&apos;-build&apos;) {
 				// Adds a remote.
 			remote {
 					// Sets credentials for authentication with the remote repository.
-				credentials(GREENLIGHT_CREDENTIAL)
+				credentials(SERENITY_CREDENTIAL)
 					// Sets a name for the remote.
 				name(&apos;origin&apos;)
 					// Sets the remote URL.
@@ -180,7 +180,7 @@ job (JOB_NAME+&apos;-build&apos;) {
 			dockerRegistryURL(&quot;https://registry.lvtc.gsnet.corp&quot;)
             repositoryName(GITLAB_PROJECT)
             tag(&apos;0.$BUILD_NUMBER-SNAPSHOT&apos;)
-            registryCredentials(GREENLIGHT_CREDENTIAL)
+            registryCredentials(SERENITY_CREDENTIAL)
             forcePull(false)
             createFingerprints(false)
             skipDecorate()
@@ -200,7 +200,7 @@ job (JOB_NAME+&apos;-build&apos;) {
                 condition(&apos;SUCCESS&apos;)
                 parameters {
                   predefinedProp(&apos;OSE3_PROJECT_NAME&apos;, OSE3_PROJECT_NAME)
-                  predefinedProp(&apos;OSE3_CREDENTIAL&apos;, GREENLIGHT_CREDENTIAL)
+                  predefinedProp(&apos;OSE3_CREDENTIAL&apos;, SERENITY_CREDENTIAL)
                 }
             }
         }
@@ -218,7 +218,7 @@ job (JOB_NAME+&apos;-dev-deploy&apos;) {
             type(&apos;com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl&apos;)
             required()
             description(&apos;Username/password for deploying images into Openshift3&apos;)
-            defaultValue(GREENLIGHT_CREDENTIAL)
+            defaultValue(SERENITY_CREDENTIAL)
         }
       stringParam(&apos;PIPELINE_VERSION&apos;,&apos;&apos;,&apos;&apos;)
     }
