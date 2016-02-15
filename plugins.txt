@@ -24,6 +24,8 @@ matrix-project:1.6
 monitoring:1.58.0
 
 # delivery pipeline
+rebuild:1.22
+promoted-builds:2.24.1
 jquery:1.11.2-0
 parameterized-trigger:2.30
 delivery-pipeline-plugin:0.9.8
