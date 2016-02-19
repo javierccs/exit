@@ -36,7 +36,6 @@ managed-scripts:1.2.1
 job-dsl:1.42
 
 #docker
-docker-plugin:0.16.0
 docker-commons:1.2
 docker-build-publish:1.1
 
