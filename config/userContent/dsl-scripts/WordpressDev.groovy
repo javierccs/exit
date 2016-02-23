@@ -43,7 +43,7 @@ job (buildJobName) {
   }
 
   wrappers {
-    deliveryPipelineVersion(GITLAB_PROJECT+':1.${BUILD_NUMBER}', true)
+    deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
   }
 
   scm {
@@ -88,13 +88,17 @@ job (buildJobName) {
   } //triggers
 
   steps {
+    shell('./parse_yaml.sh application.yml > env.properties')
+    environmentVariables {
+            propertiesFile('env.properties')
+        }
     shell('zip -r wordpress.zip docker-compose.yml wp-content/')
   }// steps
   publishers {
     archiveArtifacts('**/*.zip')
     git {
       pushOnlyIfSuccess()
-      tag('origin', '1.$BUILD_NUMBER') {
+      tag('origin', '$WORDPRESS_IMAGE_VERSION') {
         message('DOCKER IMAGE TAG')
         create()
       }
