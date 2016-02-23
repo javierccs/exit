@@ -1,12 +1,12 @@
 #plugin_id:version
 
 copy-to-slave:1.4.4
+copyartifact:1.37
 managed-scripts:1.2.1
 config-file-provider:2.10.0
 workflow-step-api:1.13
 plain-credentials:1.1
 credentials-binding:1.6
-sidebar-link:1.7
 
 #common
 token-macro:1.12.1
@@ -37,8 +37,6 @@ job-dsl:1.42
 
 #docker
 docker-plugin:0.16.0
-docker-commons:1.2
-docker-build-publish:1.1
 
 #email-ext
 email-ext:2.40.5

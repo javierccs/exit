@@ -21,6 +21,16 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_NAME</name>
+          <description></description>
+          <defaultValue>wordpress-btsync-s3-experimental</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>OSE3_TEMPLATE_PARAMS</name>
+          <description></description>
+          <defaultValue>APP_NAME=${OSE3_APP_NAME},WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/${PIPELINE_VERSION},MYSQL_DB_HOST=external-mysql,MYSQL_DB_PORT=3306,MYSQL_DB_USER=admin,MYSQL_DB_PASSWORD=aquielpassword,MYSQL_DB_NAME=wordpress</defaultValue>
+        </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
           <description>GreenLight LDAP username/password</description>
@@ -30,16 +40,28 @@
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <assignedNode>master</assignedNode>
-  <canRoam>false</canRoam>
+  <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
+    <hudson.tasks.Shell>
+      <command>JENKINS_PROJECT=${GITLAB_PROJECT//\//.}
+echo JENKINS_PROJECT=${JENKINS_PROJECT} &gt; env.properties
+echo INITIAL_JOB_NAME=${JENKINS_PROJECT}-master-build &gt;&gt; env.properties</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@1.92.1">
+      <info>
+        <propertiesFilePath>env.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
       <targets>**/*.groovy</targets>
       <usingScriptText>false</usingScriptText>
@@ -53,7 +75,7 @@
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressTemplate.groovy</includes>
+      <includes>dsl-scripts/WordpressDev.groovy,dsl-scripts/WordpressPro.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
