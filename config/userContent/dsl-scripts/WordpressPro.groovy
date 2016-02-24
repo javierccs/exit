@@ -48,8 +48,15 @@ job (buildJobName) {
     }
   }
 
+  steps {
+    shell('parse_yaml.sh application.yml > env.properties')
+    environmentVariables {
+            propertiesFile('env.properties')
+        }
+  }// steps
+
   wrappers {
-    deliveryPipelineVersion(GITLAB_PROJECT+':1.${BUILD_NUMBER}', true)
+    deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
   }
 
   scm {
@@ -92,7 +99,7 @@ job (buildJobName) {
     archiveArtifacts('**/*.zip')
     git {
       pushOnlyIfSuccess()
-      tag('origin', '1.$BUILD_NUMBER') {
+      tag('origin', '${WORDPRESS_IMAGE_VERSION}') {
         message('DOCKER IMAGE TAG')
         create()
       }
@@ -101,7 +108,7 @@ job (buildJobName) {
       trigger(dockerJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
