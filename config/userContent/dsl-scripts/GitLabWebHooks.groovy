@@ -25,7 +25,7 @@ webhook_integration = Jenkins.getInstance().getRootUrl()+"project/"+INITIAL_INTE
 webhook_release = Jenkins.getInstance().getRootUrl()+"project/"+INITIAL_RELEASE_JOB_NAME
 if (!text.contains("url\":\""+webhook_integration+"\"")) {
     url = new URL(GITLAB_SERVER+"/api/v3/projects/"+java.net.URLEncoder.encode(GITLAB_PROJECT)+"/hooks?private_token="+GITLAB_API_TOKEN+"&url="+webhook_integration+
-      "&merge_requests_events=true&push_events=true")
+      "&merge_requests_events=false&push_events=true")
   connection = url.openConnection()
   connection.setRequestMethod("POST")
   connection.doOutput = true
@@ -35,7 +35,7 @@ if (!text.contains("url\":\""+webhook_integration+"\"")) {
 }
 if (!text.contains("url\":\""+webhook_release+"\"")) {
     url = new URL(GITLAB_SERVER+"/api/v3/projects/"+java.net.URLEncoder.encode(GITLAB_PROJECT)+"/hooks?private_token="+GITLAB_API_TOKEN+"&url="+webhook_release+
-      "&merge_requests_events=true&push_events=true")
+      "&merge_requests_events=false&push_events=true")
   connection = url.openConnection()
   connection.setRequestMethod("POST")
   connection.doOutput = true
