@@ -1,12 +1,15 @@
 /*
   GITLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
-  JENKINS_PROJECT: Jenkins project name
 */
 
 // Input parameters
-def JENKINS_PROJECT = "${JENKINS_PROJECT}".trim()
+def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
 
-deliveryPipelineView(JENKINS_PROJECT) {
+folder(GROUP_NAME) {
+    primaryView(REPOSITORY_NAME)
+}
+
+deliveryPipelineView(GITLAB_PROJECT) {
     //allowPipelineStart()
     allowRebuild()
     columns(1)
@@ -20,6 +23,6 @@ deliveryPipelineView(JENKINS_PROJECT) {
     showTotalBuildTime()
     updateInterval(5)
     pipelines {
-        regex(JENKINS_PROJECT+'-(.*)-build')
+        regex(REPOSITORY_NAME+'-(.*)-build')
     }
 } // deliveryPipelineView

@@ -1,13 +1,12 @@
 /*
   GITLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
-  INITIAL_JOB_NAME: Jenkins project name
 */
 import jenkins.model.*
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
-def INITIAL_INTEGRATION_JOB_NAME = "${INITIAL_INTEGRATION_JOB_NAME}".trim()
-def INITIAL_RELEASE_JOB_NAME = "${INITIAL_RELEASE_JOB_NAME}".trim()
+def INITIAL_INTEGRATION_JOB_NAME = GITLAB_PROJECT+'-integration-build'
+def INITIAL_RELEASE_JOB_NAME = GITLAB_PROJECT+'-release-build'
 
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()

@@ -57,17 +57,6 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <hudson.tasks.Shell>
-      <command>JENKINS_PROJECT=${GITLAB_PROJECT//\//.}
-echo JENKINS_PROJECT=${JENKINS_PROJECT} &gt; env.properties
-echo INITIAL_INTEGRATION_JOB_NAME=${JENKINS_PROJECT}-integration-build &gt;&gt; env.properties
-echo INITIAL_RELEASE_JOB_NAME=${JENKINS_PROJECT}-release-build &gt;&gt; env.properties</command>
-    </hudson.tasks.Shell>
-    <EnvInjectBuilder plugin="envinject@1.92.1">
-      <info>
-        <propertiesFilePath>env.properties</propertiesFilePath>
-      </info>
-    </EnvInjectBuilder>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
       <targets>**/*.groovy</targets>
       <usingScriptText>false</usingScriptText>

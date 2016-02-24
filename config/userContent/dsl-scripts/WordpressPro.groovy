@@ -5,14 +5,13 @@ def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
-def JENKINS_PROJECT = "${JENKINS_PROJECT}".trim()
 
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def REPOSITORY_NAME = GITLAB_PROJECT.substring(GITLAB_PROJECT.indexOf('/')+1)
-def buildJobName = JENKINS_PROJECT+'-release-build'
-def dockerJobName = JENKINS_PROJECT+'-release-docker'
+def buildJobName = GITLAB_PROJECT+'-release-build'
+def dockerJobName = GITLAB_PROJECT+'-release-docker'
 
 // Build job
 job (buildJobName) {
