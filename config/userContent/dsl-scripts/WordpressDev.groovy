@@ -11,8 +11,8 @@ def JENKINS_PROJECT = "${JENKINS_PROJECT}".trim()
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def REPOSITORY_NAME = GITLAB_PROJECT.substring(GITLAB_PROJECT.indexOf('/')+1)
-def buildJobName = JENKINS_PROJECT+'-dev-build'
-def dockerJobName = JENKINS_PROJECT+'-dev-docker'
+def buildJobName = JENKINS_PROJECT+'-integration-build'
+def dockerJobName = JENKINS_PROJECT+'-integration-docker'
 
 // Build job
 job (buildJobName) {
