@@ -12,7 +12,12 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>GIT_BRANCH</name>
+          <name>GIT_RELEASE_BRANCH</name>
+          <description>Release branch</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH</name>
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>

@@ -2,7 +2,7 @@ import jenkins.model.*
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
-def GIT_BRANCH = "${GIT_BRANCH}".trim()
+def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def JENKINS_PROJECT = "${JENKINS_PROJECT}".trim()
@@ -26,8 +26,8 @@ job (buildJobName) {
     stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
     stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
-    stringParam('gitlabSourceBranch', GIT_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
-    stringParam('gitlabTargetBranch', GIT_BRANCH, 'GitLab target branch (only for MERGE events)')
+    stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
+    stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH, 'GitLab target branch (only for MERGE events)')
   }
 
   properties {
@@ -83,7 +83,7 @@ job (buildJobName) {
       setBuildDescription(true)
       useCiFeatures(false)
       allowAllBranches(false)
-      includeBranches(GIT_BRANCH)
+      includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
 
