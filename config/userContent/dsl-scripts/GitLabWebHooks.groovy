@@ -1,4 +1,5 @@
-TLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
+/*
+  GITLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
   INITIAL_JOB_NAME: Jenkins project name
 */
 import jenkins.model.*
