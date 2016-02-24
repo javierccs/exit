@@ -12,7 +12,12 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>GIT_BRANCH</name>
+          <name>GIT_RELEASE_BRANCH</name>
+          <description>Release branch</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH</name>
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
@@ -55,7 +60,8 @@
     <hudson.tasks.Shell>
       <command>JENKINS_PROJECT=${GITLAB_PROJECT//\//.}
 echo JENKINS_PROJECT=${JENKINS_PROJECT} &gt; env.properties
-echo INITIAL_JOB_NAME=${JENKINS_PROJECT}-master-build &gt;&gt; env.properties</command>
+echo INITIAL_INTEGRATION_JOB_NAME=${JENKINS_PROJECT}-integration-build &gt;&gt; env.properties
+echo INITIAL_RELEASE_JOB_NAME=${JENKINS_PROJECT}-release-build &gt;&gt; env.properties</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>

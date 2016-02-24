@@ -97,7 +97,7 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>.+-ci-.+</includeRegex>
+      <includeRegex>.+(-integration-|-release-).+</includeRegex>
       <recurse>false</recurse>
     </listView>
     <listView>
