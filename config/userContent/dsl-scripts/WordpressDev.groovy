@@ -6,6 +6,7 @@ def GIT_BRANCH = "${GIT_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def JENKINS_PROJECT = "${JENKINS_PROJECT}".trim()
+  
 
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
@@ -41,6 +42,13 @@ job (buildJobName) {
       }
     }
   }
+
+  steps {
+    shell('parse_yaml.sh application.yml > env.properties')
+    environmentVariables {
+            propertiesFile('env.properties')
+        }
+  }// steps
 
   wrappers {
     deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
@@ -88,17 +96,13 @@ job (buildJobName) {
   } //triggers
 
   steps {
-    shell('./parse_yaml.sh application.yml > env.properties')
-    environmentVariables {
-            propertiesFile('env.properties')
-        }
     shell('zip -r wordpress.zip docker-compose.yml wp-content/')
   }// steps
   publishers {
     archiveArtifacts('**/*.zip')
     git {
       pushOnlyIfSuccess()
-      tag('origin', '$WORDPRESS_IMAGE_VERSION') {
+      tag('origin', '${WORDPRESS_IMAGE_VERSION}') {
         message('DOCKER IMAGE TAG')
         create()
       }
@@ -107,7 +111,7 @@ job (buildJobName) {
       trigger(dockerJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
@@ -134,6 +138,10 @@ job (dockerJobName) {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
     }
   }
+  wrappers {
+    deliveryPipelineVersion('${PIPELINE_VERSION_TEST}', true)
+  }
+
   steps {
     copyArtifacts(buildJobName) {
       includePatterns('**/*.zip')

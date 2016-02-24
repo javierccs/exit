@@ -49,6 +49,13 @@ job (buildJobName) {
     }
   }
 
+  steps {
+    shell('parse_yaml.sh application.yml > env.properties')
+    environmentVariables {
+            propertiesFile('env.properties')
+        }
+  }// steps
+
   wrappers {
     deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
   }
@@ -95,18 +102,13 @@ job (buildJobName) {
   } //triggers
 
   steps {
-    shell('parse_yaml.sh application.yml > env.properties')
-    environmentVariables {
-            propertiesFile('env.properties')
-        }
-
     shell('zip -r wordpress.zip docker-compose.yml wp-content/')
   }// steps
   publishers {
     archiveArtifacts('**/*.zip')
     git {
       pushOnlyIfSuccess()
-      tag('origin', '$WORDPRESS_IMAGE_VERSION') {
+      tag('origin', '${WORDPRESS_IMAGE_VERSION}') {
         message('DOCKER IMAGE TAG')
         create()
       }
@@ -115,7 +117,7 @@ job (buildJobName) {
       trigger(dockerJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
