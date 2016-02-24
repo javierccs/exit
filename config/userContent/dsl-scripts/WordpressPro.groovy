@@ -70,14 +70,6 @@ job (buildJobName) {
         // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
-      remote {
-        // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
-        // Sets a name for the remote.
-        name('${gitlabSourceRepoName}')
-        // Sets the remote URL.
-        url('${gitlabSourceRepoURL}')
-      } //remote
       wipeOutWorkspace(true)
       mergeOptions('origin', '${gitlabTargetBranch}')
     } //git
