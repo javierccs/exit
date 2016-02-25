@@ -37,14 +37,14 @@ job (buildJobName) {
         name('PreProduction')
         icon('star-gold-w')
         conditions {
-          downstream(false, 'wp-pre-ose3-deploy')
+          downstream(false, deployPreJobName)
         }
       }
       promotion {
         name('Production')
         icon('star-gold')
         conditions {
-          downstream(false, 'wp-pro-ose3-deploy')
+          downstream(false, deployProJobName)
         }
       }
     }
@@ -56,10 +56,6 @@ job (buildJobName) {
             propertiesFile('env.properties')
         }
   }// steps
-
-  wrappers {
-    deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
-  }
 
   scm {
     git {
@@ -147,7 +143,7 @@ job (dockerJobName) {
             trigger(deployPreJobName,'SUCCESS') {
               //condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre)
+                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
@@ -161,6 +157,7 @@ job (dockerJobName) {
   }
 
   wrappers {
+    deliveryPipelineVersion(${PIPELINE_VERSION_TEST}', true)
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
     }
@@ -214,11 +211,11 @@ job (deployPreJobName) {
            downstreamParameterized {
              trigger(deployProJobName, 'SUCCESS') {
                parameters {
-                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro)
-                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
-                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+                 predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
+                 predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
+                 predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
+                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                }
              }
            }

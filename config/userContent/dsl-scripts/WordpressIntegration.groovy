@@ -91,13 +91,6 @@ job (buildJobName) {
   }// steps
   publishers {
     archiveArtifacts('**/*.zip')
-    git {
-      pushOnlyIfSuccess()
-      tag('origin', '${WORDPRESS_IMAGE_VERSION}') {
-        message('DOCKER IMAGE TAG')
-        create()
-      }
-    }
     downstreamParameterized {
       trigger(dockerJobName) {
         condition('SUCCESS')
