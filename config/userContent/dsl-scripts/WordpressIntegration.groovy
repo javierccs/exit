@@ -12,6 +12,7 @@ def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def REPOSITORY_NAME = GITLAB_PROJECT.substring(GITLAB_PROJECT.indexOf('/')+1)
 def buildJobName = GITLAB_PROJECT+'-integration-build'
 def dockerJobName = GITLAB_PROJECT+'-integration-docker'
+def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 
 // Build job
 job (buildJobName) {
@@ -35,7 +36,7 @@ job (buildJobName) {
         name('Development')
         icon('star-gold-e')
         conditions {
-          downstream(false, 'wp-dev-ose3-deploy')
+          downstream(false, deployDevJobName)
         }
       }
     }
@@ -102,6 +103,7 @@ job (buildJobName) {
         condition('SUCCESS')
         parameters {
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }
       }
     }
@@ -146,10 +148,10 @@ job (dockerJobName) {
   }
   publishers {
     downstreamParameterized {
-      trigger('wp-dev-ose3-deploy') {
+      trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME)
+          predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
           predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
           predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
@@ -157,5 +159,33 @@ job (dockerJobName) {
         }
       }
     }
+  }
+}
+
+//Deploy in dev job
+job (deployDevJobName) {
+  println "JOB: " + deployDevJobName
+  label('ose3-deploy')
+  deliveryPipelineConfiguration('DEV', 'Deploy')
+  parameters {
+    stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    credentialsParam('OSE3_CREDENTIAL') {
+      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+      required(false)
+      defaultValue('')
+      description('OSE3 credentials')
+    }
+    stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    credentialsBinding {
+      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+    }
+  }
+  steps {
+    shell('deploy_in_ose3.sh')
   }
 }

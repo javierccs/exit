@@ -12,6 +12,8 @@ def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def REPOSITORY_NAME = GITLAB_PROJECT.substring(GITLAB_PROJECT.indexOf('/')+1)
 def buildJobName = GITLAB_PROJECT+'-release-build'
 def dockerJobName = GITLAB_PROJECT+'-release-docker'
+def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 // Build job
 job (buildJobName) {
@@ -109,6 +111,7 @@ job (buildJobName) {
         condition('SUCCESS')
         parameters {
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }
       }
     }
@@ -141,10 +144,10 @@ job (dockerJobName) {
         }
         actions {
           downstreamParameterized {
-            trigger('wp-pre-ose3-deploy','SUCCESS') {
+            trigger(deployPreJobName,'SUCCESS') {
               //condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME)
+                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre)
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
@@ -175,3 +178,84 @@ job (dockerJobName) {
     shell('generate-and-push-wordpress-image.sh')
   }
 }
+
+//Deploy in pre job
+job (deployPreJobName) {
+  println "JOB: " + deployPreJobName
+  label('ose3-deploy')
+  deliveryPipelineConfiguration('PRE', 'Deploy')
+  parameters {
+    stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    credentialsParam('OSE3_CREDENTIAL') {
+      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+      required(false)
+      defaultValue('')
+      description('OSE3 credentials')
+    }
+    stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    credentialsBinding {
+      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+    }
+  }
+  properties {
+    promotions {
+     promotion {
+       name('Promote-PRO')
+       icon('star-gold-e')
+         conditions {
+           manual('') {}
+         }
+         actions {
+           downstreamParameterized {
+             trigger(deployProJobName, 'SUCCESS') {
+               parameters {
+                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro)
+                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
+                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+  steps {
+    shell('deploy_in_ose3.sh')
+  }
+}
+
+//Deploy in pro job
+job (deployProJobName) {
+  println "JOB: " + deployProJobName
+  label('ose3-deploy')
+  deliveryPipelineConfiguration('PRO', 'Deploy')
+  parameters {
+    stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    credentialsParam('OSE3_CREDENTIAL') {
+      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+      required(false)
+      defaultValue('')
+      description('OSE3 credentials')
+    }
+    stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    credentialsBinding {
+      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+    }
+  }
+  steps {
+    shell('deploy_in_ose3.sh')
+  }
+}
+
