@@ -111,6 +111,7 @@ job (buildJobName) {
         condition('SUCCESS')
         parameters {
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }
       }
     }
@@ -146,7 +147,7 @@ job (dockerJobName) {
             trigger(deployPreJobName,'SUCCESS') {
               //condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME)
+                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre)
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
@@ -212,6 +213,13 @@ job (deployPreJobName) {
          actions {
            downstreamParameterized {
              trigger(deployProJobName, 'SUCCESS') {
+               parameters {
+                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro)
+                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+                 predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
+                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+               }
              }
            }
          }
@@ -223,7 +231,7 @@ job (deployPreJobName) {
   }
 }
 
-//Deploy in pre job
+//Deploy in pro job
 job (deployProJobName) {
   println "JOB: " + deployProJobName
   label('ose3-deploy')

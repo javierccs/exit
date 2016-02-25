@@ -103,6 +103,7 @@ job (buildJobName) {
         condition('SUCCESS')
         parameters {
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }
       }
     }
@@ -150,7 +151,7 @@ job (dockerJobName) {
       trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME)
+          predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
           predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
           predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
