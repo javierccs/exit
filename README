@@ -12,7 +12,7 @@ docker run -d \
 	-e LDAP_BASE=<(Optional) Ldap search user base DN>\
 	-e LDAP_GROUP_BASE=<(Optional) Ldap search group base DN>\
 	-e JENKINS_URL=<(Required) Jenkins url> \
-	-e JENKINS_EMAIL=<(Optional) Jenkins email address> \
+	-e JENKINS_EMAIL=<(Required) Jenkins email address> \
 	-e JENKINS_PASSWORD=<(Required) Admin password> \
 	-e SMTP_HOST=<(Optional) SMTP Server hostname> \
 	-e SMTP_PORT=<(Optional) SMTP Server port> \

@@ -98,7 +98,7 @@
         <hudson.views.BuildButtonColumn/>
       </columns>
       <includeRegex>.+(-integration-|-release-).+</includeRegex>
-      <recurse>false</recurse>
+      <recurse>true</recurse>
     </listView>
     <listView>
       <owner class="hudson" reference="../../.."/>
@@ -120,7 +120,7 @@
         <hudson.views.BuildButtonColumn/>
       </columns>
      <includeRegex>.+-dev-.+</includeRegex>
-      <recurse>false</recurse>
+      <recurse>true</recurse>
     </listView>
     <listView>
       <owner class="hudson" reference="../../.."/>
@@ -142,7 +142,7 @@
         <hudson.views.BuildButtonColumn/>
       </columns>
       <includeRegex>.+-pre-.+</includeRegex>
-      <recurse>false</recurse>
+      <recurse>true</recurse>
     </listView>
     <listView>
       <owner class="hudson" reference="../../.."/>
@@ -164,7 +164,7 @@
         <hudson.views.BuildButtonColumn/>
       </columns>
       <includeRegex>.+-pro-.+</includeRegex>
-      <recurse>false</recurse>
+      <recurse>true</recurse>
     </listView>
     <listView>
       <owner class="hudson" reference="../../.."/>

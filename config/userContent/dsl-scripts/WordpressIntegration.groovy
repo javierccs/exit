@@ -49,8 +49,9 @@ job (buildJobName) {
         }
   }// steps
 
+// TODO Revisar el funcionamiento del PIPELINE_VERSION
   wrappers {
-    deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}', true)
+    deliveryPipelineVersion(GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}-snapshot', true)
   }
 
   scm {
@@ -95,7 +96,7 @@ job (buildJobName) {
       trigger(dockerJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':snapshot')
           predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }
       }
@@ -168,7 +169,7 @@ job (deployDevJobName) {
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
-      defaultValue('')
+      defaultValue(SERENITY_CREDENTIAL)
       description('OSE3 credentials')
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')

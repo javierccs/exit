@@ -157,7 +157,7 @@ job (dockerJobName) {
   }
 
   wrappers {
-    deliveryPipelineVersion(${PIPELINE_VERSION_TEST}', true)
+    deliveryPipelineVersion('${PIPELINE_VERSION_TEST}', true)
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
     }
@@ -189,7 +189,7 @@ job (deployPreJobName) {
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
-      defaultValue('')
+      defaultValue(SERENITY_CREDENTIAL)
       description('OSE3 credentials')
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
@@ -241,7 +241,7 @@ job (deployProJobName) {
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
-      defaultValue('')
+      defaultValue(SERENITY_CREDENTIAL)
       description('OSE3 credentials')
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
@@ -255,4 +255,3 @@ job (deployProJobName) {
     shell('deploy_in_ose3.sh')
   }
 }
-
