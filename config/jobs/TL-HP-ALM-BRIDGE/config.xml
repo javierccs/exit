@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>PROJECT_NAME</name>
+          <description></description>
+          <defaultValue>JUNIT HPALM BRIDGE </defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GITLAB_URL</name>
+          <description></description>
+          <defaultValue>https://gitlab.ci.gsnet.corp/serenity-alm/selenium-base.git</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_BRANCH</name>
+          <description></description>
+          <defaultValue>development</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_TEST_SET_ID</name>
+          <description></description>
+          <defaultValue>103031</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_DOMAIN</name>
+          <description></description>
+          <defaultValue>LABS_MIDDLEWARE</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_PROJECT</name>
+          <description></description>
+          <defaultValue>LABORATORIO_SGS</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_URL</name>
+          <description></description>
+          <defaultValue>http://alm1.produban.gs.corp</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>HPALM_CREDS</name>
+          <description></description>
+          <defaultValue>44f66fcc-e140-47b6-a552-47f3cdc21ebc</defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>false</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>POM_PATH</name>
+          <description>POM file to be executed</description>
+          <defaultValue>pom.xml</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TEST_RESULT_PATH</name>
+          <description>Relative path, respect project directory, where the tests results are storaged</description>
+          <defaultValue>./target/surefire-reports</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
+      <scriptText>import jenkins.model.*
+
+// Input parameters
+def _PROJECT_NAME_ = &quot;${PROJECT_NAME}&quot;.trim()
+def _GITLAB_URL_ = &quot;${GITLAB_URL}&quot;.trim()
+def _BRANCH_ = &quot;${GIT_BRANCH}&quot;.trim()
+def _POM_PATH_ = &quot;${POM_PATH}&quot;.trim()
+def _TEST_RESULT_PATH_ = &quot;${TEST_RESULT_PATH}&quot;.trim()
+
+def _HPALM_TEST_SET_ID_ = &quot;${HPALM_TEST_SET_ID}&quot;.trim()
+def _HPALM_DOMAIN_ = &quot;${HPALM_DOMAIN}&quot;.trim()
+def _HPALM_PROJECT_ = &quot;${HPALM_PROJECT}&quot;.trim()
+def _HPALM_URL_ = &quot;${HPALM_URL}&quot;.trim()
+def _HPALM_CREDS_ = &quot;${HPALM_CREDS}&quot;.trim()
+
+def _PROJECT_TYPE_ = &quot;hpalm_bridge&quot;
+def inst = Jenkins.getInstance()
+def gitlab = inst.getDescriptor(&quot;com.dabsquared.gitlabjenkins.GitLabPushTrigger&quot;)
+def _GITLAB_SERVER_ = gitlab.getGitlabHostUrl()
+def _GITLAB_API_TOKEN_ = gitlab.getGitlabApiToken()
+def _GITLAB_PROJECT_ = _GITLAB_URL_.minus(_GITLAB_SERVER_+&apos;/&apos;)
+def JOB_NAME = &quot;bridge-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}&quot;
+
+def _REPOSITORY_=&apos;${ENV,var=\&quot;REPOSITORY\&quot;}&apos;
+
+
+// Build job
+job (JOB_NAME+&apos;-test&apos;) {
+	println &quot;JOB: ${JOB_NAME}&quot;
+    label(_PROJECT_TYPE_)
+    deliveryPipelineConfiguration(&apos;CI&apos;, &apos;Build Image&apos;)
+
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+                
+		// Gives permission for the special authenticated group to see the workspace of the job
+/*	authorization {
+		permission(&apos;hudson.model.Item.Build&apos;, &quot;${BUILD_USER_ID}&quot;)
+		permission(&apos;hudson.model.Item.Cancel&apos;, &quot;${BUILD_USER_ID}&quot;)
+        permission(&apos;hudson.model.Item.Delete&apos;, &quot;${BUILD_USER_ID}&quot;)
+		permission(&apos;hudson.model.Item.Discover&apos;, &quot;${BUILD_USER_ID}&quot;)
+		permission(&apos;hudson.model.Item.Read&apos;, &quot;${BUILD_USER_ID}&quot;)
+		permission(&apos;hudson.model.Item.Workspace&apos;, &quot;${BUILD_USER_ID}&quot;)
+		permission(&apos;hudson.model.Run.Update&apos;, &quot;${BUILD_USER_ID}&quot;)
+		//permission(&apos;hudson.plugins.release.ReleaseWrapper.Release&apos;, &quot;${BUILD_USER_ID}&quot;)	  
+	} //authorization */
+
+
+  
+	scm {
+		git {
+				// Specify the branches to examine for changes and to build.
+			branch(&apos;origin/&apos; + _BRANCH_)
+				// Adds a repository browser for browsing the details of changes in an external system.
+			browser {
+				gitLab(_GITLAB_URL_, &apos;7.9&apos;)
+			} //browser
+				// Adds a remote.
+			remote {
+					// Sets a name for the remote.
+				name(&apos;origin&apos;)
+					// Sets the remote URL.
+				url(_GITLAB_URL_)
+			} //remote
+          
+            wipeOutWorkspace(true)
+	} //git
+	} //scm
+	
+  	wrappers {
+        credentialsBinding {
+            usernamePassword(&apos;CREDENTIALS&apos;, _HPALM_CREDS_)
+        }
+    }
+	 steps {
+	   maven {
+	    goals(&apos;test&apos;)
+        rootPOM(_POM_PATH_) 
+		mavenOpts(&apos;-Dhpalm.test.set.id=&apos;+_HPALM_TEST_SET_ID_)
+		mavenOpts(&apos;-Dhpalm.domain=&apos;+_HPALM_DOMAIN_)
+		mavenOpts(&apos;-Dhpalm.project=&apos;+_HPALM_PROJECT_)
+        mavenOpts(&apos;-Dmaven.test.failure.ignore=true&apos;)
+	  }
+	  
+      shell(
+		&apos;#!/bin/bash\n&apos;+
+		&apos;/tmp/hpalm-bridge.sh &apos; + _HPALM_URL_ + &apos; \&quot;&apos; + _TEST_RESULT_PATH_ +&apos;\&quot;&apos;
+	  )	
+	  }//steps
+	
+	}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <ignoreExisting>false</ignoreExisting>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+      <additionalClasspath></additionalClasspath>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

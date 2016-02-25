@@ -147,6 +147,33 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           privileged: false,
           tty: false,
           macAddress: ''
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:0.1',
+          labelString: 'hpalm_bridge',
+          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '5',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 1024,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '1',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: true,
+          tty: false,
+          macAddress: ''
         ]
       ]
     ]
