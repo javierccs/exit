@@ -15,20 +15,6 @@
       <parameterDefinitions/>
     </hudson.plugins.promoted__builds.conditions.ManualCondition>
   </conditions>
-  <icon>star-gold-e</icon>
-  <buildSteps>
-    <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.30">
-      <configs>
-        <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
-          <configs>
-            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
-          </configs>
-          <projects>wp-pro-ose3-deploy</projects>
-          <condition>ALWAYS</condition>
-          <triggerWithNoParameters>false</triggerWithNoParameters>
-          <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
-        </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
-      </configs>
-    </hudson.plugins.parameterizedtrigger.TriggerBuilder>
-  </buildSteps>
+  <icon>star-gold</icon>
+  <buildSteps/>
 </hudson.plugins.promoted__builds.PromotionProcess>

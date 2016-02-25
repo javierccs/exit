@@ -12,7 +12,12 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>GIT_BRANCH</name>
+          <name>GIT_RELEASE_BRANCH</name>
+          <description>Release branch</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH</name>
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
@@ -21,6 +26,16 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_NAME</name>
+          <description></description>
+          <defaultValue>wordpress-btsync-s3-experimental</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>OSE3_TEMPLATE_PARAMS</name>
+          <description></description>
+          <defaultValue>APP_NAME=wordpress-scf-demo,WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/${PIPELINE_VERSION},MYSQL_DB_HOST=external-mysql,MYSQL_DB_PORT=3306,MYSQL_DB_USER=admin,MYSQL_DB_PASSWORD=aquielpassword,MYSQL_DB_NAME=wordpress</defaultValue>
+        </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
           <description>GreenLight LDAP username/password</description>
@@ -30,10 +45,12 @@
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <assignedNode>master</assignedNode>
-  <canRoam>false</canRoam>
+  <canRoam>true</canRoam>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
@@ -53,7 +70,7 @@
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressTemplate.groovy</includes>
+      <includes>dsl-scripts/WordpressIntegration.groovy,dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

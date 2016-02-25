@@ -16,3 +16,14 @@ RUN for f in /usr/share/jenkins/ref/plugins/*; do unzip -qqt $f; done
 
 # Static config files
 COPY config/ /usr/share/jenkins/ref/
+
+LABEL description="Serenity ALM Jenkins image"
+LABEL com.serenity.imageowner="Serenity-ALM" \
+      com.serenity.description="Jenkins" \
+      com.serenity.components="git;zip" \
+      com.serenity.image.version="1.0-SNAPSHOT"
+
+ENV com.serenity.imageowner="Serenity-ALM" \
+    com.serenity.description="Jenkins" \
+    com.serenity.components="git;zip" \
+    com.serenity.image.version="1.0-SNAPSHOT"
