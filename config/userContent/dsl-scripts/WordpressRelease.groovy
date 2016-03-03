@@ -9,9 +9,10 @@ def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
-def REPOSITORY_NAME = GITLAB_PROJECT.substring(GITLAB_PROJECT.indexOf('/')+1)
-def buildJobName = GITLAB_PROJECT+'-release-build'
-def dockerJobName = GITLAB_PROJECT+'-release-docker'
+def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
+def buildJobName = GITLAB_PROJECT+'-build'
+def dockerJobName = GITLAB_PROJECT+'-docker'
+def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
@@ -27,35 +28,58 @@ job (buildJobName) {
     stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
     stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
-    stringParam('gitlabSourceBranch', GIT_RELEASE_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
-    stringParam('gitlabTargetBranch', GIT_RELEASE_BRANCH, 'GitLab target branch (only for MERGE events)')
+    stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
+    stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH, 'GitLab target branch (only for MERGE events)')
   }
 
   properties{
     promotions{
       promotion {
-        name('PreProduction')
+        name('DEV')
+        icon('star-gold-e')
+        conditions {
+          downstream(false, deployPreJobName)
+        }
+      }
+      promotion {
+        name('PRE')
         icon('star-gold-w')
         conditions {
           downstream(false, deployPreJobName)
         }
       }
       promotion {
-        name('Production')
+        name('PRO')
         icon('star-gold')
         conditions {
           downstream(false, deployProJobName)
         }
       }
+      promotion {
+        name('Promote-pre')
+        icon('star-gold-w')
+        conditions {
+          manual('') {
+          }
+        }
+        actions {
+          downstreamParameterized {
+            trigger(deployPreJobName,'SUCCESS') {
+              parameters {
+                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim
+())
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".
+trim())
+              }
+            }
+          }
+        }
+      }
     }
   }
-
-  steps {
-    shell('parse_yaml.sh application.yml > env.properties')
-    environmentVariables {
-            propertiesFile('env.properties')
-        }
-  }// steps
 
   scm {
     git {
@@ -75,33 +99,60 @@ job (buildJobName) {
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
       wipeOutWorkspace(true)
-      mergeOptions('origin', '${gitlabTargetBranch}')
     } //git
   } //scm
 
   triggers {
     gitlabPush {
       buildOnPushEvents(true)
-      buildOnMergeRequestEvents(true)
+      buildOnMergeRequestEvents(false)
       setBuildDescription(true)
-      useCiFeatures(false)
+      useCiFeatures(true)
       allowAllBranches(false)
-      includeBranches(GIT_RELEASE_BRANCH)
+      includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
 
+  wrappers {
+    buildName('${ENV,var="WORDPRESS_NAME"}-${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    release {
+      // Adds build steps to run before the release.
+      preBuildSteps {
+        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+      }
+
+        // Adds build steps to run after a successful or failed release.
+      postSuccessfulBuildSteps {
+        git {
+          tag('origin', 'v{WORDPRESS_IMAGE_VERSION}') {
+            message('Release ${WORDPRESS_IMAGE_VERSION}')
+          }
+          branch('origin', GIT_RELEASE_BRANCH)
+        }
+        shell('git checkout development')
+        git {
+          branch('origin', GIT_INTEGRATION_BRANCH)
+        }
+        deployArtifacts {
+          evenIfUnstable(false)
+          repositoryId('repositoryId')
+          repositoryUrl('releaseRepositoryUrl')
+          uniqueVersion(true)
+        }
+      }
+    } //release
+  } //wrappers
+
   steps {
+    shell('parse_yaml.sh application.yml > env.properties')
+    environmentVariables {
+            propertiesFile('env.properties')
+        }
     shell('zip -r wordpress.zip docker-compose.yml wp-content/')
   }// steps
+
   publishers {
     archiveArtifacts('**/*.zip')
-    git {
-      pushOnlyIfSuccess()
-      tag('origin', '${WORDPRESS_IMAGE_VERSION}') {
-        message('DOCKER IMAGE TAG')
-        create()
-      }
-    }
     downstreamParameterized {
       trigger(dockerJobName) {
         condition('SUCCESS')
