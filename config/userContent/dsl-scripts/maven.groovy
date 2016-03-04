@@ -11,7 +11,7 @@ def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
-def buildJobName = GITLAB_PROJECT+'-build'
+def buildJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
@@ -119,23 +119,44 @@ mavenJob (buildJobName) {
         shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
 
-        // Adds build steps to run after a successful or failed release.
-      postSuccessfulBuildSteps {
-        git {
-          tag('origin', 'v{POM_VERSION}') {
-            message('Release ${POM_VERSION}')
+      configure {
+        it / delegate.postSuccessfulBuildSteps {
+          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+            configVersion(2)
+            pushMerge(false)
+            pushOnlyIfSuccess(false)
+            forcePush(false)
+            tagsToPush {
+              'hudson.plugins.git.GitPublisher_-TagToPush' {
+                targetRepoName('origin')
+                tagName('${WORDPRESS_IMAGE_VERSION}')
+                tagMessage()
+                createTag(false)
+                updateTag(false)
+              }
+            }
+            branchesToPush {
+              'hudson.plugins.git.GitPublisher_-BranchToPush' {
+                targetRepoName('origin')
+                branchName(GIT_RELEASE_BRANCH)
+              }
+            }
           }
-          branch('origin', GIT_RELEASE_BRANCH)
-        }
-        shell('git checkout development')
-        git {
-          branch('origin', GIT_INTEGRATION_BRANCH)
-        }
-        deployArtifacts {
-          evenIfUnstable(false)
-          repositoryId('repositoryId')
-          repositoryUrl('releaseRepositoryUrl')
-          uniqueVersion(true)
+          'hudson.tasks.Shell' {
+            command("git checkout ${GIT_INTEGRATION_BRANCH}")
+          }
+          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+            configVersion(2)
+            pushMerge(false)
+            pushOnlyIfSuccess(false)
+            forcePush(false)
+            branchesToPush {
+              'hudson.plugins.git.GitPublisher_-BranchToPush' {
+                targetRepoName('origin')
+                branchName(GIT_INTEGRATION_BRANCH)
+              }
+            }
+          }
         }
       }
     } //release

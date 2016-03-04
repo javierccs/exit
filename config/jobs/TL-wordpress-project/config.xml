@@ -29,12 +29,12 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
-          <defaultValue>wordpress-btsync-s3-experimental</defaultValue>
+          <defaultValue>wordpress-status-btsync-s3-experimental</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>OSE3_TEMPLATE_PARAMS</name>
           <description></description>
-          <defaultValue>APP_NAME=wordpress-scf-demo,WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/${PIPELINE_VERSION},MYSQL_DB_HOST=external-mysql,MYSQL_DB_PORT=3306,MYSQL_DB_USER=admin,MYSQL_DB_PASSWORD=aquielpassword,MYSQL_DB_NAME=wordpress</defaultValue>
+          <defaultValue>APP_NAME=wordpress-scf-demo,WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/serenity-alm/wordpress-scf-demo:${WORDPRESS_IMAGE_VERSION},WORDPRESS_DB_HOST=external-mysql:3306,WORDPRESS_DB_USER=admin,WORDPRESS_DB_PASSWORD=aquielpassword,WORDPRESS_DB_NAME=wordpress</defaultValue>
         </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
