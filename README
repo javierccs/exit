@@ -21,3 +21,10 @@ docker run -d \
 	-e SWARM_MASTER_URL=<(Required) docker cloud daemon url> \
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home serenity/jenkins   #Jenkins volume
+ 
+ If log aggregation is desired SERENITY_FLUENTD_SERVER variable must be set, also this variables can be set:
+ 
+ -e HOSTNAME=$(hostname) -> Server hostanme
+ -e SERENITY_FLUENTD_SERVER=<Fluentd aggregation server> (like srnalmboae202.eng.gsnetcloud.corp )
+ -e SERENITY_FLUENTD_PORT=<Fluentd aggregation port> (24224 by default) 
+ -e SERENITY_TENANT=<Tenant name> (default-tenant by default)
