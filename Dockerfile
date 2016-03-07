@@ -17,7 +17,7 @@ USER root
 #This file is going to be followed by td-agent (see td-agent.conf)
 RUN mkdir /var/log/jenkins
 RUN chown jenkins:jenkins /var/log/jenkins	
-ENV JENKINS_OPTS="--logfile=/var/log/jenkins/jenkins.log"
+#ENV JENKINS_OPTS="--logfile=/var/log/jenkins/jenkins.log"
 
 COPY plugins.txt /usr/share/jenkins/ref/
 # Modify built-in plugins.sh script, in order to add proxy to curl
@@ -42,6 +42,7 @@ USER root
 #Jenkins entry point has been modified to add td-agent service
 #To start td-agent service SERENITY_FLUENTD_SERVER variable must set
 COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
+RUN chown jenkins:jenkins /usr/local/bin/jenkins-td-agent-entry-point.sh
 RUN  chmod +x /usr/local/bin/jenkins-td-agent-entry-point.sh
 
 #Downloads td-agent
@@ -69,4 +70,4 @@ USER jenkins
 #Copies td-agent configuration file
 COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
 #starts fluend and jenkins
-ENTRYPOINT ["/usr/local/bin/jenkins-td-agent-entry-point.sh"]
+ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
