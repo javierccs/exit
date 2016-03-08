@@ -131,7 +131,7 @@ trim())
             tagsToPush {
               'hudson.plugins.git.GitPublisher_-TagToPush' {
                 targetRepoName('origin')
-                tagName('${WORDPRESS_IMAGE_VERSION}')
+                tagName('v${WORDPRESS_IMAGE_VERSION}')
                 tagMessage()
                 createTag(false)
                 updateTag(false)

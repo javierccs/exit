@@ -5,7 +5,7 @@ def inst = Jenkins.getInstance()
 def git = inst.getDescriptor("hudson.plugins.git.GitSCM")
 def email = (System.getenv("JENKINS_EMAIL") == null)? "jenkins@serenity.corp":System.getenv("JENKINS_EMAIL")
 git.setGlobalConfigName("jenkins")
-git.setGlobalConfigEmail(System.getenv(email))
+git.setGlobalConfigEmail(email)
 git.save()
 
 println "-->Setting up GitLab"
