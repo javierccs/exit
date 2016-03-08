@@ -29,16 +29,16 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
-          <defaultValue>wordpress-status-btsync-s3-experimental</defaultValue>
+          <defaultValue>javase</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.TextParameterDefinition>
           <name>OSE3_TEMPLATE_PARAMS</name>
           <description></description>
-          <defaultValue>APP_NAME=wordpress-scf-demo,WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/serenity-alm/wordpress-scf-demo:${WORDPRESS_IMAGE_VERSION},WORDPRESS_DB_HOST=external-mysql:3306,WORDPRESS_DB_USER=admin,WORDPRESS_DB_PASSWORD=aquielpassword,WORDPRESS_DB_NAME=wordpress</defaultValue>
+          <defaultValue></defaultValue>
         </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
-          <description>GreenLight LDAP username/password</description>
+          <description>Serenity LDAP username/password</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
@@ -70,7 +70,7 @@
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
+      <includes>dsl-scripts/maven.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

@@ -2,6 +2,7 @@ import jenkins.model.*
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
+def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
@@ -11,15 +12,14 @@ def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.G
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
 def buildJobName = GITLAB_PROJECT+'-ci-build'
-def dockerJobName = GITLAB_PROJECT+'-ci-docker'
-def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
-def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
-def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
+def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
+def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 // Build job
-job (buildJobName) {
+mavenJob (buildJobName) {
   println "JOB: "+buildJobName
-  label('wordpress-build')
+  label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
 
@@ -35,8 +35,29 @@ job (buildJobName) {
   properties{
     promotions{
       promotion {
+        name('Promote-pre')
+        icon('star-gold-w')
+        conditions {
+          manual('') {
+          }
+        }
+        actions {
+          downstreamParameterized {
+            trigger(deployPreJobName,'SUCCESS') {
+              parameters {
+                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+              }
+            }
+          }
+        }
+      }
+      promotion {
         name('DEV')
-        icon('star-gold-e')
+        icon('star-gold')
         conditions {
           downstream(false, deployDevJobName)
         }
@@ -53,30 +74,6 @@ job (buildJobName) {
         icon('star-gold')
         conditions {
           downstream(false, deployProJobName)
-        }
-      }
-      promotion {
-        name('Promote-pre')
-        icon('star-gold-w')
-        conditions {
-          manual('') {
-          }
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
-              parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
-                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim
-())
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".
-trim())
-                predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
-              }
-            }
-          }
         }
       }
     }
@@ -115,12 +112,13 @@ trim())
   } //triggers
 
   wrappers {
-    buildName('${ENV,var="WORDPRESS_NAME"}-${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       // Adds build steps to run before the release.
       preBuildSteps {
         shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
+
       configure {
         it / delegate.postSuccessfulBuildSteps {
           'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
@@ -162,66 +160,16 @@ trim())
         }
       }
     } //release
-  } //wrappers
+  }
 
-  steps {
-    shell('parse_yaml.sh application.yml > env.properties')
-    environmentVariables {
-            propertiesFile('env.properties')
-        }
-    shell('zip -r wordpress.zip docker-compose.yml wp-content/')
-  }// steps
+  goals('clean verify')
 
   publishers {
-    archiveArtifacts('**/*.zip')
-    downstreamParameterized {
-      trigger(dockerJobName) {
-        condition('SUCCESS')
-        parameters {
-          propertiesFile('env.properties', true)
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
-          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
-        }
-      }
+    deployArtifacts {
+      repositoryId('repositoryId')
+      repositoryUrl('snapshotRepositoryUrl')
+      uniqueVersion(true)
     }
-  } //publishers
-} //job
-
-// Docker job
-job (dockerJobName) {
-  println "JOB: "+dockerJobName
-  label('wordpress-docker')
-  deliveryPipelineConfiguration('CI', 'Docker Build')
-  parameters {
-    stringParam('ARTIFACT_NAME', 'wordpress.zip', 'Wordpress artifact name')
-    credentialsParam('DOCKER_REGISTRY_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('Docker Registry credential')
-    }
-  }
-
-  wrappers {
-    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
-    credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
-    }
-  }
-  steps {
-    copyArtifacts(buildJobName) {
-      includePatterns('**/*.zip')
-      flatten()
-      optional(false)
-      fingerprintArtifacts(false)
-      buildSelector {
-        latestSuccessful(true)
-      }
-    }
-    shell('generate-and-push-wordpress-image.sh')
-  }
-
-  publishers {
     downstreamParameterized {
       trigger(deployDevJobName) {
         condition('SUCCESS')
@@ -231,13 +179,11 @@ job (dockerJobName) {
           predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
           predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
           predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
-
-          predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
-  }
-}
+  } //publishers
+} //job
 
 //Deploy in dev job
 job (deployDevJobName) {
@@ -258,7 +204,6 @@ job (deployDevJobName) {
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="PIPELINE_VERSION"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
@@ -287,36 +232,34 @@ job (deployPreJobName) {
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="PIPELINE_VERSION"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
   }
   properties {
     promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('') {}
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName, 'SUCCESS') {
-              parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-                predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
-                predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
-                predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+     promotion {
+       name('Promote-PRO')
+       icon('star-gold-e')
+         conditions {
+           manual('') {}
+         }
+         actions {
+           downstreamParameterized {
+             trigger(deployProJobName, 'SUCCESS') {
+               parameters {
+                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+                 predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
+                 predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
+                 predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
+                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
+               }
+             }
+           }
+         }
+       }
+     }
+   }
   steps {
     shell('deploy_in_ose3.sh')
   }
@@ -341,7 +284,6 @@ job (deployProJobName) {
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="PIPELINE_VERSION"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }

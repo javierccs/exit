@@ -8,6 +8,8 @@ workflow-step-api:1.13
 plain-credentials:1.1
 credentials-binding:1.6
 cloudbees-folder:5.2.1
+release:2.5.4
+dashboard-view:2.9.7
 
 #common
 token-macro:1.12.1
@@ -29,6 +31,8 @@ rebuild:1.22
 promoted-builds:2.24.1
 jquery:1.11.2-0
 parameterized-trigger:2.30
+build-name-setter:1.5.1
+build-pipeline-plugin:1.5.1
 delivery-pipeline-plugin:0.9.8
 
 #job dsl

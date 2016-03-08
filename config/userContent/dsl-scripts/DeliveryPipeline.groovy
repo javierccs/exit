@@ -1,19 +1,20 @@
 /*
   GITLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
 */
+import jenkins.model.*
 
 // Input parameters
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
 
-folder(GROUP_NAME) {
-    primaryView(REPOSITORY_NAME)
+if (!Jenkins.instance.getItemByFullName('serenity-alm')) {
+  folder(GROUP_NAME) {
+  }
 }
 
 deliveryPipelineView(GITLAB_PROJECT) {
-    //allowPipelineStart()
     allowRebuild()
     columns(1)
-    //enableManualTriggers()
+    enableManualTriggers()
     pipelineInstances(3)
     showAggregatedPipeline()
     showAvatars()
@@ -23,6 +24,6 @@ deliveryPipelineView(GITLAB_PROJECT) {
     showTotalBuildTime()
     updateInterval(5)
     pipelines {
-        regex(REPOSITORY_NAME+'-(.*)-build')
+      component(REPOSITORY_NAME, REPOSITORY_NAME+'-ci-build')
     }
 } // deliveryPipelineView
