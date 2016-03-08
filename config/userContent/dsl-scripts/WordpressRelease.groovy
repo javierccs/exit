@@ -38,7 +38,7 @@ job (buildJobName) {
         name('DEV')
         icon('star-gold-e')
         conditions {
-          downstream(false, deployPreJobName)
+          downstream(false, deployDevJobName)
         }
       }
       promotion {
@@ -178,7 +178,7 @@ trim())
       trigger(dockerJobName) {
         condition('SUCCESS')
         parameters {
-          currentBuild()
+          propertiesFile('env.properties', true)
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT + ':${WORDPRESS_IMAGE_VERSION}')
           predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
         }

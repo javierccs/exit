@@ -29,6 +29,7 @@
           <permission>hudson.model.Item.ExtendedRead</permission>
           <permission>hudson.scm.SCM.Tag</permission>
           <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Item.Move</permission>
           <permission>hudson.model.Hudson.Read</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
           <permission>hudson.model.Item.Create</permission>
@@ -48,6 +49,7 @@
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseItem</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseOwn</permission>
           <permission>hudson.model.Run.Update</permission>
+          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
         </permissions>
         <assignedSIDs>
           <sid>admin</sid>
