@@ -15,6 +15,10 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
+if (nexusRepositoryUrl==null) {
+  nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
+}
 
 // Build job
 mavenJob (buildJobName) {
@@ -129,7 +133,7 @@ mavenJob (buildJobName) {
             tagsToPush {
               'hudson.plugins.git.GitPublisher_-TagToPush' {
                 targetRepoName('origin')
-                tagName('${WORDPRESS_IMAGE_VERSION}')
+                tagName('v{POM_VERSION}')
                 tagMessage()
                 createTag(false)
                 updateTag(false)
@@ -163,11 +167,13 @@ mavenJob (buildJobName) {
   }
 
   goals('clean verify')
+    // Use managed global Maven settings.
+  providedGlobalSettings('Serenity Maven Global Settings')
 
   publishers {
     deployArtifacts {
-      repositoryId('repositoryId')
-      repositoryUrl('snapshotRepositoryUrl')
+      repositoryId('serenity')
+      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
       uniqueVersion(true)
     }
     downstreamParameterized {
