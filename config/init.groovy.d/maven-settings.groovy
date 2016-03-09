@@ -1,4 +1,4 @@
-import org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig;
+import org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig;
 import org.jenkinsci.lib.configprovider.ConfigProvider;
 import org.jenkinsci.plugins.configfiles.maven.security.ServerCredentialMapping;
 import com.cloudbees.plugins.credentials.domains.Domain;
@@ -39,13 +39,13 @@ if (mavenDeployerLogin == null && mavenDeployerPasswd == null){
  
   InputStream is = new FileInputStream(Jenkins.instance.getRootDir().toString()+'/userContent/customConfigs/maven-settings.xml')
     
-  def globalMavenSettingsConfig = new GlobalMavenSettingsConfig(
-    "org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig", 
-    "Serenity Maven Global Settings", "Custom Maven settings for Serenity framework", is.text, true, serverCredentialMappings);
+  def mavenSettingsConfig = new MavenSettingsConfig(
+    "org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig", 
+    "Serenity Maven Settings", "Custom Maven settings for Serenity framework", is.text, true, serverCredentialMappings);
   
   for (ConfigProvider provider : ConfigProvider.all()) {
-      if (provider.isResponsibleFor(globalMavenSettingsConfig.id)) {
-          provider.save(globalMavenSettingsConfig);
+      if (provider.isResponsibleFor(mavenSettingsConfig.id)) {
+          provider.save(mavenSettingsConfig);
       }
   }
 }

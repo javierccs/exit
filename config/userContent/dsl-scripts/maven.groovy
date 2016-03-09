@@ -168,7 +168,7 @@ mavenJob (buildJobName) {
 
   goals('clean verify')
     // Use managed global Maven settings.
-  providedGlobalSettings('Serenity Maven Global Settings')
+  providedSettings('Serenity Maven Settings')
 
   publishers {
     deployArtifacts {
