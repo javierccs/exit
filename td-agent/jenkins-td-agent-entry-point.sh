@@ -3,7 +3,11 @@
 #Starts fluentd if fluentd server variable is set
 if [ -z "$SERENITY_FLUENTD_SERVER" ]; then
     echo "Warning: Serenity fluentd server variable (SERENITY_FLUENTD_SERVER) is unset. td-agent won't be started"
-else 
+else
+    #Changes jenkins log file to be followed by td-agent
+    export JENKINS_LOG_FILE=/var/log/td-agent/jenkins.log
+    echo Setting jenkins log file to $JENKINS_LOG_FILE
+    export JENKINS_OPTS="$JENKINS_OPTS --logfile=$JENKINS_LOG_FILE"
     #Checks if tenant variable has been set
 	if [ -z "$SERENITY_TENANT" ]; then
 		echo "Warning: Serenity tenant (SERENITY_TENANT) is unset. Default value (default-tenant) will be used"
@@ -19,4 +23,13 @@ fi
 #Starts jenkins
 echo "Starting jenkins..."
 /bin/tini -- /usr/local/bin/jenkins.sh
-echo "Done."
+echo Error starting jenkins!
+if [ -z "$SERENITY_FLUENTD_SERVER" ]; then
+  echo "Done."
+else
+  #prints jenkins log file
+  echo Jenkins log file
+  echo ###############
+  cat $JENKINS_LOG_FILE  
+  echo ###############
+fi
