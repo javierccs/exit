@@ -40,8 +40,8 @@ if (mavenDeployerLogin == null && mavenDeployerPasswd == null){
   InputStream is = new FileInputStream(Jenkins.instance.getRootDir().toString()+'/userContent/customConfigs/maven-settings.xml')
     
   def globalMavenSettingsConfig = new GlobalMavenSettingsConfig(
-    "org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig", 
-    "Serenity Maven Global Settings", "Custom Maven settings for Serenity framework", is.text, true, serverCredentialMappings);
+    "org.jenkinsci.plugins.configfiles.maven.job.MvnSettingsProvider", 
+    "Serenity Maven Settings", "Custom Maven settings for Serenity framework", is.text, true, serverCredentialMappings);
   
   for (ConfigProvider provider : ConfigProvider.all()) {
       if (provider.isResponsibleFor(globalMavenSettingsConfig.id)) {
