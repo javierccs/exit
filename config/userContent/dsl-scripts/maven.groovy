@@ -20,19 +20,9 @@ if (nexusRepositoryUrl==null) {
   nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
 }
 
-// variables for nexus 
-def apiPartUri='/service/local/artifact/maven/redirect?';
-def nexusGroupId='g='+'${POM_GROUPID}';
-def nexusArtifactId='&a='+'${POM_ARTIFACTID}';
-def nexusPomVersion='&v='+'${POM_VERSION}';
-def snapshotsRepository="&r=snapshots";
-def releasesRepository="&r=releases";
-
-
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
 
-// Build job
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -41,11 +31,16 @@ mavenJob (buildJobName) {
 
   parameters {
     // Defines a simple text parameter, where users can enter a string value.
-    stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
-    stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
-    stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
-    stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH, 'GitLab target branch (only for MERGE events)')
+    stringParam('gitlabActionType', 'PUSH',
+                'GitLab Event (PUSH or MERGE)')
+    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git',
+                'GitLab Source Repository')
+    stringParam('gitlabSourceRepoName', 'origin',
+                'GitLab source repo name (only for MERGE events from forked repositories)')
+    stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH,
+                'Gitlab source branch (only for MERGE events from forked repositories)')
+    stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH,
+                'GitLab target branch (only for MERGE events)')
   }
 
   properties{
@@ -64,8 +59,10 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
-                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+releasesRepository+"'")
+                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
+                               'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+                               'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
               }
             }
           }
@@ -133,6 +130,9 @@ mavenJob (buildJobName) {
       // Adds build steps to run before the release.
       preBuildSteps {
         shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+        environmentVariables {
+           env('IS_RELEASE',true)
+        }
       }
 
       configure {
@@ -173,6 +173,12 @@ mavenJob (buildJobName) {
               }
             }
           }
+          'hudson.maven.RedeployPublisher' {
+            id('serenity')
+            url(nexusRepositoryUrl+'/content/repositories/releases')
+            uniqueVersion(true)
+            evenIfUnstable(false)
+          }
         }
       }
     } //release
@@ -195,12 +201,18 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
           predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
-          predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-          predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+snapshotsRepository+"'")
+          predefinedProp('OSE3_TEMPLATE_NAME','javase')
+          predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
+                         'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
         }
       }
     }
   } //publishers
+
+  configure {
+    it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
+  }
 } //job
 
 //Deploy in dev job
@@ -270,7 +282,7 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+releasesRepository+"'")
+                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                }
              }
            }
