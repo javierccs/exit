@@ -20,6 +20,18 @@ if (nexusRepositoryUrl==null) {
   nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
 }
 
+// variables for nexus 
+def apiPartUri='/service/local/artifact/maven/redirect?';
+def nexusGroupId='g='+'${POM_GROUPID}';
+def nexusArtifactId='&a='+'${POM_ARTIFACTID}';
+def nexusPomVersion='&v='+'${POM_VERSION}';
+def snapshotsRepository="&r=snapshots";
+def releasesRepository="&r=releases";
+
+
+// APP_name for OSE3 -it doesnt allow uppercase chars!!
+def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
+
 // Build job
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
@@ -51,9 +63,9 @@ mavenJob (buildJobName) {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+                predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+releasesRepository+"'")
               }
             }
           }
@@ -182,9 +194,9 @@ mavenJob (buildJobName) {
         parameters {
           predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
+          predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
           predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
+          predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+snapshotsRepository+"'")
         }
       }
     }
@@ -258,7 +270,7 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
+                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+'ARTIFACT_URL='+"'"+nexusRepositoryUrl+apiPartUri+nexusGroupId+nexusArtifactId+nexusPomVersion+releasesRepository+"'")
                }
              }
            }
