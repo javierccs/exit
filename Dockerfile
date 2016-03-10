@@ -55,7 +55,10 @@ USER root
 #Jenkins entry point has been modified to add td-agent service
 #To start td-agent service SERENITY_FLUENTD_SERVER variable must set
 COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
-
+#Unset proxy
+ENV http_proxy ""
+ENV https_proxy ""
+ENV no_proxy ""
 User jenkins
 #Copies static config files
 COPY config/ /usr/share/jenkins/ref/
