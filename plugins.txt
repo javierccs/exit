@@ -60,3 +60,4 @@ greenballs:1.15
 build-timeout:1.15
 envinject:1.92.1
 role-strategy:2.2.0
+docker-plugin:0.16.0
