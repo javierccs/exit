@@ -184,6 +184,15 @@ trim())
         }
       }
     }
+    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
+      trigger(triggerName: 'Always')
+      trigger(triggerName: 'Failure', includeCulprits: true)
+      trigger(triggerName: 'Unstable', includeCulprits: true)
+      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
+      configure {
+        it/contentType('text/html')
+      }
+    } //extendedEmail
   } //publishers
 } //job
 

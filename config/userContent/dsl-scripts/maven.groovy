@@ -204,10 +204,19 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
         }
       }
     }
+    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
+      trigger(triggerName: 'Always')
+      trigger(triggerName: 'Failure', includeCulprits: true)
+      trigger(triggerName: 'Unstable', includeCulprits: true)
+      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
+      configure {
+        it/contentType('text/html')
+      }
+    } //extendedEmail
   } //publishers
 
   configure {
