@@ -126,62 +126,69 @@ mavenJob (buildJobName) {
 
   wrappers {
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
-    release {
-      // Adds build steps to run before the release.
-      preBuildSteps {
-        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
-        environmentVariables {
-           env('IS_RELEASE',true)
-        }
-      }
-
+    release {       
       configure {
-        it / delegate.postSuccessfulBuildSteps {
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            tagsToPush {
-              'hudson.plugins.git.GitPublisher_-TagToPush' {
-                targetRepoName('origin')
-                tagName('v{POM_VERSION}')
-                tagMessage()
-                createTag(false)
-                updateTag(false)
-              }
+        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+          configVersion(2)
+          pushMerge(false)
+          pushOnlyIfSuccess(false)
+          forcePush(false)
+          tagsToPush {
+            'hudson.plugins.git.GitPublisher_-TagToPush' {
+              targetRepoName('origin')
+              tagName('v${POM_VERSION}')
+              tagMessage()
+              createTag(false)
+              updateTag(false)
             }
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_RELEASE_BRANCH)
+          }
+          branchesToPush {
+            'hudson.plugins.git.GitPublisher_-BranchToPush' {
+              targetRepoName('origin')
+              branchName(GIT_RELEASE_BRANCH)
+            }
+          }
+        }
+        postSuccessfulBuildSteps {
+          shell("git checkout ${GIT_INTEGRATION_BRANCH}")
+        }
+        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+          configVersion(2)
+          pushMerge(false)
+          pushOnlyIfSuccess(false)
+          forcePush(false)
+          branchesToPush {
+            'hudson.plugins.git.GitPublisher_-BranchToPush' {
+              targetRepoName('origin')
+              branchName(GIT_INTEGRATION_BRANCH)
+            }
+          }
+        }
+        it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
+          id('serenity')
+          url(nexusRepositoryUrl+'/content/repositories/releases')
+          uniqueVersion(true)
+          evenIfUnstable(false)
+        }
+        it / 'preBuildSteps' << 'org.jenkinsci.plugins.configfiles.builder.ConfigFileBuildStep' (plugin: 'config-file-provider@2.10.0') {
+            managedFiles {
+              'org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile' {
+                fileId('org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig')
+                targetLocation('/tmp/settings.xml')
+                variable('MAVEN_SETTINGS')
               }
             }
           }
-          'hudson.tasks.Shell' {
-            command("git checkout ${GIT_INTEGRATION_BRANCH}")
-          }
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_INTEGRATION_BRANCH)
-              }
-            }
-          }
-          'hudson.maven.RedeployPublisher' {
-            id('serenity')
-            url(nexusRepositoryUrl+'/content/repositories/releases')
-            uniqueVersion(true)
-            evenIfUnstable(false)
+        it / 'preBuildSteps' << 'hudson.tasks.Shell' {
+          command("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+        }
+        it / 'preBuildSteps' << 'EnvInjectBuilder' (plugin: 'envinject@1.92.1') {
+          info {
+            propertiesContent('IS_RELEASE=true')
           }
         }
       }
-    } //release
+    } //release  
   }
 
   goals('clean verify')
