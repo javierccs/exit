@@ -20,6 +20,17 @@ if (nexusRepositoryUrl==null) {
   nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
 }
 
+//HPALM INFO
+def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
+def _HPALM_DOMAIN_ = "${HPALM_DOMAIN}".trim()
+def _HPALM_PROJECT_ = "${HPALM_PROJECT}".trim()
+def _HPALM_URL_ = "${HPALM_URL}".trim()
+def _HPALM_CREDS_ = "${HPALM_CREDS}".trim()
+def _TEST_RESULT_PATH_ = "target/surefire-reports"
+def _POM_PATH_ = "pom.xml"
+
+def BridgeHPALMJobName = GITLAB_PROJECT+'pre-hpalm-bridge'
+
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
 
@@ -126,7 +137,7 @@ mavenJob (buildJobName) {
 
   wrappers {
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
-    release {       
+    release {
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
           configVersion(2)
@@ -188,7 +199,7 @@ mavenJob (buildJobName) {
           }
         }
       }
-    } //release  
+    } //release
   }
 
   goals('clean verify')
@@ -253,10 +264,67 @@ job (deployDevJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    steps {
+      shell('deploy_in_ose3.sh')
+    }
   }
-  steps {
-    shell('deploy_in_ose3.sh')
-  }
+}
+
+//Use HPALM Bridge
+job (BridgeHPALMJobName)
+{
+  println "JOB: ${BridgeHPALMJobName}"
+    label("hpalm_bridge")
+    parameters {
+       stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
+    }
+    deliveryPipelineConfiguration('PRE', 'Functional Test')
+
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+                
+	scm {
+    git {
+      // Specify the branches to examine for changes and to build.
+      branch(GIT_INTEGRATION_BRANCH)
+      // Adds a repository browser for browsing the details of changes in an external system.
+      browser {
+        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+      } //browser
+      // Adds a remote.
+      remote {
+        // Sets credentials for authentication with the remote repository.
+        credentials(SERENITY_CREDENTIAL)
+        // Sets a name for the remote.
+        name('origin')
+        // Sets the remote URL.
+        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+      } //remote
+      wipeOutWorkspace(true)
+    } //git
+	} //scm
+	
+  	wrappers {
+        credentialsBinding {
+            usernamePassword('CREDENTIALS', _HPALM_CREDS_)
+        }
+    }
+	 steps {
+	   maven {
+	    goals('test')
+  		providedSettings('Serenity Maven Settings')
+        rootPOM(_POM_PATH_) 
+		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
+		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
+		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
+		mavenOpts('-DseleniumBaseURL=\"${OSE3_END_POINT_URL}\"')
+        mavenOpts('-Dmaven.test.failure.ignore=true')
+	  }
+	  
+      shell(
+		'#!/bin/bash\n'+
+		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
+	  )	
+	  }//steps
 }
 
 //Deploy in pre job
@@ -308,7 +376,22 @@ job (deployPreJobName) {
    }
   steps {
     shell('deploy_in_ose3.sh')
-  }
+        environmentVariables
+        {
+          propertiesFile('/tmp/deploy_jenkins.properties')
+  	}
+    }
+    publishers
+    {
+	downstreamParameterized {
+	    trigger(BridgeHPALMJobName) {
+        	condition('SUCCESS')
+        	parameters {
+         		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
+		}
+	    }
+	}
+    }
 }
 
 //Deploy in pro job

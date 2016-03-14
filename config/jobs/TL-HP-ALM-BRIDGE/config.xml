@@ -21,20 +21,27 @@
           <description></description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GIT_LAB_CREDENTIALS</name>
+          <description></description>
+          <defaultValue>bd73de5a-890b-4ddf-901b-ec82af3e3e11</defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>false</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_TEST_SET_ID</name>
           <description></description>
-          <defaultValue>103031</defaultValue>
+          <defaultValue>801</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_DOMAIN</name>
           <description></description>
-          <defaultValue>LABS_MIDDLEWARE</defaultValue>
+          <defaultValue>METODOLOGIA_ISBAN</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_PROJECT</name>
           <description></description>
-          <defaultValue>LABORATORIO_SGS</defaultValue>
+          <defaultValue>NUEVAS_FUNC_ALM11</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_URL</name>
@@ -44,19 +51,19 @@
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>HPALM_CREDS</name>
           <description></description>
-          <defaultValue>44f66fcc-e140-47b6-a552-47f3cdc21ebc</defaultValue>
+          <defaultValue>83e27227-38e1-421e-895a-cda11c0031d3</defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>POM_PATH</name>
           <description>POM file to be executed</description>
-          <defaultValue>pom.xml</defaultValue>
+          <defaultValue>WpressDemo/pom.xml</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>TEST_RESULT_PATH</name>
           <description>Relative path, respect project directory, where the tests results are storaged</description>
-          <defaultValue>./target/surefire-reports</defaultValue>
+          <defaultValue>./WpressDemo/target/surefire-reports</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -75,6 +82,7 @@
 // Input parameters
 def _PROJECT_NAME_ = &quot;${PROJECT_NAME}&quot;.trim()
 def _GITLAB_URL_ = &quot;${GITLAB_URL}&quot;.trim()
+def _GIT_LAB_CREDENTIALS_ = &quot;${GIT_LAB_CREDENTIALS}&quot;.trim()
 def _BRANCH_ = &quot;${GIT_BRANCH}&quot;.trim()
 def _POM_PATH_ = &quot;${POM_PATH}&quot;.trim()
 def _TEST_RESULT_PATH_ = &quot;${TEST_RESULT_PATH}&quot;.trim()
@@ -91,13 +99,13 @@ def gitlab = inst.getDescriptor(&quot;com.dabsquared.gitlabjenkins.GitLabPushTri
 def _GITLAB_SERVER_ = gitlab.getGitlabHostUrl()
 def _GITLAB_API_TOKEN_ = gitlab.getGitlabApiToken()
 def _GITLAB_PROJECT_ = _GITLAB_URL_.minus(_GITLAB_SERVER_+&apos;/&apos;)
-def JOB_NAME = &quot;bridge-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}&quot;
+def JOB_NAME = &quot;bridge-${_PROJECT_NAME_.replace(&quot; &quot;,&quot;_&quot;)}_test_set_id_&quot; + _HPALM_TEST_SET_ID_
 
 def _REPOSITORY_=&apos;${ENV,var=\&quot;REPOSITORY\&quot;}&apos;
 
 
 // Build job
-job (JOB_NAME+&apos;-test&apos;) {
+job (JOB_NAME) {
 	println &quot;JOB: ${JOB_NAME}&quot;
     label(_PROJECT_TYPE_)
     deliveryPipelineConfiguration(&apos;CI&apos;, &apos;Build Image&apos;)
@@ -128,6 +136,7 @@ job (JOB_NAME+&apos;-test&apos;) {
 			} //browser
 				// Adds a remote.
 			remote {
+				credentials(_GIT_LAB_CREDENTIALS_)
 					// Sets a name for the remote.
 				name(&apos;origin&apos;)
 					// Sets the remote URL.
