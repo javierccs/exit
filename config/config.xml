@@ -28,8 +28,8 @@
           <permission>hudson.model.Item.Build</permission>
           <permission>hudson.model.Item.ExtendedRead</permission>
           <permission>hudson.scm.SCM.Tag</permission>
-          <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Hudson.Read</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
           <permission>hudson.model.Item.Create</permission>
@@ -42,6 +42,7 @@
           <permission>hudson.model.View.Create</permission>
           <permission>hudson.model.Computer.ExtendedRead</permission>
           <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
           <permission>hudson.model.Computer.Configure</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
           <permission>hudson.model.Computer.Disconnect</permission>
@@ -49,7 +50,6 @@
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseItem</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseOwn</permission>
           <permission>hudson.model.Run.Update</permission>
-          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
         </permissions>
         <assignedSIDs>
           <sid>admin</sid>
@@ -70,6 +70,270 @@
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds>
+    <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.16.1-SNAPSHOT">
+      <name>cloud</name>
+      <templates>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>wordpress-build</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>jenkins-ssh-slave-credentials</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/jenkins</remoteFs>
+          <instanceCap>1</instanceCap>
+          <mode>EXCLUSIVE</mode>
+          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">
+            <idleMinutes>5</idleMinutes>
+            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">5</idleMinutes>
+          </retentionStrategy>
+          <numExecutors>2</numExecutors>
+          <dockerTemplateBase>
+            <image>registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest</image>
+            <dockerCommand>start</dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes/>
+            <volumesFrom2/>
+            <environment>
+              <string>JENKINS_USERLOGIN=jenkins</string>
+              <string>JENKINS_USERPASSWORD=jenkins</string>
+            </environment>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>1024</memoryLimit>
+            <memorySwap>0</memorySwap>
+            <cpuShares>2</cpuShares>
+            <privileged>true</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>true</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>wordpress-docker</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>jenkins-ssh-slave-credentials</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/jenkins</remoteFs>
+          <instanceCap>1</instanceCap>
+          <mode>EXCLUSIVE</mode>
+          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">
+            <idleMinutes>5</idleMinutes>
+            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">5</idleMinutes>
+          </retentionStrategy>
+          <numExecutors>2</numExecutors>
+          <dockerTemplateBase>
+            <image>registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:latest</image>
+            <dockerCommand>start</dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes>
+              <string>/var/run/docker.sock:/var/run/docker.sock</string>
+              <string>/usr/local/bin/docker:/usr/local/bin/docker</string>
+            </volumes>
+            <volumesFrom2/>
+            <environment>
+              <string>JENKINS_USERLOGIN=jenkins</string>
+              <string>JENKINS_USERPASSWORD=jenkins</string>
+            </environment>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>1024</memoryLimit>
+            <memorySwap>0</memorySwap>
+            <cpuShares>2</cpuShares>
+            <privileged>true</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>true</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>ose3-deploy</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>jenkins-ssh-slave-credentials</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/jenkins</remoteFs>
+          <instanceCap>1</instanceCap>
+          <mode>EXCLUSIVE</mode>
+          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">
+            <idleMinutes>5</idleMinutes>
+            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">5</idleMinutes>
+          </retentionStrategy>
+          <numExecutors>2</numExecutors>
+          <dockerTemplateBase>
+            <image>registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest</image>
+            <dockerCommand>start</dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes/>
+            <volumesFrom2/>
+            <environment>
+              <string>JENKINS_USERLOGIN=jenkins</string>
+              <string>JENKINS_USERPASSWORD=jenkins</string>
+            </environment>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>512</memoryLimit>
+            <memorySwap>0</memorySwap>
+            <cpuShares>2</cpuShares>
+            <privileged>false</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>true</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>maven</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>jenkins-ssh-slave-credentials</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/jenkins</remoteFs>
+          <instanceCap>1</instanceCap>
+          <mode>EXCLUSIVE</mode>
+          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">
+            <idleMinutes>5</idleMinutes>
+            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">5</idleMinutes>
+          </retentionStrategy>
+          <numExecutors>2</numExecutors>
+          <dockerTemplateBase>
+            <image>registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:latest</image>
+            <dockerCommand>start</dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes>
+              <string>/opt/docker-volumes/jslave-maven/m2:/opt/docker-volumes/jslave-maven/m2</string>
+            </volumes>
+            <volumesFrom2/>
+            <environment>
+              <string>JENKINS_USERLOGIN=jenkins</string>
+              <string>JENKINS_USERPASSWORD=jenkins</string>
+            </environment>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>1024</memoryLimit>
+            <memorySwap>0</memorySwap>
+            <cpuShares>2</cpuShares>
+            <privileged>true</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>true</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+        <com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <configVersion>2</configVersion>
+          <labelString>hpalm_bridge</labelString>
+          <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+            <sshConnector plugin="ssh-slaves@1.10">
+              <port>22</port>
+              <credentialsId>jenkins-ssh-slave-credentials</credentialsId>
+              <jvmOptions></jvmOptions>
+              <javaPath></javaPath>
+              <maxNumRetries>0</maxNumRetries>
+              <retryWaitTime>0</retryWaitTime>
+            </sshConnector>
+          </launcher>
+          <remoteFsMapping></remoteFsMapping>
+          <remoteFs>/home/jenkins</remoteFs>
+          <instanceCap>1</instanceCap>
+          <mode>EXCLUSIVE</mode>
+          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">
+            <idleMinutes>5</idleMinutes>
+            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerCloudRetentionStrategy">5</idleMinutes>
+          </retentionStrategy>
+          <numExecutors>2</numExecutors>
+          <dockerTemplateBase>
+            <image>registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:latest</image>
+            <dockerCommand>start</dockerCommand>
+            <lxcConfString></lxcConfString>
+            <hostname></hostname>
+            <dnsHosts/>
+            <volumes>
+              <string>/opt/docker-volumes/jslave-maven/m2:/opt/docker-volumes/jslave-maven/m2</string>
+            </volumes>
+            <volumesFrom2/>
+            <environment>
+              <string>JENKINS_USERLOGIN=jenkins</string>
+              <string>JENKINS_USERPASSWORD=jenkins</string>
+            </environment>
+            <bindPorts></bindPorts>
+            <bindAllPorts>false</bindAllPorts>
+            <memoryLimit>1024</memoryLimit>
+            <memorySwap>0</memorySwap>
+            <cpuShares>2</cpuShares>
+            <privileged>true</privileged>
+            <tty>false</tty>
+            <extraHosts class="java.util.Collections$UnmodifiableRandomAccessList" resolves-to="java.util.Collections$UnmodifiableList">
+              <c class="list"/>
+              <list reference="../c"/>
+            </extraHosts>
+          </dockerTemplateBase>
+          <removeVolumes>true</removeVolumes>
+          <pullStrategy>PULL_LATEST</pullStrategy>
+        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+      </templates>
+      <serverUrl>http://oclubunc012.isbcloud.isban.corp:2375</serverUrl>
+      <connectTimeout>15</connectTimeout>
+      <readTimeout>15</readTimeout>
+      <credentialsId></credentialsId>
+      <containerCap>10</containerCap>
+    </com.nirima.jenkins.plugins.docker.DockerCloud>
+  </clouds>
   <quietPeriod>5</quietPeriod>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>

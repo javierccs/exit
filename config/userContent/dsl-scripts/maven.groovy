@@ -20,6 +20,18 @@ if (nexusRepositoryUrl==null) {
   nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
 }
 
+//HPALM INFO
+def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
+def _HPALM_DOMAIN_ = "${HPALM_DOMAIN}".trim()
+def _HPALM_PROJECT_ = "${HPALM_PROJECT}".trim()
+def _HPALM_URL_ = "${HPALM_URL}".trim()
+def _HPALM_CREDS_ = "${HPALM_CREDS}".trim()
+def _TEST_RESULT_PATH_ = "target/surefire-reports"
+def _POM_PATH_ = "pom.xml"
+def OSE3_END_POINT_URL = ""
+
+def BridgeHPALMJobName = GITLAB_PROJECT+'-hpalm-bridge'
+
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
 
@@ -66,7 +78,6 @@ mavenJob (buildJobName) {
               }
             }
           }
-        }
       }
       promotion {
         name('DEV')
@@ -126,69 +137,62 @@ mavenJob (buildJobName) {
 
   wrappers {
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
-    release {       
+    release {
+      // Adds build steps to run before the release.
+      preBuildSteps {
+        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+        environmentVariables {
+           env('IS_RELEASE',true)
+        }
+      }
+
       configure {
-        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-          configVersion(2)
-          pushMerge(false)
-          pushOnlyIfSuccess(false)
-          forcePush(false)
-          tagsToPush {
-            'hudson.plugins.git.GitPublisher_-TagToPush' {
-              targetRepoName('origin')
-              tagName('v${POM_VERSION}')
-              tagMessage()
-              createTag(false)
-              updateTag(false)
+        it / delegate.postSuccessfulBuildSteps {
+          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+            configVersion(2)
+            pushMerge(false)
+            pushOnlyIfSuccess(false)
+            forcePush(false)
+            tagsToPush {
+              'hudson.plugins.git.GitPublisher_-TagToPush' {
+                targetRepoName('origin')
+                tagName('v{POM_VERSION}')
+                tagMessage()
+                createTag(false)
+                updateTag(false)
+              }
             }
-          }
-          branchesToPush {
-            'hudson.plugins.git.GitPublisher_-BranchToPush' {
-              targetRepoName('origin')
-              branchName(GIT_RELEASE_BRANCH)
-            }
-          }
-        }
-        postSuccessfulBuildSteps {
-          shell("git checkout ${GIT_INTEGRATION_BRANCH}")
-        }
-        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-          configVersion(2)
-          pushMerge(false)
-          pushOnlyIfSuccess(false)
-          forcePush(false)
-          branchesToPush {
-            'hudson.plugins.git.GitPublisher_-BranchToPush' {
-              targetRepoName('origin')
-              branchName(GIT_INTEGRATION_BRANCH)
-            }
-          }
-        }
-        it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
-          id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
-          uniqueVersion(true)
-          evenIfUnstable(false)
-        }
-        it / 'preBuildSteps' << 'org.jenkinsci.plugins.configfiles.builder.ConfigFileBuildStep' (plugin: 'config-file-provider@2.10.0') {
-            managedFiles {
-              'org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile' {
-                fileId('org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig')
-                targetLocation('/tmp/settings.xml')
-                variable('MAVEN_SETTINGS')
+            branchesToPush {
+              'hudson.plugins.git.GitPublisher_-BranchToPush' {
+                targetRepoName('origin')
+                branchName(GIT_RELEASE_BRANCH)
               }
             }
           }
-        it / 'preBuildSteps' << 'hudson.tasks.Shell' {
-          command("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
-        }
-        it / 'preBuildSteps' << 'EnvInjectBuilder' (plugin: 'envinject@1.92.1') {
-          info {
-            propertiesContent('IS_RELEASE=true')
+          'hudson.tasks.Shell' {
+            command("git checkout ${GIT_INTEGRATION_BRANCH}")
+          }
+          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
+            configVersion(2)
+            pushMerge(false)
+            pushOnlyIfSuccess(false)
+            forcePush(false)
+            branchesToPush {
+              'hudson.plugins.git.GitPublisher_-BranchToPush' {
+                targetRepoName('origin')
+                branchName(GIT_INTEGRATION_BRANCH)
+              }
+            }
+          }
+          'hudson.maven.RedeployPublisher' {
+            id('serenity')
+            url(nexusRepositoryUrl+'/content/repositories/releases')
+            uniqueVersion(true)
+            evenIfUnstable(false)
           }
         }
       }
-    } //release  
+    } //release
   }
 
   goals('clean verify')
@@ -211,19 +215,10 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
         }
       }
     }
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
-      }
-    } //extendedEmail
   } //publishers
 
   configure {
@@ -257,6 +252,78 @@ job (deployDevJobName) {
   steps {
     shell('deploy_in_ose3.sh')
   }
+}
+
+
+//Use HPALM Bridge
+job (BridgeHPALMJobName)
+{
+	println "JOB: ${JOB_NAME}"
+    label("hpalm_bridge")
+    parameters {
+       stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
+    }
+    deliveryPipelineConfiguration('PRE', 'Functional Test')
+
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+                
+		// Gives permission for the special authenticated group to see the workspace of the job
+/*	authorization {
+		permission('hudson.model.Item.Build', "${BUILD_USER_ID}")
+		permission('hudson.model.Item.Cancel', "${BUILD_USER_ID}")
+        permission('hudson.model.Item.Delete', "${BUILD_USER_ID}")
+		permission('hudson.model.Item.Discover', "${BUILD_USER_ID}")
+		permission('hudson.model.Item.Read', "${BUILD_USER_ID}")
+		permission('hudson.model.Item.Workspace', "${BUILD_USER_ID}")
+		permission('hudson.model.Run.Update', "${BUILD_USER_ID}")
+		//permission('hudson.plugins.release.ReleaseWrapper.Release', "${BUILD_USER_ID}")	  
+	} //authorization */
+
+
+  
+	scm {
+    git {
+      // Specify the branches to examine for changes and to build.
+      branch(GIT_INTEGRATION_BRANCH)
+      // Adds a repository browser for browsing the details of changes in an external system.
+      browser {
+        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+      } //browser
+      // Adds a remote.
+      remote {
+        // Sets credentials for authentication with the remote repository.
+        credentials(SERENITY_CREDENTIAL)
+        // Sets a name for the remote.
+        name('origin')
+        // Sets the remote URL.
+        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+      } //remote
+      wipeOutWorkspace(true)
+    } //git
+	} //scm
+	
+  	wrappers {
+        credentialsBinding {
+            usernamePassword('CREDENTIALS', _HPALM_CREDS_)
+        }
+    }
+	 steps {
+	   maven {
+	    goals('test')
+  		providedSettings('Serenity Maven Settings')
+        rootPOM(_POM_PATH_) 
+		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
+		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
+		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
+		mavenOpts('-DseleniumBaseURL=\"'+OSE3_END_POINT_URL+ '\"')
+        mavenOpts('-Dmaven.test.failure.ignore=true')
+	  }
+	  
+      shell(
+		'#!/bin/bash\n'+
+		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
+	  )	
+	  }//steps
 }
 
 //Deploy in pre job
@@ -308,7 +375,22 @@ job (deployPreJobName) {
    }
   steps {
     shell('deploy_in_ose3.sh')
-  }
+        environmentVariables
+        {
+          propertiesFile('/tmp/deploy_jenkins.properties')
+  	}
+    }
+    publishers
+    {
+	downstreamParameterized {
+	    trigger(BridgeHPALMJobName) {
+        	condition('SUCCESS')
+        	parameters {
+         		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
+		}
+	    }
+	}
+    }
 }
 
 //Deploy in pro job
@@ -337,4 +419,5 @@ job (deployProJobName) {
   steps {
     shell('deploy_in_ose3.sh')
   }
+}
 }

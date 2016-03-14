@@ -26,6 +26,16 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_NAME</name>
+          <description></description>
+          <defaultValue>javase</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>OSE3_TEMPLATE_PARAMS</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
           <description>Serenity LDAP username/password</description>
@@ -33,6 +43,35 @@
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+		
+		<hudson.model.StringParameterDefinition>
+          <name>HPALM_TEST_SET_ID</name>
+          <description></description>
+          <defaultValue>801</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_DOMAIN</name>
+          <description></description>
+          <defaultValue>METODOLOGIA_ISBAN</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_PROJECT</name>
+          <description></description>
+          <defaultValue>NUEVAS_FUNC_ALM11</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>HPALM_URL</name>
+          <description></description>
+          <defaultValue>http://alm1.produban.gs.corp</defaultValue>
+        </hudson.model.StringParameterDefinition>
+		 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>HPALM_CREDS</name>
+          <description></description>
+          <defaultValue>83e27227-38e1-421e-895a-cda11c0031d3</defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>false</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+		
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
