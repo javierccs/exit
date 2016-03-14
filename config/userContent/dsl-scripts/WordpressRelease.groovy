@@ -6,16 +6,6 @@ def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
-//HPALM INFO
-def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
-def _HPALM_DOMAIN_ = "${HPALM_DOMAIN}".trim()
-def _HPALM_PROJECT_ = "${HPALM_PROJECT}".trim()
-def _HPALM_URL_ = "${HPALM_URL}".trim()
-def _HPALM_CREDS_ = "${HPALM_CREDS}".trim()
-
-def _TEST_RESULT_PATH_ = "/target/surefire-reports"
-def _POM_PATH_ = "/pom.xml"
-
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
@@ -25,8 +15,6 @@ def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
 def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
-
-def BridgeHPALMJobName = GITLAB_PROJECT+'-hpalm-bridge'
 
 // Build job
 job (buildJobName) {
@@ -196,6 +184,15 @@ trim())
         }
       }
     }
+    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
+      trigger(triggerName: 'Always')
+      trigger(triggerName: 'Failure', includeCulprits: true)
+      trigger(triggerName: 'Unstable', includeCulprits: true)
+      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
+      configure {
+        it/contentType('text/html')
+      }
+    } //extendedEmail
   } //publishers
 } //job
 
@@ -213,50 +210,6 @@ job (dockerJobName) {
       description('Docker Registry credential')
     }
   }
-
-
-  properties {
-    promotions{
-      promotion {
-        name('Promote-pre')
-        icon('star-gold-w')
-        conditions {
-          manual('') {
-          }
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
-              //condition('SUCCESS')
-              parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
-                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
-              }
-            }
-          }
-		  
-		    downstreamParameterized {
-			  trigger(BridgeHPALMJobName,'SUCCESS') {
-              //condition('SUCCESS')
-              parameters {
-                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-                predefinedProp('OSE3_APP_NAME', REPOSITORY_NAME)
-                predefinedProp('OSE3_TEMPLATE_NAME',"${OSE3_TEMPLATE_NAME}".trim())
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}".trim())
-              }
-            }
-          }
-		  
-		  
-        }
-      }
-    }    
-  }
-
 
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
@@ -323,73 +276,6 @@ job (deployDevJobName) {
     shell('deploy_in_ose3.sh')
   }
 }
-
-//Use HPALM Bridge
-job (BridgeHPALMJobName)
-{
-	println "JOB: ${JOB_NAME}"
-    label(_PROJECT_TYPE_)
-    deliveryPipelineConfiguration('CI', 'Build Image')
-
-    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
-                
-		// Gives permission for the special authenticated group to see the workspace of the job
-/*	authorization {
-		permission('hudson.model.Item.Build', "${BUILD_USER_ID}")
-		permission('hudson.model.Item.Cancel', "${BUILD_USER_ID}")
-        permission('hudson.model.Item.Delete', "${BUILD_USER_ID}")
-		permission('hudson.model.Item.Discover', "${BUILD_USER_ID}")
-		permission('hudson.model.Item.Read', "${BUILD_USER_ID}")
-		permission('hudson.model.Item.Workspace', "${BUILD_USER_ID}")
-		permission('hudson.model.Run.Update', "${BUILD_USER_ID}")
-		//permission('hudson.plugins.release.ReleaseWrapper.Release', "${BUILD_USER_ID}")	  
-	} //authorization */
-
-
-  
-	scm {
-    git {
-      // Specify the branches to examine for changes and to build.
-      branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
-      // Adds a repository browser for browsing the details of changes in an external system.
-      browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
-      } //browser
-      // Adds a remote.
-      remote {
-        // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
-        // Sets a name for the remote.
-        name('origin')
-        // Sets the remote URL.
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
-      } //remote
-      wipeOutWorkspace(true)
-    } //git
-	} //scm
-	
-  	wrappers {
-        credentialsBinding {
-            usernamePassword('CREDENTIALS', _HPALM_CREDS_)
-        }
-    }
-	 steps {
-	   maven {
-	    goals('test')
-        rootPOM(_POM_PATH_) 
-		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
-		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
-		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
-        mavenOpts('-Dmaven.test.failure.ignore=true')
-	  }
-	  
-      shell(
-		'#!/bin/bash\n'+
-		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
-	  )	
-	  }//steps
-}
-
 
 //Deploy in pre job
 job (deployPreJobName) {
