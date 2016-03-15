@@ -21,6 +21,7 @@ docker run -d \
 	-e SWARM_MASTER_URL=<(Required) docker cloud daemon url> \
         -e MAVEN_DEPLOYER_LOGIN=<(Required) Nexus deployer user login> \
         -e MAVEN_DEPLOYER_PASSWD=<(Required> Nexus deployer user password> \
+	-e NEXUS_BASE_URL=<(Required) Nexus URL>
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home serenity/jenkins   #Jenkins volume
  
