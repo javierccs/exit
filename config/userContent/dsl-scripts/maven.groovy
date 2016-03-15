@@ -73,7 +73,7 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                                'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                               'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                               'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases\'')
               }
             }
           }
@@ -205,6 +205,9 @@ mavenJob (buildJobName) {
   goals('clean verify')
     // Use managed global Maven settings.
   providedSettings('Serenity Maven Settings')
+   mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
+   mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
+   mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
 
   publishers {
     deployArtifacts {
@@ -222,7 +225,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\'')
         }
       }
     }
@@ -322,7 +325,7 @@ job (BridgeHPALMJobName)
 	  
       shell(
 		'#!/bin/bash\n'+
-		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
+		'hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
 	  )	
 	  }//steps
 }
