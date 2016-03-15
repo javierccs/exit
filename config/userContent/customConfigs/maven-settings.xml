@@ -166,7 +166,7 @@ under the License.
       <id>Serenity</id>
       <mirrorOf>*</mirrorOf>
       <name>Serenity Central</name>
-      <url>http://islinnxp01.scisb.isban.corp:8081/nexus/content/groups/public/</url>
+      <url>https://nexus.ci.gsnet.corp/nexus/content/groups/public/</url>
     </mirror>
   </mirrors>
   
