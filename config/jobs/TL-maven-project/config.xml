@@ -33,8 +33,13 @@
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-		
-		<hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>ADD_HPALM_INTEGRATION</name>
+          <description>Use this flag to request a pipeline that include HPALM Bridge integration
+</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>HPALM_TEST_SET_ID</name>
           <description></description>
           <defaultValue>801</defaultValue>
@@ -54,14 +59,13 @@
           <description></description>
           <defaultValue>http://alm1.produban.gs.corp</defaultValue>
         </hudson.model.StringParameterDefinition>
-		 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>HPALM_CREDS</name>
           <description></description>
-          <defaultValue>83e27227-38e1-421e-895a-cda11c0031d3</defaultValue>
+          <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-		
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">

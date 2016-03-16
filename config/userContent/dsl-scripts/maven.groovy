@@ -21,6 +21,7 @@ if (nexusRepositoryUrl==null) {
 }
 
 //HPALM INFO
+def ADD_HPALM_INTEGRATION = "${ADD_HPALM_INTEGRATION}".trim()
 def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
 def _HPALM_DOMAIN_ = "${HPALM_DOMAIN}".trim()
 def _HPALM_PROJECT_ = "${HPALM_PROJECT}".trim()
@@ -29,7 +30,7 @@ def _HPALM_CREDS_ = "${HPALM_CREDS}".trim()
 def _TEST_RESULT_PATH_ = "target/surefire-reports"
 def _POM_PATH_ = "pom.xml"
 
-def BridgeHPALMJobName = GITLAB_PROJECT+'pre-hpalm-bridge'
+def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
 
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
@@ -274,6 +275,8 @@ job (deployDevJobName) {
 }
 
 //Use HPALM Bridge
+if(ADD_HPALM_INTEGRATION == "true")
+{
 job (BridgeHPALMJobName)
 {
   println "JOB: ${BridgeHPALMJobName}"
@@ -328,8 +331,8 @@ job (BridgeHPALMJobName)
 		'hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
 	  )	
 	  }//steps
-}
-
+}//HPALM BRIDGE
+}//HPALM
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
@@ -384,6 +387,8 @@ job (deployPreJobName) {
           propertiesFile('/tmp/deploy_jenkins.properties')
   	}
     }
+if(ADD_HPALM_INTEGRATION == "true")
+{
     publishers
     {
 	downstreamParameterized {
@@ -395,6 +400,7 @@ job (deployPreJobName) {
 	    }
 	}
     }
+} //HPALM
 }
 
 //Deploy in pro job
