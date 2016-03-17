@@ -268,7 +268,7 @@ job (deployDevJobName) {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
     steps {
-      shell('deploy_in_ose3.sh')
+      shell(echo "Changing template params..." echo ${OSE3_TEMPLATE_PARAMS} # array template params IFS=',' read -a params <<< "${OSE3_TEMPLATE_PARAMS}" for i in "${params[@]}" do key_name=$(echo "$i" | tr -d \' | cut -d = -f1) echo $key_name key_value=$(echo "$i" | tr -d \'| cut -d = -f2-) echo $key_value if [ "$key_name" = "ARTIFACT_URL" ]; then URL_without_redirect=$(curl -k -s -I $key_value -I | awk '/Location: (.*)/ {print $2}' | tail -n 1) OSE3_TEMPLATE_PARAMS_NEW+=",$key_name=$URL_without_redirect" else OSE3_TEMPLATE_PARAMS_NEW="$key_name=$key_value" fi done OSE3_TEMPLATE_PARAMS=$OSE3_TEMPLATE_PARAMS_NEW echo "Changes were done! ->${OSE3_TEMPLATE_PARAMS}" deploy_in_ose3.sh)
     }
   }
 }
