@@ -10,6 +10,7 @@ import java.util.logging.Logger
 import jenkins.model.*;
 
 def logger = Logger.getLogger("org.apache.maven.artifact.deployer.DefaultArtifactDeployer")
+logger.info("Setting maven...")
 def mavenDeployerLogin = System.getenv("MAVEN_DEPLOYER_LOGIN")
 def mavenDeployerPasswd = System.getenv("MAVEN_DEPLOYER_PASSWD")
 if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
@@ -19,9 +20,13 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
   def mavenDeployerCredentialsId = "maven-deployer-credentials-id";
   def systemCreds = SystemCredentialsProvider.getInstance();
   Map<Domain, List<Credentials>> domainCredentialsMap = systemCreds.getDomainCredentialsMap();
-  
-  domainCredentialsMap[Domain.global()].add(
+  def obj = domainCredentialsMap[Domain.global()].find {mavenDeployerCredentialsId.equals(it.getId())}
+  if (obj != null) {
+    logger.info("Maven deployer credentials already exists. Updating...")
+    domainCredentialsMap[Domain.global()].remove(obj)
+  }
  
+  domainCredentialsMap[Domain.global()].add(
     new UsernamePasswordCredentialsImpl(
       CredentialsScope.SYSTEM,
       mavenDeployerCredentialsId,
