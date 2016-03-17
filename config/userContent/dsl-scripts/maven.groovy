@@ -22,6 +22,8 @@ if (nexusRepositoryUrl==null) {
 
 //HPALM INFO
 def ADD_HPALM_INTEGRATION = "${ADD_HPALM_INTEGRATION}".trim()
+def ADD_HPALM_AT_DEV = "${ADD_HPALM_AT_DEV}".trim()
+def ADD_HPALM_AT_PRE = "${ADD_HPALM_AT_PRE}".trim()
 def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
 def _HPALM_DOMAIN_ = "${HPALM_DOMAIN}".trim()
 def _HPALM_PROJECT_ = "${HPALM_PROJECT}".trim()
@@ -29,8 +31,11 @@ def _HPALM_URL_ = "${HPALM_URL}".trim()
 def _HPALM_CREDS_ = "${HPALM_CREDS}".trim()
 def _TEST_RESULT_PATH_ = "target/surefire-reports"
 def _POM_PATH_ = "pom.xml"
+def GITLAB_PROJECT_TEST = "${GITLAB_PROJECT_TEST}".trim()
+def URL_BASE_SELENIUM= "${URL_BASE_SELENIUM}".trim()
 
 def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
+def BridgeHPALMJobNameDev = GITLAB_PROJECT+'-dev-hpalm-bridge'
 
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
@@ -73,8 +78,8 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
-                               'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                               'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases\'')
+                         'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+                           'g%3D${POM_GROUPID}&ai%3D${POM_ARTIFACTID}&v%3D${POM_VERSION}&r%3Dsnapshots')
               }
             }
           }
@@ -225,8 +230,8 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
-                         'ARTIFACT_URL=\''+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\'')
+                         'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+                           'g%3D${POM_GROUPID}&ai%3D${POM_ARTIFACTID}&v%3D${POM_VERSION}&r%3Dsnapshots')
         }
       }
     }
@@ -269,22 +274,40 @@ job (deployDevJobName) {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
     steps {
-      shell(echo "Changing template params..." echo ${OSE3_TEMPLATE_PARAMS} # array template params IFS=',' read -a params <<< "${OSE3_TEMPLATE_PARAMS}" for i in "${params[@]}" do key_name=$(echo "$i" | tr -d \' | cut -d = -f1) echo $key_name key_value=$(echo "$i" | tr -d \'| cut -d = -f2-) echo $key_value if [ "$key_name" = "ARTIFACT_URL" ]; then URL_without_redirect=$(curl -k -s -I $key_value -I | awk '/Location: (.*)/ {print $2}' | tail -n 1) OSE3_TEMPLATE_PARAMS_NEW+=",$key_name=$URL_without_redirect" else OSE3_TEMPLATE_PARAMS_NEW="$key_name=$key_value" fi done OSE3_TEMPLATE_PARAMS=$OSE3_TEMPLATE_PARAMS_NEW echo "Changes were done! ->${OSE3_TEMPLATE_PARAMS}" deploy_in_ose3.sh)
+    shell('deploy_in_ose3.sh')
+        environmentVariables
+        {
+          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+  	}
     }
   }
+if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
+{
+    publishers
+    {
+	downstreamParameterized {
+	    trigger(BridgeHPALMJobNameDev) {
+        	condition('SUCCESS')
+        	parameters {
+         		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
+		}
+	    }
+	}
+    }
+} //HPALM
 }
 
-//Use HPALM Bridge
-if(ADD_HPALM_INTEGRATION == "true")
+//Use HPALM Bridge DEV 
+if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
 {
-job (BridgeHPALMJobName)
+job (BridgeHPALMJobNameDEV)
 {
-  println "JOB: ${BridgeHPALMJobName}"
+  println "JOB: ${BridgeHPALMJobNameDEV}"
     label("hpalm_bridge")
     parameters {
        stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
     }
-    deliveryPipelineConfiguration('PRE', 'Functional Test')
+    deliveryPipelineConfiguration('DEV', 'Functional Test (DEV)') 
 
     logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
                 
@@ -294,7 +317,14 @@ job (BridgeHPALMJobName)
       branch(GIT_INTEGRATION_BRANCH)
       // Adds a repository browser for browsing the details of changes in an external system.
       browser {
+if(GITLAB_PROJECT_TEST == "")
+{
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+}
+else
+{
+        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
+}
       } //browser
       // Adds a remote.
       remote {
@@ -303,7 +333,14 @@ job (BridgeHPALMJobName)
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
+if(GITLAB_PROJECT_TEST == "")
+{
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+}
+else
+{
+        url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
+}
       } //remote
       wipeOutWorkspace(true)
     } //git
@@ -331,8 +368,83 @@ job (BridgeHPALMJobName)
 		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
 	  )	
 	  }//steps
-}//HPALM BRIDGE
-}//HPALM
+}
+}//HPALM BRIDGE DEV
+
+//HPALM Bridge PRE
+if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_PRE == "true")
+{
+job (BridgeHPALMJobName)
+{
+  println "JOB: ${BridgeHPALMJobName}"
+    label("hpalm_bridge")
+    parameters {
+       stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
+    }
+    deliveryPipelineConfiguration('PRE', 'Functional Test') 
+
+    logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+                
+	scm {
+    git {
+      // Specify the branches to examine for changes and to build.
+      branch(GIT_INTEGRATION_BRANCH)
+      // Adds a repository browser for browsing the details of changes in an external system.
+      browser {
+if(GITLAB_PROJECT_TEST == "")
+{
+        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+}
+else
+{
+        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
+}
+      } //browser
+      // Adds a remote.
+      remote {
+        // Sets credentials for authentication with the remote repository.
+        credentials(SERENITY_CREDENTIAL)
+        // Sets a name for the remote.
+        name('origin')
+        // Sets the remote URL.
+if(GITLAB_PROJECT_TEST == "")
+{
+        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+}
+else
+{
+        url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
+}
+      } //remote
+      wipeOutWorkspace(true)
+    } //git
+	} //scm
+	
+  	wrappers {
+        credentialsBinding {
+            usernamePassword('CREDENTIALS', _HPALM_CREDS_)
+        }
+    }
+	 steps {
+	   maven {
+	    goals('test')
+  		providedSettings('Serenity Maven Settings')
+        rootPOM(_POM_PATH_) 
+		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
+		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
+		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
+		mavenOpts('-DseleniumBaseURL=\"${OSE3_END_POINT_URL}\"')
+        mavenOpts('-Dmaven.test.failure.ignore=true')
+	  }
+	  
+      shell(
+		'#!/bin/bash\n'+
+		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
+	  )	
+	  }//steps
+}
+}//HPALM BRIDGE PRE
+
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
@@ -387,7 +499,7 @@ job (deployPreJobName) {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
     }
-if(ADD_HPALM_INTEGRATION == "true")
+if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_PRE == "true")
 {
     publishers
     {

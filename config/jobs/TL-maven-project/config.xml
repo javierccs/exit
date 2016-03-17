@@ -41,31 +41,53 @@
         </hudson.model.BooleanParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_TEST_SET_ID</name>
-          <description></description>
+          <description>Test Set ID from HP ALM</description>
           <defaultValue>801</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_DOMAIN</name>
-          <description></description>
+          <description>HP ALM domain </description>
           <defaultValue>METODOLOGIA_ISBAN</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_PROJECT</name>
-          <description></description>
+          <description>HP ALM project </description>
           <defaultValue>NUEVAS_FUNC_ALM11</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>HPALM_URL</name>
-          <description></description>
+          <description>URL of HP ALM</description>
           <defaultValue>http://alm1.produban.gs.corp</defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>HPALM_CREDS</name>
-          <description></description>
+          <description>HP ALM credentials</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GITLAB_PROJECT_TEST</name>
+          <description>GITLAB project for functional test.
+If it is passed blank the GITLAB project of the aplication will be used</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>URL_BASE_SELENIUM</name>
+          <description>URL where the functional test are executed (selenium case)
+If it is passed blank it will use the PAAS deployer URL</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>ADD_HPALM_AT_DEV</name>
+          <description>The functional test are executed after deploy in development environement</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>ADD_HPALM_AT_PRE</name>
+          <description>The functional test are executed after deploy in QA (PRE) environement</description>
+          <defaultValue>true</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
