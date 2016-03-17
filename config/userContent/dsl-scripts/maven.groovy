@@ -352,6 +352,17 @@ else
         }
     }
 	 steps {
+        environmentVariables
+        {
+	  if(URL_BASE_SELENIUM == "")
+	  {
+	    env('seleniumBaseURL','${OSE3_END_POINT_URL}')
+	  }
+	  else
+	  {
+	    env('seleniumBaseURL','${URL_BASE_SELENIUM}')
+	  }
+  	}
 	   maven {
 	    goals('test')
   		providedSettings('Serenity Maven Settings')
@@ -359,8 +370,7 @@ else
 		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
 		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
 		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
-		mavenOpts('-DseleniumBaseURL=\"${OSE3_END_POINT_URL}\"')
-        mavenOpts('-Dmaven.test.failure.ignore=true')
+        	mavenOpts('-Dmaven.test.failure.ignore=true')
 	  }
 	  
       shell(
@@ -426,6 +436,17 @@ else
         }
     }
 	 steps {
+        environmentVariables
+        {
+	  if(URL_BASE_SELENIUM == "")
+	  {
+	    env('seleniumBaseURL','${OSE3_END_POINT_URL}')
+	  }
+	  else
+	  {
+	    env('seleniumBaseURL','${URL_BASE_SELENIUM}')
+	  }
+  	}
 	   maven {
 	    goals('test')
   		providedSettings('Serenity Maven Settings')
@@ -433,8 +454,7 @@ else
 		mavenOpts('-Dhpalm.test.set.id='+_HPALM_TEST_SET_ID_)
 		mavenOpts('-Dhpalm.domain='+_HPALM_DOMAIN_)
 		mavenOpts('-Dhpalm.project='+_HPALM_PROJECT_)
-		mavenOpts('-DseleniumBaseURL=\"${OSE3_END_POINT_URL}\"')
-        mavenOpts('-Dmaven.test.failure.ignore=true')
+                mavenOpts('-Dmaven.test.failure.ignore=true')
 	  }
 	  
       shell(
