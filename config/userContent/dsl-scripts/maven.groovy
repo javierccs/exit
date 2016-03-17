@@ -286,7 +286,7 @@ if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
     publishers
     {
 	downstreamParameterized {
-	    trigger(BridgeHPALMJobNameDev) {
+	    trigger(BridgeHPALMJobNameDEV) {
         	condition('SUCCESS')
         	parameters {
          		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
