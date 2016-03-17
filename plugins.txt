@@ -50,7 +50,7 @@ git:2.4.1
 gitlab-plugin:1.1.28
 
 #sonarqube integration
-#sonar:2.3
+sonar:2.3
 
 #greenballs
 greenballs:1.15

@@ -2,7 +2,7 @@ Jenkins server for Serenity ALM
 
 Build:
 
-docker build -t serenity/jenkins:0.1 .
+docker build -t serenity/jenkins .
 
 Run:
 docker run -d \
@@ -21,7 +21,13 @@ docker run -d \
 	-e SWARM_MASTER_URL=<(Required) docker cloud daemon url> \
         -e MAVEN_DEPLOYER_LOGIN=<(Required) Nexus deployer user login> \
         -e MAVEN_DEPLOYER_PASSWD=<(Required> Nexus deployer user password> \
-	-e NEXUS_BASE_URL=<(Required) Nexus URL>
+	-e NEXUS_BASE_URL=<(Required) Nexus URL> \
+        -e SONARQUBE_SERVER_URL=<(Optional) SonarQube server http URL>
+        -e SONARQUBE_SERVER_LOGIN=<(Optional) SonarQube user>
+        -e SONARQUBE_SERVER_PASSWORD=<(Optional) SonarQube password>
+        -e SONARQUBE_DATABASE_URL=<(Optional) SonarQube database jdbc url>
+        -e SONARQUBE_DATABASE_LOGIN=<(Optional) SonarQube database user>
+        -e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password>
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home serenity/jenkins   #Jenkins volume
  
