@@ -35,7 +35,7 @@ def GITLAB_PROJECT_TEST = "${GITLAB_PROJECT_TEST}".trim()
 def URL_BASE_SELENIUM= "${URL_BASE_SELENIUM}".trim()
 
 def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
-def BridgeHPALMJobNameDev = GITLAB_PROJECT+'-dev-hpalm-bridge'
+def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
