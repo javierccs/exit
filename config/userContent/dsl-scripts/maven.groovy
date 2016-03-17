@@ -328,7 +328,7 @@ job (BridgeHPALMJobName)
 	  
       shell(
 		'#!/bin/bash\n'+
-		'hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
+		'/tmp/hpalm-bridge.sh ' + _HPALM_URL_ + ' \"' + _TEST_RESULT_PATH_ +'\"'
 	  )	
 	  }//steps
 }//HPALM BRIDGE
@@ -384,7 +384,7 @@ job (deployPreJobName) {
     shell('deploy_in_ose3.sh')
         environmentVariables
         {
-          propertiesFile('/tmp/deploy_jenkins.properties')
+          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
     }
 if(ADD_HPALM_INTEGRATION == "true")
