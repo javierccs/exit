@@ -77,9 +77,9 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
-                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
+          predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g%3D${POM_GROUPID}&ai%3D${POM_ARTIFACTID}&v%3D${POM_VERSION}&r%3Dsnapshots')
+                           'g=${POM_GROUPID}&ai=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=\'-Djava.security.egd=file:/dev/./urandom -Xmx400m\'')
               }
             }
           }
@@ -231,7 +231,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g%3D${POM_GROUPID}&ai%3D${POM_ARTIFACTID}&v%3D${POM_VERSION}&r%3Dsnapshots')
+                           'g=${POM_GROUPID}&ai=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=\'-Djava.security.egd=file:/dev/./urandom -Xmx400m\'')
         }
       }
     }
