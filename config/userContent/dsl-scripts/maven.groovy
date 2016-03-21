@@ -37,7 +37,34 @@ def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
 def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
-def APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase();
+def APP_NAME_OSE3="${APP_NAME_OSE3}".trim().toLowerCase()
+if(APP_NAME_OSE3 == "")
+ APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase()
+
+//JAVASE TEMPLATE VARS
+def OTHER_OSE3_TEMPLATE_PARAMS =""
+JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
+JAVA_PARAMETERS="${JAVA_PARAMETERS}".trim()
+POD_MAX_MEM="${POD_MAX_MEM}".trim()
+TZ="${TZ}".trim()
+WILY_MOM_FQDN="${WILY_MOM_FQDN}".trim()
+WILY_MOM_PORT="${WILY_MOM_PORT}".trim()
+
+//Compose the template params, if blank we left the default pf PAAS
+if(JAVA_OPTS_EXT != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",JAVA_OPTS_EXT="+JAVA_OPTS_EXT
+if(JAVA_PARAMETERS != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",JAVA_PARAMETERS="+JAVA_PARAMETERS
+if(POD_MAX_MEM != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",POD_MAX_MEM="+POD_MAX_MEM
+if(TZ != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
+if(WILY_MOM_FQDN != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_FQDN="+WILY_MOM_FQDN
+if(WILY_MOM_PORT != "")
+ OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
+
+
 
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
@@ -71,6 +98,11 @@ mavenJob (buildJobName) {
         actions {
           downstreamParameterized {
             trigger(deployPreJobName,'SUCCESS') {
+                block {
+                    buildStepFailure('FAILURE')
+                    failure('FAILURE')
+                    unstable('UNSTABLE')
+                }
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
@@ -78,7 +110,7 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=-Djava.security.egd=file:/dev/./urandom -Xmx400m')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
               }
             }
           }
@@ -230,7 +262,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=-Djava.security.egd=file:/dev/./urandom -Xmx400m')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
         }
       }
     }

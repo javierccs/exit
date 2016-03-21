@@ -11,6 +11,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         iconlib:"foundation3",
 		schema: {
 	  "title": "Functional test",
+	  "description": "Functional tests configuration",
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
