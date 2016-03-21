@@ -98,11 +98,6 @@ mavenJob (buildJobName) {
         actions {
           downstreamParameterized {
             trigger(deployPreJobName,'SUCCESS') {
-                block {
-                    buildStepFailure('FAILURE')
-                    failure('FAILURE')
-                    unstable('UNSTABLE')
-                }
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
