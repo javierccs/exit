@@ -21,7 +21,6 @@ if (nexusRepositoryUrl==null) {
 }
 
 //HPALM INFO
-def ADD_HPALM_INTEGRATION = "${ADD_HPALM_INTEGRATION}".trim()
 def ADD_HPALM_AT_DEV = "${ADD_HPALM_AT_DEV}".trim()
 def ADD_HPALM_AT_PRE = "${ADD_HPALM_AT_PRE}".trim()
 def _HPALM_TEST_SET_ID_ = "${HPALM_TEST_SET_ID}".trim()
@@ -79,7 +78,7 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&ai=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=\'-Djava.security.egd=file:/dev/./urandom -Xmx400m\'')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=-Djava.security.egd=file:/dev/./urandom -Xmx400m')
               }
             }
           }
@@ -231,7 +230,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
                          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&ai=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=\'-Djava.security.egd=file:/dev/./urandom -Xmx400m\'')
+                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots,JAVA_OPTS_EXT=-Djava.security.egd=file:/dev/./urandom -Xmx400m')
         }
       }
     }
@@ -281,7 +280,7 @@ job (deployDevJobName) {
   	}
     }
   }
-if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
+if(ADD_HPALM_AT_DEV == "true")
 {
     publishers
     {
@@ -298,7 +297,7 @@ if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
 }
 
 //Use HPALM Bridge DEV 
-if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_DEV == "true")
+if(ADD_HPALM_AT_DEV == "true")
 {
 job (BridgeHPALMJobNameDEV)
 {
@@ -382,7 +381,7 @@ else
 }//HPALM BRIDGE DEV
 
 //HPALM Bridge PRE
-if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_PRE == "true")
+if(ADD_HPALM_AT_PRE == "true")
 {
 job (BridgeHPALMJobName)
 {
@@ -519,7 +518,7 @@ job (deployPreJobName) {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
     }
-if(ADD_HPALM_INTEGRATION == "true" &&  ADD_HPALM_AT_PRE == "true")
+if( ADD_HPALM_AT_PRE == "true")
 {
     publishers
     {

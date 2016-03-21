@@ -33,66 +33,46 @@
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <hudson.model.BooleanParameterDefinition>
-          <name>ADD_HPALM_INTEGRATION</name>
-          <description>Use this flag to request a pipeline that include HPALM Bridge integration
-</description>
-          <defaultValue>false</defaultValue>
-        </hudson.model.BooleanParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>HPALM_TEST_SET_ID</name>
-          <description>Test Set ID from HP ALM</description>
-          <defaultValue>801</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>HPALM_DOMAIN</name>
-          <description>HP ALM domain </description>
-          <defaultValue>METODOLOGIA_ISBAN</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>HPALM_PROJECT</name>
-          <description>HP ALM project </description>
-          <defaultValue>NUEVAS_FUNC_ALM11</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>HPALM_URL</name>
-          <description>URL of HP ALM</description>
-          <defaultValue>http://alm1.produban.gs.corp</defaultValue>
-        </hudson.model.StringParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>BRIDGE</name>
+          <description>Functional tests configuration</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/bridge_hpalm_json.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>HPALM_CREDS</name>
-          <description>HP ALM credentials</description>
+          <description>(optional ) HP ALM credentials. Only necessary if the functional tests are configured. </description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>GITLAB_PROJECT_TEST</name>
-          <description>GITLAB project for functional test.
-If it is passed blank the GITLAB project of the aplication will be used</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>URL_BASE_SELENIUM</name>
-          <description>URL where the functional test are executed (selenium case)
-If it is passed blank it will use the PAAS deployer URL</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.BooleanParameterDefinition>
-          <name>ADD_HPALM_AT_DEV</name>
-          <description>The functional test are executed after deploy in development environement</description>
-          <defaultValue>true</defaultValue>
-        </hudson.model.BooleanParameterDefinition>
-        <hudson.model.BooleanParameterDefinition>
-          <name>ADD_HPALM_AT_PRE</name>
-          <description>The functional test are executed after deploy in QA (PRE) environement</description>
-          <defaultValue>true</defaultValue>
-        </hudson.model.BooleanParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
       <autoRebuild>false</autoRebuild>
     </com.sonyericsson.rebuild.RebuildSettings>
+    <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <groovyScriptContent>import groovy.json.*
+def BRIDGE = &quot;${BRIDGE}&quot;.trim()
+def slurper = new JsonSlurper()
+def list = slurper.parseText(BRIDGE)
+
+return list</groovyScriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <canRoam>true</canRoam>
