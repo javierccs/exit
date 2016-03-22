@@ -68,7 +68,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:Q1',
           labelString: 'wordpress-build',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -95,7 +95,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:Q1',
           labelString: 'wordpress-docker',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -122,7 +122,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:Q1',
           labelString: 'ose3-deploy',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -149,7 +149,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:Q1',
           labelString: 'maven',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
@@ -176,7 +176,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:Q1',
           labelString: 'hpalm_bridge',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',
