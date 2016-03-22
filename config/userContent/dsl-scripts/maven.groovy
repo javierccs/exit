@@ -194,6 +194,7 @@ mavenJob (buildJobName) {
         }
         postSuccessfulBuildSteps {
           shell("git checkout ${GIT_INTEGRATION_BRANCH}")
+
         }
         it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
           configVersion(2)
@@ -240,16 +241,17 @@ mavenJob (buildJobName) {
    mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
    mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
    mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
-
-  shell{
-    'export VALUE_URL=\"https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
-    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-    'echo \"ARTIFACT_URL=$ARTIFACT_URL\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  }
-  environmentVariables{
-    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  }
-
+   
+   postBuildSteps {
+  	  shell(
+  	    'export VALUE_URL=\"https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
+  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+  	    'echo \"ARTIFACT_URL=$ARTIFACT_URL\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+  	 ) 
+  	  environmentVariables{
+  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+  	  }
+   }
   publishers {
     deployArtifacts {
       repositoryId('serenity')
