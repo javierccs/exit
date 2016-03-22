@@ -241,6 +241,15 @@ mavenJob (buildJobName) {
    mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
    mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
 
+  shell{
+    'export VALUE_URL=\"https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
+    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+    'echo \"ARTIFACT_URL=$ARTIFACT_URL\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+  }
+  environmentVariables{
+    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+  }
+
   publishers {
     deployArtifacts {
       repositoryId('serenity')
@@ -256,8 +265,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
           predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
-                         'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                           'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
+                         'ARTIFACT_URL=${ARTIFACT_URL}'+OTHER_OSE3_TEMPLATE_PARAMS)
         }
       }
     }
