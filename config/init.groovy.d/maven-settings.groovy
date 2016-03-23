@@ -53,7 +53,7 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
   // Test authentication
   def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
   if (nexusRepositoryUrl==null) {
-    nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
+    nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
   }
   def url = new URL(nexusRepositoryUrl+"/service/local/authentication/login")
   def connection = url.openConnection()
