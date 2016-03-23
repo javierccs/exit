@@ -17,7 +17,7 @@ def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
 if (nexusRepositoryUrl==null) {
-  nexusRepositoryUrl='http://islinnxp01.scisb.isban.corp:8081/nexus'
+  nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
 }
 
 //HPALM INFO
