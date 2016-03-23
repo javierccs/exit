@@ -61,3 +61,6 @@ build-timeout:1.15
 envinject:1.92.1
 role-strategy:2.2.0
 docker-plugin:0.16.0
+
+#Extended Choice Parameter plugin
+extended-choice-parameter:0.56
