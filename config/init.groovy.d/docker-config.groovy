@@ -166,7 +166,7 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
           instanceCapStr: '1',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '/srv/Jenkins:/tmp/jslave-maven/m2',
+          volumesString: '/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
