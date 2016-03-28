@@ -38,10 +38,27 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
  
   def settingsFile = Jenkins.instance.getRootDir().toString()+'/userContent/customConfigs/maven-settings.xml'
   InputStream is = new FileInputStream(settingsFile)
-    
+   
+  def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
+  if (nexusRepositoryUrl==null) {
+    nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
+  }
+ 
+  //replaces environment variables inside maven-settings.xml
+  def text = is.text
+  HashMap<String, String> envMap = new HashMap<String, String>()
+  envMap.putAll(System.getenv())
+  //in case variable has default value
+  envMap.put('NEXUS_BASE_URL', 'nexusRepositoryUrl')
+  for (entry in envMap.entrySet()) {
+    String key = entry.getKey();
+    String value = entry.getValue();
+    text = text.replaceAll('\\$\\{' + key + '\\}', value);
+  }
+ 
   def mavenSettingsConfig = new MavenSettingsConfig(
     "org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig", 
-    "Serenity Maven Settings", "Custom Maven settings for Serenity framework", is.text, true, serverCredentialMappings);
+    "Serenity Maven Settings", "Custom Maven settings for Serenity framework", text, true, serverCredentialMappings);
   
   for (ConfigProvider provider : ConfigProvider.all()) {
       if (provider.isResponsibleFor(mavenSettingsConfig.id)) {
@@ -49,12 +66,7 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
           logger.info("Created maven settings file \"Serenity Maven Settings\" from \"$settingsFile\"")
       }
   }
-
   // Test authentication
-  def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
-  if (nexusRepositoryUrl==null) {
-    nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
-  }
   def url = new URL(nexusRepositoryUrl+"/service/local/authentication/login")
   def connection = url.openConnection()
   connection.setRequestMethod("GET")
