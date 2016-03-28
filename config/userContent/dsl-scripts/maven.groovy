@@ -242,16 +242,6 @@ mavenJob (buildJobName) {
    mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
    mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
    
-   postBuildSteps {
-  	  shell(
-  	    'export VALUE_URL=\"https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-  	    'echo \"ARTIFACT_URL=$ARTIFACT_URL\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  	 ) 
-  	  environmentVariables{
-  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  	  }
-   }
   publishers {
     deployArtifacts {
       repositoryId('serenity')
@@ -266,8 +256,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
           predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
-          predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3+','+
-                         'ARTIFACT_URL=${ARTIFACT_URL}'+OTHER_OSE3_TEMPLATE_PARAMS)
+          predefinedProp('VALUE_URL','https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
         }
       }
     }
@@ -296,7 +285,7 @@ job (deployDevJobName) {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
@@ -310,6 +299,13 @@ job (deployDevJobName) {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
     steps {
+  	  shell(
+  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+  	    'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+  	 ) 
+  	  environmentVariables{
+  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+  	  }
     shell('deploy_in_ose3.sh')
         environmentVariables
         {
