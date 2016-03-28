@@ -49,7 +49,7 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
   HashMap<String, String> envMap = new HashMap<String, String>()
   envMap.putAll(System.getenv())
   //in case variable has default value
-  envMap.put('NEXUS_BASE_URL', 'nexusRepositoryUrl')
+  envMap.put('NEXUS_BASE_URL', nexusRepositoryUrl)
   for (entry in envMap.entrySet()) {
     String key = entry.getKey();
     String value = entry.getValue();
