@@ -244,7 +244,7 @@ mavenJob (buildJobName) {
    
    postBuildSteps {
   	  shell(
-  	    'export VALUE_URL=\"https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
+  	    'export VALUE_URL=\"' + nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots\"\n'+
   	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
   	    'echo \"ARTIFACT_URL=$ARTIFACT_URL\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
   	 ) 
