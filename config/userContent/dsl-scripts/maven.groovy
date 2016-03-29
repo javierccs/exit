@@ -256,7 +256,7 @@ mavenJob (buildJobName) {
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
           predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
           predefinedProp('OSE3_TEMPLATE_NAME','javase')
-          predefinedProp('VALUE_URL','https://nexus.ci.gsnet.corp/nexus/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+          predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
         }
       }
     }
