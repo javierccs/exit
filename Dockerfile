@@ -59,7 +59,17 @@ COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-en
 ENV http_proxy ""
 ENV https_proxy ""
 ENV no_proxy ""
-User jenkins
+
+USER jenkins
 #Copies static config files
 COPY config/ /usr/share/jenkins/ref/
+
+
+USER root
+ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+RUN keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
+USER jenkins
+
+
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
