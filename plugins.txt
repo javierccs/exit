@@ -2,6 +2,7 @@
 
 copy-to-slave:1.4.4
 copyartifact:1.37
+groovy:1.29
 managed-scripts:1.2.1
 config-file-provider:2.10.0
 workflow-step-api:1.13
