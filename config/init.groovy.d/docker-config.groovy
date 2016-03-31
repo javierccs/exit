@@ -10,9 +10,12 @@ import com.cloudbees.plugins.credentials.SystemCredentialsProvider
 import com.nirima.jenkins.plugins.docker.*
 import com.nirima.jenkins.plugins.docker.launcher.*
 import com.nirima.jenkins.plugins.docker.strategy.*
+import java.util.logging.Logger
 
+
+def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
+logger.info("Setting docker cloud...")
 def dockerCertificatesDirectory = System.getenv('DOCKER_CERTIFICATES_DIRECTORY')
-
 def dockerCertificatesDirectoryCredentialsId = 'docker-certificates-credentials'
 def jenkinsSlaveCredentialsId = 'jenkins-ssh-slave-credentials'
 
@@ -20,11 +23,13 @@ def jenkinsSlaveCredentialsId = 'jenkins-ssh-slave-credentials'
 // Configure credz
 ///////////////////////////////////////////////////:
 def system_creds = SystemCredentialsProvider.getInstance()
-
 Map<Domain, List<Credentials>> domainCredentialsMap = system_creds.getDomainCredentialsMap()
-
+def obj = domainCredentialsMap[Domain.global()].find {jenkinsSlaveCredentialsId.equals(it.getId())}
+if (obj != null) {
+  logger.info("Jenkins slave docker container credentials already exists. Updating...")
+  domainCredentialsMap[Domain.global()].remove(obj)
+}
 domainCredentialsMap[Domain.global()].add(
-
   new UsernamePasswordCredentialsImpl(
     CredentialsScope.SYSTEM,
     jenkinsSlaveCredentialsId,
@@ -33,7 +38,8 @@ domainCredentialsMap[Domain.global()].add(
     'jenkins'
     )
 )
-
+logger.info('Added jenkins slave docker container credentials.')
+system_creds.save()
 // domainCredentialsMap[Domain.global()].add(
 //
 //    new com.nirima.jenkins.plugins.docker.utils.DockerDirectoryCredentials(
@@ -44,19 +50,19 @@ domainCredentialsMap[Domain.global()].add(
 //    )
 //)
 
-system_creds.save()
-println 'Added docker cloud credentials.'
-
 /////////////////////////////////////////////////////:
 // Docker Cloud config per-se
 /////////////////////////////////////////////////////:
-def CLOUD_NAME = 'cloud'
-if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
-  def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
-  assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
+def CLOUD_NAME = 'serenity'
+def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
+assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
+def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
+if (inst != null) {
+  Jenkins.instance.clouds.remove(inst)
+}
 
-  def docker_settings = [:]
-  docker_settings =
+def docker_settings = [:]
+docker_settings =
   [
     [
       name: CLOUD_NAME,
@@ -245,13 +251,11 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
       )
 
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
-
       dockerTemplate.setMode(Node.Mode.EXCLUSIVE)
       dockerTemplate.setNumExecutors(2)
       dockerTemplate.setRemoveVolumes(true)
       dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(5))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
-
       templates.add(dockerTemplate)
     }
 
@@ -270,4 +274,3 @@ if (Jenkins.instance.clouds.getByName(CLOUD_NAME) == null) {
 
   Jenkins.instance.clouds.addAll(dockerClouds)
   println 'Configured docker cloud.'
-}
