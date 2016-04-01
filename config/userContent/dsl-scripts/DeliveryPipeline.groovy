@@ -6,7 +6,7 @@ import jenkins.model.*
 // Input parameters
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
 
-if (!Jenkins.instance.getItemByFullName('serenity-alm')) {
+if (!Jenkins.instance.getItemByFullName(GROUP_NAME)) {
   folder(GROUP_NAME) {
   }
 }
