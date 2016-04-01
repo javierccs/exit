@@ -172,7 +172,7 @@ mavenJob (buildJobName) {
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
-        systemGroovyScriptFile('$JENKINS_HOME/userContent/dsl-scripts/InjectBuildParameters.groovy') {
+        systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
           binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
         }
       }
