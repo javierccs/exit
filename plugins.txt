@@ -65,3 +65,8 @@ docker-plugin:0.16.0
 
 #Extended Choice Parameter plugin
 extended-choice-parameter:0.56
+
+#Flexible Publish Plugin
+flexible-publish:0.15.2
+token-macro:1.5.1
+run-condition:0.7
