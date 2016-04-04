@@ -257,18 +257,28 @@ mavenJob (buildJobName) {
       repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
       uniqueVersion(true)
     }
-    downstreamParameterized {
-      trigger(deployDevJobName) {
-        condition('SUCCESS')
-        parameters {
-          predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-          predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
-          predefinedProp('OSE3_TEMPLATE_NAME','javase')
-          predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
-        }
-      }
-    }
+    flexiblePublish {
+      conditionalAction{
+            condition { not {
+                    booleanCondition('${ENV,var="IS_RELEASE"}')
+                      }
+                }
+             publishers {
+                          downstreamParameterized {
+                           trigger(deployDevJobName) {
+                            condition('SUCCESS')
+                             parameters {
+                                predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+                                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+                                predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
+                                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                               }
+                              }
+                           }
+                        }
+       } //conditionalAction
+    } // flexiblePublish
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
       trigger(triggerName: 'Failure', includeCulprits: true)
