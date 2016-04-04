@@ -169,6 +169,9 @@ mavenJob (buildJobName) {
   } //triggers
 
   wrappers {
+    credentialsBinding {
+      usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
+    }
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
