@@ -797,7 +797,16 @@ job (deployPreJobName) {
      }
    }
   steps {
-    shell('deploy_in_ose3.sh')
+    
+	shell(
+            'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+         )
+          environmentVariables{
+            propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+          }
+
+   shell('deploy_in_ose3.sh')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -843,6 +852,14 @@ job (deployProJobName) {
     }
   }
   steps {
+       shell(
+            'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+         )
+          environmentVariables{
+            propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+          }
+
     shell('deploy_in_ose3.sh')
   }
 }
