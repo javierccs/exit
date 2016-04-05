@@ -558,7 +558,8 @@ job (deployDevJobName) {
   	  environmentVariables{
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
-    shell('deploy_in_ose3.sh')
+    shell('#AB-TESTING FLAG ACTIVE \n' +
+          'deploy_in_ose3.sh ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -805,8 +806,8 @@ job (deployPreJobName) {
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
-
-   shell('deploy_in_ose3.sh')
+   shell('#AB-TESTING FLAG ACTIVE \n' +
+          'deploy_in_ose3.sh ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -860,6 +861,7 @@ job (deployProJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
 
-    shell('deploy_in_ose3.sh')
+    shell('#AB-TESTING FLAG ACTIVE \n' +
+          'deploy_in_ose3.sh ON')
   }
 }
