@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <hudson>
   <disabledAdministrativeMonitors/>
-  <version>1.625.2</version>
+  <version>1.642.2</version>
   <numExecutors>1</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
@@ -22,22 +22,19 @@
           <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Hudson.Administer</permission>
           <permission>hudson.model.Item.Cancel</permission>
-          <permission>hudson.model.Item.Read</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
           <permission>hudson.model.Computer.Delete</permission>
           <permission>hudson.model.Item.Build</permission>
           <permission>hudson.model.Item.ExtendedRead</permission>
           <permission>hudson.scm.SCM.Tag</permission>
           <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Item.Move</permission>
-          <permission>hudson.model.Hudson.Read</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
           <permission>hudson.model.Item.Create</permission>
           <permission>hudson.model.Item.Workspace</permission>
           <permission>org.jenkinsci.plugins.envinject.EnvInjectPlugin.ViewVars</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
           <permission>hudson.model.Item.WipeOut</permission>
-          <permission>hudson.model.View.Read</permission>
           <permission>hudson.model.Hudson.RunScripts</permission>
           <permission>hudson.model.View.Create</permission>
           <permission>hudson.model.Computer.ExtendedRead</permission>
@@ -52,7 +49,44 @@
           <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
         </permissions>
         <assignedSIDs>
+          <sid>jenkins-administrators</sid>
           <sid>admin</sid>
+        </assignedSIDs>
+      </role>
+      <role name="user" pattern=".*">
+        <permissions>
+          <permission>hudson.model.Hudson.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Run.Delete</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.View.Read</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.scm.SCM.Tag</permission>
+          <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+      <role name="reader" pattern=".*">
+        <permissions>
+          <permission>hudson.model.Hudson.Read</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>hudson.model.View.Read</permission>
+        </permissions>
+        <assignedSIDs>
+          <sid>authenticated</sid>
         </assignedSIDs>
       </role>
     </roleMap>
@@ -70,6 +104,7 @@
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds/>
   <quietPeriod>5</quietPeriod>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
