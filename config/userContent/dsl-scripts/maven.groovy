@@ -311,46 +311,48 @@ job (deployDevJobName) {
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
+  properties {
+    sidebarLinks {
+      link('#', 'OpenShift3 DEV', '/userContent/openshift_64x64.png')
+    }
+  }
   wrappers {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
-    steps {
-  	  shell(
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-  	    'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  	 ) 
-  	  environmentVariables{
-  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  	  }
+  }
+  steps {
+    shell(
+      'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+      'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n') 
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+    }
     shell('deploy_in_ose3.sh')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+    }
+    systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+      binding('LINK_URL', 'OSE3_END_POINT_URL')
     }
   }
-if(ADD_HPALM_AT_DEV == "true")
-{
-    publishers
-    {
-	downstreamParameterized {
-	    trigger(BridgeHPALMJobNameDEV) {
-        	condition('SUCCESS')
-        	parameters {
-         		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
-		}
-	    }
-	}
-    }
-} //HPALM
+  publishers {
+    if (ADD_HPALM_AT_DEV == "true") {
+      downstreamParameterized {
+        trigger(BridgeHPALMJobNameDEV) {
+          condition('SUCCESS')
+            parameters {
+              predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
+            }
+	  }
+      }
+    } //HPALM
+  }
 }
 
 //Use HPALM Bridge DEV 
-if(ADD_HPALM_AT_DEV == "true")
-{
-job (BridgeHPALMJobNameDEV)
-{
+if (ADD_HPALM_AT_DEV == "true") {
+job (BridgeHPALMJobNameDEV) {
   println "JOB: ${BridgeHPALMJobNameDEV}"
     label("hpalm_bridge")
     parameters {
@@ -366,12 +368,9 @@ job (BridgeHPALMJobNameDEV)
       branch(GIT_INTEGRATION_BRANCH)
       // Adds a repository browser for browsing the details of changes in an external system.
       browser {
-if(GITLAB_PROJECT_TEST == "")
-{
+if (GITLAB_PROJECT_TEST == "") {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
-}
-else
-{
+} else {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
 }
       } //browser
@@ -382,12 +381,9 @@ else
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
-if(GITLAB_PROJECT_TEST == "")
-{
+if (GITLAB_PROJECT_TEST == "") {
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
-}
-else
-{
+} else {
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
@@ -431,8 +427,7 @@ else
 }//HPALM BRIDGE DEV
 
 //HPALM Bridge PRE
-if(ADD_HPALM_AT_PRE == "true")
-{
+if(ADD_HPALM_AT_PRE == "true") {
 job (BridgeHPALMJobName)
 {
   println "JOB: ${BridgeHPALMJobName}"
@@ -450,12 +445,9 @@ job (BridgeHPALMJobName)
       branch(GIT_INTEGRATION_BRANCH)
       // Adds a repository browser for browsing the details of changes in an external system.
       browser {
-if(GITLAB_PROJECT_TEST == "")
-{
+if(GITLAB_PROJECT_TEST == "") {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
-}
-else
-{
+} else {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
 }
       } //browser
@@ -532,6 +524,11 @@ job (deployPreJobName) {
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
+  properties {
+    sidebarLinks {
+      link('#', 'OpenShift3 PRE', '/userContent/openshift_64x64.png')
+    }
+  }
   wrappers {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
@@ -562,33 +559,32 @@ job (deployPreJobName) {
      }
    }
   steps {
-  	  shell(
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-  	    'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  	 ) 
-  	  environmentVariables{
-  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  	  }
+    shell(
+      'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+      'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n') 
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+    }
     shell('deploy_in_ose3.sh')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
     }
-if( ADD_HPALM_AT_PRE == "true")
-{
-    publishers
-    {
-	downstreamParameterized {
-	    trigger(BridgeHPALMJobName) {
-        	condition('SUCCESS')
-        	parameters {
-         		 predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
-		}
-	    }
-	}
+    systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+      binding('LINK_URL', 'OSE3_END_POINT_URL')
     }
-} //HPALM
+  }
+  publishers {
+    if (ADD_HPALM_AT_PRE == "true") {
+      downstreamParameterized {
+        trigger(BridgeHPALMJobName) {
+          condition('SUCCESS')
+          parameters {
+            predefinedProp('OSE3_END_POINT_URL','${OSE3_END_POINT_URL}' )
+          }
+        }
+      }
+    } //HPALM
+  }
 }
 
 //Deploy in pro job
@@ -609,19 +605,29 @@ job (deployProJobName) {
     }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
+  properties {
+    sidebarLinks {
+      link('#', 'OpenShift3 PRO', '/userContent/openshift_64x64.png')
+    }
+  }
   wrappers {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
   }
   steps {
-  	  shell(
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-  	    'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  	 ) 
-  	  environmentVariables{
-  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  	  }
+    shell(
+      'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+      'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n') 
+    environmentVariables{
+      propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+    }
     shell('deploy_in_ose3.sh')
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+    }
+    systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+      binding('LINK_URL', 'OSE3_END_POINT_URL')
+    }
   }
 }

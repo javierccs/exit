@@ -1,5 +1,6 @@
 #plugin_id:version
 
+sidebar-link:1.7
 copy-to-slave:1.4.4
 copyartifact:1.37
 groovy:1.29
