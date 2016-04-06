@@ -2,6 +2,10 @@ import hudson.model.*;
 import jenkins.model.*;
 
 def inst = Jenkins.getInstance()
+// Disable usage statistics
+hudson.model.UsageStatistics.DISABLED=true
+inst.setNoUsageStatistics(true)
+
 def email = (System.getenv("JENKINS_EMAIL") == null)? "jenkins@serenity.corp":System.getenv("JENKINS_EMAIL")
 def passwd = (System.getenv("JENKINS_PASSWORD") == null)? "admin" : System.getenv("JENKINS_PASSWORD")
 def public_key = (System.getenv("JENKINS_PUBLIC_KEY") == null)? "" : System.getenv("JENKINS_PUBLIC_KEY")
