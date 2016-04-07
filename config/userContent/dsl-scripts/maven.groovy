@@ -170,7 +170,7 @@ mavenJob (buildJobName) {
     credentialsBinding {
       usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -315,21 +315,21 @@ job (deployDevJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
-    steps {
-  	  shell(
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-  	    'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
-  	 ) 
-  	  environmentVariables{
-  	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
-  	  }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
+  }
+  steps {
+    shell(
+      'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+      'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n') 
+    environmentVariables {
+      propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
+    }
     shell('deploy_in_ose3.sh')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
     }
-  }
 if(ADD_HPALM_AT_DEV == "true")
 {
     publishers
@@ -536,6 +536,7 @@ job (deployPreJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
   properties {
     promotions {
@@ -613,6 +614,7 @@ job (deployProJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
   steps {
   	  shell(
