@@ -67,6 +67,11 @@ if(WILY_MOM_PORT != "")
 
 
 
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -246,11 +251,24 @@ mavenJob (buildJobName) {
 
   goals('clean verify')
     // Use managed global Maven settings.
-  providedSettings('Serenity Maven Settings')
+   providedSettings('Serenity Maven Settings')
    mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
    mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
    mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
    
+
+  postBuildSteps {
+    if (sq) {
+      maven {
+        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
+        providedSettings('Serenity Maven Settings')
+        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
+                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
+                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
+      }
+    }
+  }
+
   publishers {
     deployArtifacts {
       repositoryId('serenity')
@@ -292,6 +310,7 @@ mavenJob (buildJobName) {
   } //publishers
 
   configure {
+    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
     it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
   }
 } //job
