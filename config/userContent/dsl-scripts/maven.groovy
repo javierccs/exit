@@ -177,7 +177,7 @@ mavenJob (buildJobName) {
     credentialsBinding {
       usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -343,6 +343,7 @@ job (deployDevJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
   steps {
     shell(
@@ -557,6 +558,7 @@ job (deployPreJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
   properties {
     promotions {
@@ -640,6 +642,7 @@ job (deployProJobName) {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
     }
+    buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
   steps {
     shell(
