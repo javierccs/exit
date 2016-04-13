@@ -26,6 +26,17 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_URL</name>
+          <description>OpenShift PAAS region URL</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+          <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
@@ -34,7 +45,7 @@
         <hudson.model.TextParameterDefinition>
           <name>OSE3_TEMPLATE_PARAMS</name>
           <description></description>
-          <defaultValue>APP_NAME=wordpress-scf-demo,WORDPRESS_IMAGE=registry.lvtc.gsnet.corp/serenity-alm/wordpress-scf-demo:${WORDPRESS_IMAGE_VERSION},WORDPRESS_DB_HOST=external-mysql:3306,WORDPRESS_DB_USER=admin,WORDPRESS_DB_PASSWORD=aquielpassword,WORDPRESS_DB_NAME=wordpress</defaultValue>
+          <defaultValue>APP_NAME=wordpress-scf-demo,DOCKER_IMAGE=registry.lvtc.gsnet.corp/serenity-alm/wordpress-scf-demo:${WORDPRESS_IMAGE_VERSION},WORDPRESS_DB_HOST=external-mysql:3306,WORDPRESS_DB_USER=admin,WORDPRESS_DB_PASSWORD=aquielpassword,WORDPRESS_DB_NAME=wordpress</defaultValue>
         </hudson.model.TextParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>

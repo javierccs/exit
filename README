@@ -2,11 +2,11 @@ Jenkins server for Serenity ALM
 
 Build:
 
-docker build -t serenity/jenkins .
+docker build -t registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version] .
 
 Run:
 docker run -d \
-	-e LDAP_SERVER=<(Optional) LDAP server host name (like ldap.sun.com),>\
+	-e LDAP_SERVER=<(Optional) LDAP server host name (like ldap.sun.com)>\
 	-e LDAP_BIND_DN=<(Optional) Ldap bind user DN>\
 	-e LDAP_PASSWORD=<(Optional) Ldap bind password>\
 	-e LDAP_BASE=<(Optional) Ldap search user base DN>\
@@ -29,7 +29,7 @@ docker run -d \
         -e SONARQUBE_DATABASE_LOGIN=<(Optional) SonarQube database user>
         -e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password>
  --name jenkinsdev -p 8080:8080 -p 50000:50000
- -v /var/jenkins_home serenity/jenkins   #Jenkins volume
+ -v /var/jenkins_home registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version]   #Jenkins volume
  
  If log aggregation is desired SERENITY_FLUENTD_SERVER variable must be set, also this variables can be set:
  

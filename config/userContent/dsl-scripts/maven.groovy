@@ -6,6 +6,7 @@ def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
+def OSE3_URL ="${OSE3_URL}".trim()
 
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
@@ -106,6 +107,7 @@ mavenJob (buildJobName) {
             trigger(deployPreJobName,'SUCCESS') {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+                predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
@@ -285,6 +287,7 @@ mavenJob (buildJobName) {
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+                                predefinedProp('OSE3_URL', OSE3_URL)
                                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
                                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
@@ -320,6 +323,7 @@ job (deployDevJobName) {
   parameters {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
@@ -533,6 +537,7 @@ job (deployPreJobName) {
   parameters {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
@@ -566,6 +571,7 @@ job (deployPreJobName) {
              trigger(deployProJobName, 'SUCCESS') {
                parameters {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+                 predefinedProp('OSE3_URL', OSE3_URL)
                  predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
@@ -614,6 +620,7 @@ job (deployProJobName) {
   parameters {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
+    stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
