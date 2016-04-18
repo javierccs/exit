@@ -17,16 +17,6 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			  "collapsed": true
 		   },
 	  "properties": {
-		"APP_NAME_DEV": {
-			"type": "string",
-			"description": "OSE3 Application name",
-			"default": "wp-scf-demo"
-		},
-		"WORDPRESS_DOCKER_REPOSITORY_NAME_DEV": {
-			"type": "string",
-			"description": "Wordpress docker repository name (does not add tag or repository url)",
-			"default": "serenity-alm\/wordpress-scf-demo"
-		},
  		"WORDPRESS_DB_HOST_DEV": {
 			"type": "string",
 			"description": "Wordpress database host",

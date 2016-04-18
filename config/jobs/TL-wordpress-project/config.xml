@@ -25,6 +25,11 @@
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
+          <name>OSE3_APP_NAME</name>
+          <description>OSE3 Application name</description>
+          <defaultValue>wp-scf-demo</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
           <description></description>
           <defaultValue></defaultValue>
@@ -44,6 +49,11 @@
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
           <defaultValue>wordpress-status-btsync-s3-experimental</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORDPRESS_DOCKER_REPOSITORY_NAME</name>
+          <description>Wordpress docker repository name (does not add tag or repository url)</description>
+          <defaultValue>serenity-alm/wordpress-scf-demo</defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_TEMPLATE_PARAMS_DEV</name>
@@ -126,7 +136,7 @@ return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScript
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
-      <targets>**/*.groovy</targets>
+      <targets>dsl-scripts/*.groovy</targets>
       <usingScriptText>false</usingScriptText>
       <ignoreExisting>false</ignoreExisting>
       <removedJobAction>IGNORE</removedJobAction>
@@ -138,7 +148,7 @@ return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScript
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
+      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
