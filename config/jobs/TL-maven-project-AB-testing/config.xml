@@ -56,6 +56,17 @@
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_URL</name>
+          <description>OpenShift PAAS region URL</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+          <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>JAVASE_OSE3_PARAMS</name>
           <description></description>
           <quoteValue>false</quoteValue>
@@ -135,7 +146,7 @@ return listBridge + listOSE3_PARAMS </groovyScriptContent>
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/maven-ABTesting.groovy,dsl-scripts/DeliveryPipeline-ABTesting.groovy,dsl-scripts/gitLabWebHooks-ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy</includes>
+      <includes>dsl-scripts/maven-ABTesting.groovy,dsl-scripts/DeliveryPipeline-ABTesting.groovy,dsl-scripts/gitLabWebHooks-ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

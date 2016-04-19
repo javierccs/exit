@@ -128,7 +128,7 @@ docker_settings =
           macAddress: ''
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          image: 'sergio:deployer',
           labelString: 'ose3-deploy',
           environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
           remoteFs: '/home/jenkins',

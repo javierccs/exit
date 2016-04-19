@@ -8,6 +8,7 @@ def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
+def OSE3_URL ="${OSE3_URL}".trim() 
 
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
@@ -105,10 +106,12 @@ mavenJob (buildJobName_a) {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3_FEATURE_A)
-                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
+                predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3_FEATURE_A+','+
                   'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                  'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                  'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases'+','+
+                  'APP_VERSION='+${POM_VERSION})
               }
             }
           }
@@ -273,8 +276,14 @@ mavenJob (buildJobName_a) {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
                                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_A)
-                                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                                predefinedProp('OSE3_URL', OSE3_URL)
+                                predefinedProp('OSE3_URL','${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}')
+                                predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3_FEATURE_A+','+
+                                               'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+                                               'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases'+','+
+                                               'APP_VERSION='+${POM_VERSION})
                                }
                               }
                            }
@@ -335,10 +344,11 @@ mavenJob (buildJobName_b) {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3_FEATURE_B)
-                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3_FEATURE_B+','+
                   'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
-                  'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                  'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases'+','+
+                  'APP_VERSION='+${POM_VERSION})
               }
             }
           }
@@ -503,7 +513,12 @@ mavenJob (buildJobName_b) {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
                                 predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_B)
-                                predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                                predefinedProp('OSE3_URL', OSE3_URL) 
+                                predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
+                                predefinedProp('OSE3_TEMPLATE_PARAMS','APP_NAME='+APP_NAME_OSE3_FEATURE_B+','+
+        		          'ARTIFACT_URL='+nexusRepositoryUrl+'/service/local/artifact/maven/redirect?'+
+	                	  'g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+','+
+                  		  'APP_VERSION='+${POM_VERSION})
                                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                                }
                               }
@@ -537,6 +552,8 @@ job (deployDevJobName) {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS','','OSE3 template params')
+    stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
@@ -564,6 +581,9 @@ job (deployDevJobName) {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
     }
+    //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+    //  binding('LINK_URL', 'OSE3_END_POINT_URL')
+    //}
   }
 if(ADD_HPALM_AT_DEV == "true")
 {
@@ -759,6 +779,8 @@ job (deployPreJobName) {
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('OSE3_URL' , '', 'OSE3_URL')
+    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
@@ -788,7 +810,9 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
+                 predefinedProp('OSE3_URL',OSE3_URL)
                  predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
+                 predefinedProp('VALUE_URL','${VALUE_URL}')
                }
              }
            }
@@ -810,6 +834,9 @@ job (deployPreJobName) {
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
+    //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+    //  binding('LINK_URL', 'OSE3_END_POINT_URL')
+    //}
     }
 if( ADD_HPALM_AT_PRE == "true")
 {
@@ -837,6 +864,8 @@ job (deployProJobName) {
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('OSE3_URL' , '', 'OSE3 URL')
+    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
@@ -861,4 +890,7 @@ job (deployProJobName) {
 
     shell('deploy_in_ose3.sh --ab_testing=ON')
   }
+  //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
+  //    binding('LINK_URL', 'OSE3_END_POINT_URL')
+  //  }
 }
