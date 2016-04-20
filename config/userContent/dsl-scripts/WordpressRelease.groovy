@@ -60,8 +60,7 @@ job (buildJobName) {
         name('Promote-pre')
         icon('star-gold-w')
         conditions {
-          manual('') {
-          }
+          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
         }
         actions {
           downstreamParameterized {
@@ -312,7 +311,7 @@ job (deployPreJobName) {
         name('Promote-PRO')
         icon('star-gold-e')
         conditions {
-          manual('') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
         }
         actions {
           downstreamParameterized {

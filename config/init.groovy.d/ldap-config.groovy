@@ -41,4 +41,16 @@ if (role == null)  {
 list.split(',').each {
   realm.assignRole(realm.GLOBAL, role, it.trim())
 }
+def PROJECT_ROLES=['ci_user','dev_user','tl_user']
+PROJECT_ROLES.each { PROJECT_ROLE ->
+  role = realm.getGrantedRoles(realm.PROJECT).keySet().find() {PROJECT_ROLE.equals(it.getName())}
+  if (role == null)  {
+    logger.severe("Role $ROLE_NAME not found.")
+    return false
+  } else println role
+  list.split(',').each {
+    realm.assignRole(realm.PROJECT, role, it.trim())
+  }
+}
+
 Jenkins.instance.save()
