@@ -4,6 +4,9 @@
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
@@ -20,6 +23,11 @@
           <name>GIT_INTEGRATION_BRANCH</name>
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_APP_NAME</name>
+          <description>OSE3 Application name</description>
+          <defaultValue>wp-scf-demo</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
@@ -42,11 +50,47 @@
           <description></description>
           <defaultValue>wordpress-status-btsync-s3-experimental</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.TextParameterDefinition>
-          <name>OSE3_TEMPLATE_PARAMS</name>
+        <hudson.model.StringParameterDefinition>
+          <name>WORDPRESS_DOCKER_REPOSITORY_NAME</name>
+          <description>Wordpress docker repository name (does not add tag or repository url)</description>
+          <defaultValue>serenity-alm/wordpress-scf-demo</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_DEV</name>
           <description></description>
-          <defaultValue>APP_NAME=wordpress-scf-demo,DOCKER_IMAGE=registry.lvtc.gsnet.corp/serenity-alm/wordpress-scf-demo:${WORDPRESS_IMAGE_VERSION},WORDPRESS_DB_HOST=external-mysql:3306,WORDPRESS_DB_USER=admin,WORDPRESS_DB_PASSWORD=aquielpassword,WORDPRESS_DB_NAME=wordpress</defaultValue>
-        </hudson.model.TextParameterDefinition>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_PRE</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json_pre.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_PRO</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json_pro.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
           <description>GreenLight LDAP username/password</description>
@@ -56,9 +100,32 @@
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
-    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
-      <autoRebuild>false</autoRebuild>
-    </com.sonyericsson.rebuild.RebuildSettings>
+    <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <groovyScriptContent>import groovy.json.*
+def OSE3_TEMPLATE_PARAMS_DEV= &quot;${OSE3_TEMPLATE_PARAMS_DEV}&quot;.trim()
+def OSE3_TEMPLATE_PARAMS_PRE= &quot;${OSE3_TEMPLATE_PARAMS_PRE}&quot;.trim()
+def OSE3_TEMPLATE_PARAMS_PRO= &quot;${OSE3_TEMPLATE_PARAMS_PRO}&quot;.trim()
+
+def slurperOSE3_PARAMS_DEV = new JsonSlurper()
+def listOSE3_PARAMS_DEV = 
+slurperOSE3_PARAMS_DEV.parseText(OSE3_TEMPLATE_PARAMS_DEV)
+
+def slurperOSE3_PARAMS_PRE = new JsonSlurper()
+def listOSE3_PARAMS_PRE = slurperOSE3_PARAMS_PRE.parseText(OSE3_TEMPLATE_PARAMS_PRE)
+
+def slurperOSE3_PARAMS_PRO = new JsonSlurper()
+def listOSE3_PARAMS_PRO = slurperOSE3_PARAMS_PRO.parseText(OSE3_TEMPLATE_PARAMS_PRO)
+
+return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <canRoam>true</canRoam>
@@ -69,7 +136,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
-      <targets>**/*.groovy</targets>
+      <targets>dsl-scripts/*.groovy</targets>
       <usingScriptText>false</usingScriptText>
       <ignoreExisting>false</ignoreExisting>
       <removedJobAction>IGNORE</removedJobAction>
@@ -80,16 +147,16 @@
   </builders>
   <publishers/>
   <buildWrappers>
-    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (wordpress)</template>
-    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy</includes>
+      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
       <hudsonHomeRelative>false</hudsonHomeRelative>
       <relativeTo>userContent</relativeTo>
     </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}-&gt;${OSE3_PROJECT_NAME} (wordpress)</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
   </buildWrappers>
 </project>
