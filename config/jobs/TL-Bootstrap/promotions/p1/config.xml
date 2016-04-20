@@ -10,6 +10,7 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <conditions>
+    <hudson.plugins.release.promotion.ReleasePromotionCondition plugin="release@2.5.4"/>
     <hudson.plugins.promoted__builds.conditions.ManualCondition>
       <users></users>
       <parameterDefinitions/>

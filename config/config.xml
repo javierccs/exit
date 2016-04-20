@@ -6,7 +6,111 @@
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="com.michelin.cio.hudson.plugins.rolestrategy.RoleBasedAuthorizationStrategy">
-    <roleMap type="projectRoles"/>
+    <roleMap type="projectRoles">
+      <role name="ci_user" pattern=".+-ci-.+">
+        <permissions>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Run.Delete</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+      <role name="dev_user" pattern=".+-dev-.+">
+        <permissions>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Run.Delete</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+      <role name="pre_user" pattern=".+-pre-.+">
+        <permissions>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Run.Delete</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs>
+          <sid>impes-product-owner</sid>
+          <sid>impes-technical-lead</sid>
+          <sid>impes-developer</sid>
+        </assignedSIDs>
+      </role>
+      <role name="pro_user" pattern=".+-pro-.+">
+        <permissions>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Run.Delete</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs>
+          <sid>impes-product-owner</sid>
+          <sid>impes-technical-lead</sid>
+          <sid>impes-developer</sid>
+        </assignedSIDs>
+      </role>
+      <role name="tl_user" pattern="TL-.+-project">
+        <permissions>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+    </roleMap>
     <roleMap type="globalRoles">
       <role name="admin" pattern=".*">
         <permissions>
@@ -24,59 +128,36 @@
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Computer.Delete</permission>
           <permission>hudson.model.Item.Build</permission>
-          <permission>hudson.model.Item.ExtendedRead</permission>
           <permission>hudson.scm.SCM.Tag</permission>
-          <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Item.Move</permission>
+          <permission>hudson.model.Item.Discover</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
-          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
           <permission>hudson.model.Item.Create</permission>
           <permission>hudson.model.Item.Workspace</permission>
-          <permission>org.jenkinsci.plugins.envinject.EnvInjectPlugin.ViewVars</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
-          <permission>hudson.model.Item.WipeOut</permission>
           <permission>hudson.model.Hudson.RunScripts</permission>
           <permission>hudson.model.View.Create</permission>
-          <permission>hudson.model.Computer.ExtendedRead</permission>
           <permission>hudson.model.Item.Delete</permission>
+          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
           <permission>hudson.model.Computer.Configure</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
           <permission>hudson.model.Computer.Disconnect</permission>
-          <permission>hudson.model.Run.Artifacts</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseItem</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.UseOwn</permission>
           <permission>hudson.model.Run.Update</permission>
-          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
         </permissions>
         <assignedSIDs>
           <sid>jenkins-administrators</sid>
           <sid>admin</sid>
         </assignedSIDs>
       </role>
-      <role name="user" pattern=".*">
+      <role name="promoter" pattern=".*">
         <permissions>
-          <permission>hudson.model.Hudson.Read</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
           <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
-          <permission>hudson.model.Item.Create</permission>
-          <permission>hudson.model.Run.Delete</permission>
-          <permission>hudson.model.Item.Workspace</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
-          <permission>hudson.model.Item.Configure</permission>
-          <permission>hudson.model.View.Read</permission>
-          <permission>hudson.model.Item.Cancel</permission>
-          <permission>hudson.model.Item.Delete</permission>
-          <permission>hudson.model.Item.Read</permission>
-          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
-          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
-          <permission>hudson.model.Item.Build</permission>
-          <permission>hudson.scm.SCM.Tag</permission>
-          <permission>hudson.model.Item.Discover</permission>
-          <permission>hudson.model.Run.Update</permission>
         </permissions>
-        <assignedSIDs/>
+        <assignedSIDs>
+          <sid>impes-product-owner</sid>
+          <sid>impes-technical-lead</sid>
+          <sid>impes-developer</sid>
+        </assignedSIDs>
       </role>
       <role name="reader" pattern=".*">
         <permissions>
@@ -87,6 +168,28 @@
         </permissions>
         <assignedSIDs>
           <sid>authenticated</sid>
+        </assignedSIDs>
+      </role>
+      <role name="user" pattern=".*">
+        <permissions>
+          <permission>hudson.model.Hudson.Read</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Item.Create</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.View.Read</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.scm.SCM.Tag</permission>
+          <permission>hudson.model.Item.Discover</permission>
+        </permissions>
+        <assignedSIDs>
+          <sid>impes-product-owner</sid>
+          <sid>impes-technical-lead</sid>
+          <sid>impes-developer</sid>
         </assignedSIDs>
       </role>
     </roleMap>
@@ -108,13 +211,6 @@
   <quietPeriod>5</quietPeriod>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
-    <hudson.model.AllView>
-      <owner class="hudson" reference="../../.."/>
-      <name>All</name>
-      <filterExecutors>false</filterExecutors>
-      <filterQueue>false</filterQueue>
-      <properties class="hudson.model.View$PropertyList"/>
-    </hudson.model.AllView>
     <hudson.plugins.view.dashboard.Dashboard plugin="dashboard-view@2.9.7">
       <owner class="hudson" reference="../../.."/>
       <name>CI</name>
@@ -361,8 +457,30 @@
       <includeRegex>TL-.*</includeRegex>
       <recurse>false</recurse>
     </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Home</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>(?!TL-.*).*</includeRegex>
+      <recurse>false</recurse>
+    </listView>
   </views>
-  <primaryView>All</primaryView>
+  <primaryView>Home</primaryView>
   <slaveAgentPort>50000</slaveAgentPort>
   <label></label>
   <nodeProperties/>
