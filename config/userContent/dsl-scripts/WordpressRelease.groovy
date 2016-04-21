@@ -108,7 +108,7 @@ job (buildJobName) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('') {
+          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
           }
         }
         actions {
