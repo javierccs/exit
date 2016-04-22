@@ -109,7 +109,6 @@ job (buildJobName) {
         conditions {
           releaseBuild()
           manual('impes-product-owner,impes-technical-lead,impes-developer') {}
-          }
         }
         actions {
           downstreamParameterized {
