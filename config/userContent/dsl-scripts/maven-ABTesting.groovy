@@ -109,6 +109,7 @@ mavenJob (buildJobName_a) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
+                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
               }
             }
           }
@@ -339,7 +340,8 @@ mavenJob (buildJobName_b) {
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3_FEATURE_B)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
-
+                predefinedProp('OSE3_URL', OSE3_URL)
+                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
               }
             }
           }
