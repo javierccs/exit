@@ -20,66 +20,91 @@ def jsonEditorOptions = JSONObject.fromObject(/{
  		"WORDPRESS_DB_HOST_DEV": {
 			"type": "string",
 			"description": "WordPress Database host:port",
-			"default": "external-mysql:3306"
+			"default": "external-mysql:3306",
+                        "propertyOrder": 1
 		},  
 		"WORDPRESS_DB_USER_DEV": {
 			"type": "string",
 			"description": "WordPress Database user.",
-			"default": "admin"
+			"default": "admin",
+                        "propertyOrder": 2
+
 		}, 
 		"WORDPRESS_DB_PASSWORD_DEV": {
 			"type": "string",
 			"description": "WordPress Database user password.",
-			"default": "aquielpassword"
+			"default": "aquielpassword",
+                        "propertyOrder": 3
+
 		}, 
 		"WORDPRESS_DB_NAME_DEV": {
 			"type": "string",
 			"description": "WordPress MySql Database name.",
-			"default": "wordpress"
+			"default": "wordpress",
+                        "propertyOrder": 4
+
 		},
 		"S3_BACKUP_HOST_DEV": {
 			"type": "string",
-			"description": "The S3 host fqdn where the backup is stored."
+			"description": "The S3 host fqdn where the backup is stored.",
+                        "propertyOrder": 5
+
 		}, 
 		"S3_BACKUP_BUCKET_DEV": {
 			"type": "string",
-			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)"
+			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
+                        "propertyOrder": 6
+
+
 		},
 		"S3_BACKUP_ACCESS_KEY_DEV": {
 			"type": "string",
-			"description": "The S3 access key to download the backup."
+			"description": "The S3 access key to download the backup.",
+                        "propertyOrder": 7
+
 		},
 		"S3_BACKUP_SECRET_KEY_DEV": {
 			"type": "string",
-			"description": "The S3 secret key to download the backup."
+			"description": "The S3 secret key to download the backup.",
+                        "propertyOrder": 8
+
 		}, 
 		"HTTP_PROXY_DEV": {
 			"type": "string",
 			"description": "Http Proxy environment variable.",
-			"default": ""
+			"propertyOrder": 9
+
 		}, 
 		"HTTPS_PROXY_DEV": {
 			"type": "string",
 			"description": "Https Proxy environment variable.",
-			"default": ""
+                        "propertyOrder": 10
+
 		}, 
 		"NO_PROXY_DEV": {
 			"type": "string",
 			"description": "No Proxy environment variable.",
-			"default": "s3.boae.paas.gsnetcloud.corp"
+			"default": "s3.boae.paas.gsnetcloud.corp",
+                        "propertyOrder": 11
+
 		},
 		"TZ_DEV": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
-                        "default": ""
+                        "propertyOrder": 12
+
 		},
 		"IGNORELIST_DEV": {
 			"type": "string",
-			"description": "Bittorent Sync Ignore List."
+			"description": "Bittorent Sync Ignore List.",
+                        "propertyOrder": 13
+
 		},
 		"SECRETBTSYNC_DEV": {
 			"type": "string",
-			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}."
+			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}.", 
+                        "propertyOrder": 14
+
 		}
     
       }
