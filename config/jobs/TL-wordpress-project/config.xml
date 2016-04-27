@@ -48,12 +48,7 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
-          <defaultValue>wordpress-status-btsync-s3-experimental</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>WORDPRESS_DOCKER_REPOSITORY_NAME</name>
-          <description>Wordpress docker repository name (does not add tag or repository url)</description>
-          <defaultValue>serenity-alm/wordpress-scf-demo</defaultValue>
+          <defaultValue>wordpress-4.4</defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_TEMPLATE_PARAMS_DEV</name>

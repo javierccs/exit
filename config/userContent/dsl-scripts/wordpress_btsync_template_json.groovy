@@ -19,40 +19,67 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 	  "properties": {
  		"WORDPRESS_DB_HOST_DEV": {
 			"type": "string",
-			"description": "Wordpress database host",
+			"description": "WordPress Database host:port",
 			"default": "external-mysql:3306"
 		},  
 		"WORDPRESS_DB_USER_DEV": {
 			"type": "string",
-			"description": "Wordpress database user",
+			"description": "WordPress Database user.",
 			"default": "admin"
 		}, 
 		"WORDPRESS_DB_PASSWORD_DEV": {
 			"type": "string",
-			"description": "Wordpress database password",
+			"description": "WordPress Database user password.",
 			"default": "aquielpassword"
 		}, 
 		"WORDPRESS_DB_NAME_DEV": {
 			"type": "string",
-			"description": "Wordpress database name",
+			"description": "WordPress MySql Database name.",
 			"default": "wordpress"
 		},
 		"S3_BACKUP_HOST_DEV": {
 			"type": "string",
-			"description": "S3 Backup Host",
+			"description": "The S3 host fqdn where the backup is stored.",
 		}, 
 		"S3_BACKUP_BUCKET_DEV": {
 			"type": "string",
-			"description": "S3 Backup Bucket",
+			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
 		},
 		"S3_BACKUP_ACCESS_KEY_DEV": {
 			"type": "string",
-			"description": "S3 Backup access key",
+			"description": "The S3 access key to download the backup.",
 		},
 		"S3_BACKUP_SECRET_KEY_DEV": {
 			"type": "string",
-			"description": "S3 backup secret key",
-		} 
+			"description": "The S3 secret key to download the backup.",
+		}, 
+		"HTTP_PROXY_DEV": {
+			"type": "string",
+			"description": "Http Proxy environment variable.",
+			"default": "http:\/\/proxy.lvtc.gsnet.corp:80"
+		}, 
+		"HTTPS_PROXY_DEV": {
+			"type": "string",
+			"description": "Https Proxy environment variable.",
+			"default": "http:\/\/proxy.lvtc.gsnet.corp:80"
+		}, 
+		"NO_PROXY_DEV": {
+			"type": "string",
+			"description": "No Proxy environment variable.",
+			"default": "s3.boae.paas.gsnetcloud.corp"
+		},
+		"TZ_DEV": {
+			"type": "string",
+			"description": "TimeZone for the running containers.",
+		},
+		"IGNORELIST_DEV": {
+			"type": "string",
+			"description": "Bittorent Sync Ignore List.",
+		},
+		"SECRETBTSYNC_DEV": {
+			"type": "string",
+			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}.",
+		}
     
       }
     
