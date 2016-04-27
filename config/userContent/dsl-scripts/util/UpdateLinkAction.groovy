@@ -11,3 +11,4 @@ def inst = build.getProject().getAction(LinkAction.class)
 if (inst != null) {
   inst.url = build.getEnvironment(listener).get(binding.variables.get('LINK_URL'))
 }
+
