@@ -328,7 +328,7 @@ mavenJob (buildJobName_b) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('') {
+          manual('impes-product-owner,impes-technical-lead,impes-developer')  {
           }
         }
         actions {
@@ -790,7 +790,7 @@ job (deployPreJobName) {
        name('Promote-PRO')
        icon('star-gold-e')
          conditions {
-           manual('') {}
+           manual('impes-product-owner,impes-technical-lead,impes-developer')  {}
          }
          actions {
            downstreamParameterized {
