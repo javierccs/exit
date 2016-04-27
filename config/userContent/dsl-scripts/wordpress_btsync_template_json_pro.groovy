@@ -10,7 +10,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         theme: "bootstrap3",
         iconlib:"foundation3",
 		schema: {
-	  "title": "Wordpress OSE3 Template parameters - Development environment",
+	  "title": "Wordpress OSE3 Template parameters - Production environment",
 	  "description" : "Customizable Wordpress OSE3 template parameters (Do not use quotes). <br>The parameters in blank are leave with the PAAS's default values(consult PAAS page for more information)",
 	  "type": "object",
 		 "options": {
@@ -39,29 +39,27 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 		},
 		"S3_BACKUP_HOST_PRO": {
 			"type": "string",
-			"description": "The S3 host fqdn where the backup is stored.",
+			"description": "The S3 host fqdn where the backup is stored."
 		}, 
 		"S3_BACKUP_BUCKET_PRO": {
 			"type": "string",
-			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
+			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)"
 		},
 		"S3_BACKUP_ACCESS_KEY_PRO": {
 			"type": "string",
-			"description": "The S3 access key to download the backup.",
+			"description": "The S3 access key to download the backup."
 		},
 		"S3_BACKUP_SECRET_KEY_PRO": {
 			"type": "string",
-			"description": "The S3 secret key to download the backup.",
+			"description": "The S3 secret key to download the backup."
 		}, 
 		"HTTP_PROXY_PRO": {
 			"type": "string",
-			"description": "Http Proxy environment variable.",
-			"default": "http:\/\/proxy.lvtc.gsnet.corp:80"
+			"description": "Http Proxy environment variable."
 		}, 
 		"HTTPS_PROXY_PRO": {
 			"type": "string",
-			"description": "Https Proxy environment variable.",
-			"default": "http:\/\/proxy.lvtc.gsnet.corp:80"
+			"description": "Https Proxy environment variable."
 		}, 
 		"NO_PROXY_PRO": {
 			"type": "string",
@@ -70,15 +68,15 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 		},
 		"TZ_PRO": {
 			"type": "string",
-			"description": "TimeZone for the running containers.",
+			"description": "TimeZone for the running containers."
 		},
 		"IGNORELIST_PRO": {
 			"type": "string",
-			"description": "Bittorent Sync Ignore List.",
+			"description": "Bittorent Sync Ignore List."
 		},
 		"SECRETBTSYNC_PRO": {
 			"type": "string",
-			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}.",
+			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}."
 		}
     
       }
