@@ -67,8 +67,6 @@ if(WILY_MOM_FQDN != "")
 if(WILY_MOM_PORT != "")
  OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
 
-
-
 mavenJob (buildJobName_a) {
   println "JOB: "+buildJobName_a
   label('maven')
@@ -96,7 +94,7 @@ mavenJob (buildJobName_a) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('') {
+          manual('impes-product-owner,impes-technical-lead,impes-developer')  {
           }
         }
         actions {
@@ -104,7 +102,6 @@ mavenJob (buildJobName_a) {
             trigger(deployPreJobName,'SUCCESS') {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3_FEATURE_A)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_URL', OSE3_URL)
@@ -336,7 +333,6 @@ mavenJob (buildJobName_b) {
             trigger(deployPreJobName,'SUCCESS') {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3_FEATURE_B)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -759,6 +755,23 @@ else
 }
 }//HPALM BRIDGE PRE
 
+def injectPasswords = {
+  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
+    injectGlobalPasswords(false)
+    maskPasswordParameters(true)
+    passwordEntries {
+      EnvInjectPasswordEntry {
+        name('OSE3_USERNAME')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+      EnvInjectPasswordEntry {
+        name('OSE3_PASSWORD')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+    }
+  }
+}
+
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
@@ -771,18 +784,7 @@ job (deployPreJobName) {
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
   }
   properties {
     promotions {
@@ -797,7 +799,6 @@ job (deployPreJobName) {
              trigger(deployProJobName, 'SUCCESS') {
                parameters {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-                 predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
                  predefinedProp('OSE3_APP_VERSION','${POM_VERSION}')
@@ -810,6 +811,7 @@ job (deployPreJobName) {
        }
      }
    }
+  configure injectPasswords
   steps {
     
 	shell(
@@ -824,9 +826,6 @@ job (deployPreJobName) {
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
   	}
-    //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
-    //  binding('LINK_URL', 'OSE3_END_POINT_URL')
-    //}
     }
 if( ADD_HPALM_AT_PRE == "true")
 {
@@ -856,19 +855,9 @@ job (deployProJobName) {
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
-  wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
-  }
+  configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -880,7 +869,4 @@ job (deployProJobName) {
 
     shell('deploy_in_ose3.sh --ab_testing=ON')
   }
-  //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
-  //    binding('LINK_URL', 'OSE3_END_POINT_URL')
-  //  }
 }

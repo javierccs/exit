@@ -131,7 +131,6 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName,'SUCCESS') {
               parameters {
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
                 predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
@@ -361,6 +360,23 @@ job (deployDevJobName) {
   }
 }
 
+def injectPasswords = {
+  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
+    injectGlobalPasswords(false)
+    maskPasswordParameters(true)
+    passwordEntries {
+      EnvInjectPasswordEntry {
+        name('OSE3_USERNAME')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+      EnvInjectPasswordEntry {
+        name('OSE3_PASSWORD')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+    }
+  }
+}
+
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
@@ -372,20 +388,12 @@ job (deployPreJobName) {
     stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
     stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
     buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
   }
+  configure injectPasswords
   properties {
     promotions {
       promotion {
@@ -398,7 +406,6 @@ job (deployPreJobName) {
           downstreamParameterized {
             trigger(deployProJobName, 'SUCCESS') {
               parameters {
-                predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRO}")
                 predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
@@ -424,20 +431,12 @@ job (deployProJobName) {
     stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
     stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
     buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
   }
+  configure injectPasswords
   steps {
     shell('deploy_in_ose3.sh')
   }

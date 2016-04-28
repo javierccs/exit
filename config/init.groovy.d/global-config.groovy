@@ -2,6 +2,8 @@ import hudson.model.*;
 import jenkins.model.*;
 
 def inst = Jenkins.getInstance()
+// No jobs on master
+inst.setNumExecutors(0)
 // Disable usage statistics
 hudson.model.UsageStatistics.DISABLED=true
 inst.setNoUsageStatistics(true)
