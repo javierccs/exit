@@ -99,7 +99,7 @@
           <sid>impes-developer</sid>
         </assignedSIDs>
       </role>
-      <role name="tl_user" pattern="TL-.+-project">
+      <role name="tl_user" pattern="TL-.+">
         <permissions>
           <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
@@ -454,7 +454,29 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>TL-.*</includeRegex>
+      <includeRegex>TL-.+</includeRegex>
+      <recurse>false</recurse>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Job Patterns</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>TJ-.*</includeRegex>
       <recurse>false</recurse>
     </listView>
     <listView>
@@ -476,7 +498,7 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>(?!TL-.*).*</includeRegex>
+      <includeRegex>(?!(TL|TJ)-.*).*</includeRegex>
       <recurse>false</recurse>
     </listView>
   </views>
