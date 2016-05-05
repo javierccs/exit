@@ -34,6 +34,10 @@ RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && chown -R jenkins:jenkins /var/log/td-agent \ 
  && chown -R jenkins:jenkins /var/run/td-agent  
 
+ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+RUN keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
+
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
 # Modify built-in plugins.sh script, in order to add proxy to curl
@@ -63,13 +67,5 @@ ENV no_proxy ""
 USER jenkins
 #Copies static config files
 COPY config/ /usr/share/jenkins/ref/
-
-
-USER root
-ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
-RUN update-ca-certificates
-RUN keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
-USER jenkins
-
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
