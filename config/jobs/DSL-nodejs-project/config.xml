@@ -32,6 +32,12 @@
           <description>Name of the application to deploy in OpenShift</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
+          <hudson.model.StringParameterDefinition>
+          <name>TZ</name>
+          <description>Container Time Zone</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_URL</name>
           <description>OpenShift PAAS region URL</description>

@@ -20,20 +20,11 @@ def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 //JAVASE TEMPLATE VARS
 def OTHER_OSE3_TEMPLATE_PARAMS =""
-JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
-JAVA_PARAMETERS="${JAVA_PARAMETERS}".trim()
-POD_MAX_MEM="${POD_MAX_MEM}".trim()
+// JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
 TZ="${TZ}".trim()
-WILY_MOM_FQDN="${WILY_MOM_FQDN}".trim()
-WILY_MOM_PORT="${WILY_MOM_PORT}".trim()
 
 //Compose the template params, if blank we left the default pf PAAS
-if(JAVA_OPTS_EXT != "") OTHER_OSE3_TEMPLATE_PARAMS+=",JAVA_OPTS_EXT="+JAVA_OPTS_EXT
-if(JAVA_PARAMETERS != "") OTHER_OSE3_TEMPLATE_PARAMS+=",JAVA_PARAMETERS="+JAVA_PARAMETERS
-if(POD_MAX_MEM != "") OTHER_OSE3_TEMPLATE_PARAMS+=",POD_MAX_MEM="+POD_MAX_MEM
 if(TZ != "") OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
-if(WILY_MOM_FQDN != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_FQDN="+WILY_MOM_FQDN
-if(WILY_MOM_PORT != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
 
 //SONARQUBE
 String NAME="Serenity SonarQube"
@@ -262,7 +253,7 @@ job (deployPreJobName) {
                 predefinedProp('OSE3_URL', '${OSE3_URL}')
                 predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                 predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS})
+                predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
             }
