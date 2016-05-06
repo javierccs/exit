@@ -242,6 +242,34 @@ docker_settings =
           tty: false,
           macAddress: '',
           mode: Node.Mode.NORMAL
+        ],
+	[
+    	  image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:latest',
+          labelString: 'nodejs',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '5',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 1024,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '1',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
         ]
       ]
     ]
