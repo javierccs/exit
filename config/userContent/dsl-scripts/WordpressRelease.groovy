@@ -264,7 +264,7 @@ job (buildJobName) {
         condition('SUCCESS')
         parameters {
           propertiesFile('env.properties', true)
-          //predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}')
           predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
           predefinedProp('OSE3_TEMPLATE_PARAMS_DEV',"${OSE3_TEMPLATE_PARAMS_DEV}")
         }
@@ -298,7 +298,7 @@ job (dockerJobName) {
   }
 
   wrappers {
-    //buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
     }
