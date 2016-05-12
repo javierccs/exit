@@ -21,8 +21,10 @@ def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 //JAVASE TEMPLATE VARS
 def OTHER_OSE3_TEMPLATE_PARAMS =""
 // JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
-TZ="${TZ}".trim()
-
+def TZ="${TZ}".trim()
+def DIST_DIR="${DIST_DIR}".trim()
+def DIST_INCLUDE="${DIST_INCLUDE}".trim()
+def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 //Compose the template params, if blank we left the default pf PAAS
 if(TZ != "") OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 
@@ -150,12 +152,7 @@ job (buildJobName) {
   }
 
   steps {
-    shell('export http_proxy=http://proxyapps.gsnet.corp:80\n'+
-          'export https_proxy=http://proxyapps.gsnet.corp:80\n'+
-          'npm install\n'+
-          'bower install\n'+
-          'grunt\n'+
-          'tar -czvf test-project.tgz html')
+    shell("/scripts/front-compiler.sh dist.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
     if (sq) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')

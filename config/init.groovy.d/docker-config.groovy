@@ -261,7 +261,7 @@ docker_settings =
           instanceCapStr: '1',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '',
+          volumesString: '/srv/Jenkins/nodejs-cache:/cache',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',

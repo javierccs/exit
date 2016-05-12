@@ -22,6 +22,21 @@
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
+          <name>DIST_DIR</name>
+          <description>Ditribution directory (i.e.  &quot;dist &quot;,  &quot;. &quot;,...</description>
+          <defaultValue>dist</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DIST_INCLUDE</name>
+          <description>Files inside Distribution directory to include. By default all files are included (i.e.  &quot;&#42; &quot;,  &quot;&#42;.html &quot;,...</description>
+          <defaultValue>&#42;</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DIST_EXCLUDE</name>
+          <description>Files inside Distribution directory to exclude. By default all files are included (i.e.  &quot;.&#42; &quot;,  &quot;README&#42; &quot;,...</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
           <description>Name of the OpenShift project.
 (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
