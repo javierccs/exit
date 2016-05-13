@@ -15,91 +15,101 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
-		   },
+		   },	
 	  "properties": {
  		"WORDPRESS_DB_HOST_PRO": {
 			"type": "string",
 			"description": "WordPress Database host:port",
 			"default": "external-mysql:3306",
-			"propertyOrder": 1
+                        "propertyOrder": 1
 		},  
 		"WORDPRESS_DB_USER_PRO": {
 			"type": "string",
 			"description": "WordPress Database user.",
 			"default": "admin",
-			"propertyOrder": 2
+                        "propertyOrder": 2
 		}, 
 		"WORDPRESS_DB_PASSWORD_PRO": {
 			"type": "string",
 			"description": "WordPress Database user password.",
 			"default": "aquielpassword",
-			"propertyOrder": 3
+                        "propertyOrder": 3
 		}, 
 		"WORDPRESS_DB_NAME_PRO": {
 			"type": "string",
 			"description": "WordPress MySql Database name.",
 			"default": "wordpress",
-			"propertyOrder": 4
+                        "propertyOrder": 4
+		},
+		"CONFIGURATION_GIT_PRO": {
+			"type": "string",
+			"description": "Git repository for PHP and Apache configuration",
+			"default": "",
+                        "propertyOrder": 5
 		},
 		"S3_BACKUP_HOST_PRO": {
 			"type": "string",
 			"description": "The S3 host fqdn where the backup is stored.",
-			"propertyOrder": 5
+                        "propertyOrder": 6
 		}, 
 		"S3_BACKUP_BUCKET_PRO": {
 			"type": "string",
 			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
-			"propertyOrder": 6
-
+                        "propertyOrder": 7
 		},
 		"S3_BACKUP_ACCESS_KEY_PRO": {
 			"type": "string",
 			"description": "The S3 access key to download the backup.",
-			"propertyOrder": 7
-
+                        "propertyOrder": 8
 		},
 		"S3_BACKUP_SECRET_KEY_PRO": {
 			"type": "string",
 			"description": "The S3 secret key to download the backup.",
-			"propertyOrder": 8
-
+                        "propertyOrder": 9
 		}, 
 		"HTTP_PROXY_PRO": {
 			"type": "string",
 			"description": "Http Proxy environment variable.",
-			"propertyOrder": 9
-
+			"propertyOrder": 10
 		}, 
 		"HTTPS_PROXY_PRO": {
 			"type": "string",
 			"description": "Https Proxy environment variable.",
-			"propertyOrder": 10
-
+                        "propertyOrder": 11
 		}, 
 		"NO_PROXY_PRO": {
 			"type": "string",
 			"description": "No Proxy environment variable.",
 			"default": "s3.boae.paas.gsnetcloud.corp",
-			"propertyOrder": 11
-
+                        "propertyOrder": 12
 		},
 		"TZ_PRO": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
-			"propertyOrder": 12
-
+			"dafault": "Europe\/Madrid",
+                        "propertyOrder": 13
 		},
 		"IGNORELIST_PRO": {
 			"type": "string",
-			"description": "Bittorent Sync Ignore List.",
-			"propertyOrder": 13
-
+			"description": "Bittorent Sync Ignore List. (Use comma separator)",
+                        "propertyOrder": 14
 		},
 		"SECRETBTSYNC_PRO": {
 			"type": "string",
-			"description": "Secret Key for Bittorent Sync communication [A-Z0-9]{33}.",
-			"propertyOrder": 14
-
+			"description": "Secret Key for Bittorent Sync communication", 
+                        "propertyOrder": 15
+		},
+		"CONTAINER_MEMORY_PRO": {
+			"type": "string",
+			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
+			"default": "512M",
+                        "propertyOrder": 16
+		},
+		"BTSYNC_MEMORY_PRO": {
+			"type": "string",
+			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)",
+			"default": "100M",                         
+                        "propertyOrder": 17
 		}
     
       }
