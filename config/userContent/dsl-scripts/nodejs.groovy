@@ -58,15 +58,12 @@ job (buildJobName) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
+            trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_URL', OSE3_URL)
-                predefinedProp('OSE3_APP_NAME', GITLAB_PROJECT)
-                predefinedProp('OSE3_TEMPLATE_NAME','nginx')
                 predefinedProp('OSE3_TEMPLATE_PARAMS','OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$nexusRepositoryUrl/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases'+OTHER_OSE3_TEMPLATE_PARAMS)
               }
             }
@@ -180,11 +177,8 @@ job (buildJobName) {
            trigger(deployDevJobName) {
              condition('SUCCESS')
                parameters {
-                 predefinedProp('OSE3_URL', OSE3_URL)
                  predefinedProp('OSE3_USERNAME', '${OSE3_USERNAME}')
                  predefinedProp('OSE3_PASSWORD', '${OSE3_PASSWORD}')
-                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
-                 predefinedProp('OSE3_TEMPLATE_NAME','nginx')
                  predefinedProp('OSE3_TEMPLATE_PARAMS','OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$nexusRepositoryUrl/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
                }
              }
@@ -216,26 +210,31 @@ def shellnode =
   "</hudson.tasks.Shell>"
 
 def updateParam(node, String paramName, String defaultValue) {
-  def aux = node.depthFirst().find { it.name.text() == paramName }
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name != null && it.name.text() == paramName
+  }
   aux.defaultValue[0].value = defaultValue
 }
                                 
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
-  using('TL-seed-deploy')
+  using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
   configure {
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+    updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
+    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
   }
 }
 
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
-  using('TL-seed-deploy')
+  using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
   properties {
@@ -244,15 +243,12 @@ job (deployPreJobName) {
         name('Promote-PRO')
         icon('star-gold-e')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployProJobName, 'SUCCESS') {
+            trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_URL', '${OSE3_URL}')
-                predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
-                predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
@@ -264,18 +260,24 @@ job (deployPreJobName) {
   }
   configure {
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+    updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
+    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
   }
 }
 
 //Deploy in pro job
 job (deployProJobName) {
   println "JOB: $deployProJobName"
-  using('TL-seed-deploy')
+  using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
   configure {
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+    updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
+    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
   }
 }

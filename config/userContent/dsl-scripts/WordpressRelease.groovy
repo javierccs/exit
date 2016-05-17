@@ -3,11 +3,11 @@ import jenkins.model.*
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
-def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def OSE3_URL = "${OSE3_URL}".trim()
+def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
+def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
-def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
 //DEV
 def WORDPRESS_DB_HOST_DEV="${WORDPRESS_DB_HOST_DEV}".trim()
 def WORDPRESS_DB_USER_DEV="${WORDPRESS_DB_USER_DEV}".trim()
@@ -17,6 +17,10 @@ def S3_BACKUP_HOST_DEV="${S3_BACKUP_HOST_DEV}".trim()
 def S3_BACKUP_BUCKET_DEV="${S3_BACKUP_BUCKET_DEV}".trim()
 def S3_BACKUP_ACCESS_KEY_DEV="${S3_BACKUP_ACCESS_KEY_DEV}".trim()
 def S3_BACKUP_SECRET_KEY_DEV="${S3_BACKUP_SECRET_KEY_DEV}".trim()
+def CONFIGURATION_GIT_DEV ="${CONFIGURATION_GIT_DEV}".trim()
+def CONTAINER_MEMORY_DEV = "${CONTAINER_MEMORY_DEV}".trim()
+def BTSYNC_MEMORY_DEV = "${BTSYNC_MEMORY_DEV}".trim()
+
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_DEV=""
@@ -33,7 +37,11 @@ if (HTTPS_PROXY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",https_proxy="+HTTPS
 if (NO_PROXY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",no_proxy="+NO_PROXY_DEV
 if (TZ_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",TZ="+TZ_DEV
 if (IGNORELIST_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",IGNORELIST="+IGNORELIST_DEV
-if (SECRETBTSYNC_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",SECRETBTSYNC="+SECRETBTSYNC_DEV
+if (CONFIGURATION_GIT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_DEV
+if (CONTAINER_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_DEV
+if (BTSYNC_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_DEV
+
+
 def OSE3_TEMPLATE_PARAMS_DEV="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_DEV}"
 
 //PRE
@@ -45,6 +53,11 @@ def S3_BACKUP_HOST_PRE="${S3_BACKUP_HOST_PRE}".trim()
 def S3_BACKUP_BUCKET_PRE="${S3_BACKUP_BUCKET_PRE}".trim()
 def S3_BACKUP_ACCESS_KEY_PRE="${S3_BACKUP_ACCESS_KEY_PRE}".trim()
 def S3_BACKUP_SECRET_KEY_PRE="${S3_BACKUP_SECRET_KEY_PRE}".trim()
+def CONFIGURATION_GIT_PRE ="${CONFIGURATION_GIT_PRE}".trim()
+def CONTAINER_MEMORY_PRE = "${CONTAINER_MEMORY_PRE}".trim()
+def BTSYNC_MEMORY_PRE = "${BTSYNC_MEMORY_PRE}".trim()
+
+
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_PRE=""
@@ -62,6 +75,11 @@ if (NO_PROXY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",no_proxy="+NO_PROXY_PR
 if (TZ_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",TZ="+TZ_PRE
 if (IGNORELIST_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",IGNORELIST="+IGNORELIST_PRE
 if (SECRETBTSYNC_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",SECRETBTSYNC="+SECRETBTSYNC_PRE
+if (CONFIGURATION_GIT_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_PRE
+if (CONTAINER_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRE
+if (BTSYNC_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_PRE
+
+
 def OSE3_TEMPLATE_PARAMS_PRE="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRE}"
 
 //PRO
@@ -73,6 +91,11 @@ def S3_BACKUP_HOST_PRO="${S3_BACKUP_HOST_PRO}".trim()
 def S3_BACKUP_BUCKET_PRO="${S3_BACKUP_BUCKET_PRO}".trim()
 def S3_BACKUP_ACCESS_KEY_PRO="${S3_BACKUP_ACCESS_KEY_PRO}".trim()
 def S3_BACKUP_SECRET_KEY_PRO="${S3_BACKUP_SECRET_KEY_PRO}".trim()
+def CONFIGURATION_GIT_PRO ="${CONFIGURATION_GIT_PRO}".trim()
+def CONTAINER_MEMORY_PRO = "${CONTAINER_MEMORY_PRO}".trim()
+def BTSYNC_MEMORY_PRO = "${BTSYNC_MEMORY_PRO}".trim()
+
+
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_PRO=""
@@ -90,6 +113,10 @@ if (NO_PROXY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",no_proxy="+NO_PROXY_PR
 if (TZ_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",TZ="+TZ_PRO
 if (IGNORELIST_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",IGNORELIST="+IGNORELIST_PRO
 if (SECRETBTSYNC_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",SECRETBTSYNC="+SECRETBTSYNC_PRO
+if (CONFIGURATION_GIT_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_PRO
+if (CONTAINER_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRO
+if (BTSYNC_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_PRO
+
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
 // Static values
@@ -125,14 +152,14 @@ job (buildJobName) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
+            trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
-                predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE)
+                predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
           }
@@ -179,7 +206,9 @@ job (buildJobName) {
         // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
-      wipeOutWorkspace(true)
+      extensions {
+        wipeOutWorkspace()
+      }
     } //git
   } //scm
 
@@ -265,18 +294,29 @@ job (buildJobName) {
         parameters {
           propertiesFile('env.properties', true)
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}')
-          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_TEMPLATE_PARAMS_DEV',"${OSE3_TEMPLATE_PARAMS_DEV}")
         }
       }
     }
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
+    extendedEmail {
+      defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+      contentType('text/html')
+      triggers {
+        always()
+        failure {
+          sendTo {
+            culprits()
+          }
+        }
+        unstable {
+          sendTo {
+            culprits()
+          }
+        }
+        fixedUnhealthy {
+          sendTo {
+            developers()
+          }
+        }
       }
     } //extendedEmail
   } //publishers
@@ -289,18 +329,12 @@ job (dockerJobName) {
   deliveryPipelineConfiguration('CI', 'Docker Build')
   parameters {
     stringParam('ARTIFACT_NAME', 'wordpress.zip', 'Wordpress artifact name')
-    credentialsParam('DOCKER_REGISTRY_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('Docker Registry credential')
-    }
   }
 
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
   steps {
@@ -321,93 +355,60 @@ job (dockerJobName) {
       trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_DEV}")
-          predefinedProp('WORDPRESS_IMAGE_VERSION', '${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
+          predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
   }
 }
 
+def updateParam(node, String paramName, String defaultValue) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name != null && it.name.text() == paramName
+  }
+  aux.defaultValue[0].value = defaultValue
+}
+
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-dev", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
   wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
-  steps {
-    shell('deploy_in_ose3.sh')
-  }
-}
-
-def injectPasswords = {
-  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
-    injectGlobalPasswords(false)
-    maskPasswordParameters(true)
-    passwordEntries {
-      EnvInjectPasswordEntry {
-        name('OSE3_USERNAME')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-      EnvInjectPasswordEntry {
-        name('OSE3_PASSWORD')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-    }
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
   }
 }
 
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pre", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-  }
-  configure injectPasswords
   properties {
     promotions {
       promotion {
         name('Promote-PRO')
         icon('star-gold-e')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployProJobName, 'SUCCESS') {
+            trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRO}")
-                predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
+                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
             }
           }
@@ -415,29 +416,24 @@ job (deployPreJobName) {
       }
     }
   }
-  steps {
-    shell('deploy_in_ose3.sh')
+ configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
   }
 }
 
 //Deploy in pro job
 job (deployProJobName) {
   println "JOB: " + deployProJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pro", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-  }
-  configure injectPasswords
-  steps {
-    shell('deploy_in_ose3.sh')
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
   }
 }
