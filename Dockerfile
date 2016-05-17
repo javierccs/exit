@@ -60,3 +60,4 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 COPY config/ /usr/share/jenkins/ref/
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
+

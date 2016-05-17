@@ -14,17 +14,20 @@ def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.G
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
 def buildJobName = GITLAB_PROJECT+'-ci-build'
+def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 //JAVASE TEMPLATE VARS
-def OTHER_OSE3_TEMPLATE_PARAMS =""
+def OSE3_TEMPLATE_PARAMS =""
 // JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
-TZ="${TZ}".trim()
-
+def TZ="${TZ}".trim()
+def DIST_DIR="${DIST_DIR}".trim()
+def DIST_INCLUDE="${DIST_INCLUDE}".trim()
+def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 //Compose the template params, if blank we left the default pf PAAS
-if(TZ != "") OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
+if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 
 //SONARQUBE
 String NAME="Serenity SonarQube"
@@ -34,7 +37,7 @@ boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getNam
 job (buildJobName) {
   println "JOB: "+buildJobName
   label('nodejs')
-  deliveryPipelineConfiguration('CI', 'Build&Package')
+  deliveryPipelineConfiguration('CI', 'Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
 
   parameters {
@@ -147,12 +150,12 @@ job (buildJobName) {
   }
 
   steps {
-    shell('export http_proxy=http://proxyapps.gsnet.corp:80\n'+
-          'export https_proxy=http://proxyapps.gsnet.corp:80\n'+
-          'npm install\n'+
-          'bower install\n'+
-          'grunt\n'+
-          'tar -czvf test-project.tgz html')
+    shell("/scripts/front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
+	shell('parse_yaml.sh application.yml > env.properties')
+	environmentVariables {
+      propertiesFile('env.properties')
+    }
+    shell('tar --append --file=front-tgz application.yml')
     if (sq) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
@@ -163,28 +166,27 @@ job (buildJobName) {
       }
     }
   }
-
   publishers {
-    archiveArtifacts('*.tgz')
+    archiveArtifacts('**/*.tgz')
     flexiblePublish {
-      conditionalAction{
+      conditionalAction {
         condition { not {
-          booleanCondition('${ENV,var="IS_RELEASE"}')
+            booleanCondition('${ENV,var="IS_RELEASE"}')
           }
         }
         publishers {
           downstreamParameterized {
-           trigger(deployDevJobName) {
-             condition('SUCCESS')
-               parameters {
-                 predefinedProp('OSE3_USERNAME', '${OSE3_USERNAME}')
-                 predefinedProp('OSE3_PASSWORD', '${OSE3_PASSWORD}')
-                 predefinedProp('OSE3_TEMPLATE_PARAMS','OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$nexusRepositoryUrl/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
-               }
-             }
-           }
-         }
-       } //conditionalAction
+            trigger(deployDevJobName) {
+              condition('SUCCESS')
+              parameters {
+                predefinedProp('OSE3_USERNAME', '${OSE3_USERNAME}')
+                predefinedProp('OSE3_PASSWORD', '${OSE3_PASSWORD}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS','OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$nexusRepositoryUrl/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots'+OTHER_OSE3_TEMPLATE_PARAMS)
+              }
+            }
+          }
+        }
+      } //conditionalAction
     } // flexiblePublish
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
@@ -214,6 +216,54 @@ def updateParam(node, String paramName, String defaultValue) {
     it.name != null && it.name.text() == paramName
   }
   aux.defaultValue[0].value = defaultValue
+}
+
+// Docker job
+job (dockerJobName) {
+  println "JOB: "+dockerJobName
+  label('wordpress-docker')
+  deliveryPipelineConfiguration('CI', 'Docker Build')
+  parameters {
+    stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
+    credentialsParam('DOCKER_REGISTRY_CREDENTIAL') {
+      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+      required(false)
+      defaultValue(SERENITY_CREDENTIAL)
+      description('Docker Registry credential')
+    }
+  }
+
+  wrappers {
+    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    credentialsBinding {
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
+    }
+  }
+  steps {
+    copyArtifacts(buildJobName) {
+      includePatterns('front.tgz')
+      flatten()
+      optional(false)
+      fingerprintArtifacts(false)
+      buildSelector {
+        latestSuccessful(true)
+      }
+    }
+    shell('generate-and-push-wordpress-image.sh')
+  }
+
+  publishers {
+    downstreamParameterized {
+      trigger(deployDevJobName) {
+        condition('SUCCESS')
+        parameters {
+          predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
+          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+          predefinedProp('FRONT_IMAGE_VERSION', '${FRONT_IMAGE_VERSION}')
+        }
+      }
+    }
+  }
 }
                                 
 //Deploy in dev job
@@ -247,7 +297,11 @@ job (deployPreJobName) {
         }
         actions {
           downstreamParameterized {
+<<<<<<< HEAD
             trigger(deployProJobName) {
+=======
+            trigger(deployProJobName ) {
+>>>>>>> 17e436707466d22d88174f07710f7522442a63de
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
