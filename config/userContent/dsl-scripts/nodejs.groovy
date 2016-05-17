@@ -297,11 +297,7 @@ job (deployPreJobName) {
         }
         actions {
           downstreamParameterized {
-<<<<<<< HEAD
             trigger(deployProJobName) {
-=======
-            trigger(deployProJobName ) {
->>>>>>> 17e436707466d22d88174f07710f7522442a63de
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
