@@ -99,11 +99,11 @@ mavenJob (buildJobName) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
+            trigger(deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_URL', OSE3_URL)
@@ -156,7 +156,9 @@ mavenJob (buildJobName) {
         // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
-      wipeOutWorkspace(true)
+      extensions {
+        wipeOutWorkspace()
+      }
     } //git
   } //scm
 
@@ -296,13 +298,26 @@ mavenJob (buildJobName) {
                         }
        } //conditionalAction
     } // flexiblePublish
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
+    extendedEmail {
+      defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+      contentType('text/html')
+      triggers {
+        always()
+        failure {
+          sendTo {
+            culprits()
+          }
+        }
+        unstable {
+          sendTo {
+            culprits()
+          }
+        }
+        fixedUnhealthy {
+          sendTo {
+            developers()
+          }
+        }
       }
     } //extendedEmail
   } //publishers
@@ -409,7 +424,6 @@ if (GITLAB_PROJECT_TEST == "") {
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
-      wipeOutWorkspace(true)
     } //git
 	} //scm
 	
@@ -489,7 +503,6 @@ else
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
-      wipeOutWorkspace(true)
     } //git
 	} //scm
 	
@@ -573,11 +586,11 @@ job (deployPreJobName) {
        name('Promote-PRO')
        icon('star-gold-e')
          conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
          }
          actions {
            downstreamParameterized {
-             trigger(deployProJobName, 'SUCCESS') {
+             trigger(deployProJobName) {
                parameters {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
                  predefinedProp('OSE3_URL', OSE3_URL)

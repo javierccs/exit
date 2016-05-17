@@ -33,6 +33,18 @@ RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && chown -R jenkins:jenkins /opt/td-agent \
  && chown -R jenkins:jenkins /var/log/td-agent \ 
  && chown -R jenkins:jenkins /var/run/td-agent  
+#Copies td-agent configuration file
+COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
+#Jenkins entry point has been modified to add td-agent service
+#To start td-agent service SERENITY_FLUENTD_SERVER variable must set
+COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
+#Unset proxy
+ENV http_proxy ""
+ENV https_proxy ""
+ENV no_proxy ""
+
+ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
+RUN update-ca-certificates && keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
 
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
@@ -42,34 +54,9 @@ RUN chmod +x /usr/local/bin/plugins.sh
 
 USER jenkins
 
-# Installis plugins
+# Install plugins
 RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
-COPY plugins/ /usr/share/jenkins/ref/plugins/
-RUN for f in /usr/share/jenkins/ref/plugins/*; do unzip -qqt $f; done
-
-
-#Copies td-agent configuration file
-COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
-
-USER root
-#Jenkins entry point has been modified to add td-agent service
-#To start td-agent service SERENITY_FLUENTD_SERVER variable must set
-COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
-#Unset proxy
-ENV http_proxy ""
-ENV https_proxy ""
-ENV no_proxy ""
-
-USER jenkins
 #Copies static config files
 COPY config/ /usr/share/jenkins/ref/
-
-
-USER root
-ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
-RUN update-ca-certificates
-RUN keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
-USER jenkins
-
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
