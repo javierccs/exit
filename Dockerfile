@@ -33,9 +33,6 @@ RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && chown -R jenkins:jenkins /opt/td-agent \
  && chown -R jenkins:jenkins /var/log/td-agent \ 
  && chown -R jenkins:jenkins /var/run/td-agent  
-
-#HEAD1
-
 #Copies td-agent configuration file
 COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
 #Jenkins entry point has been modified to add td-agent service
@@ -51,7 +48,6 @@ RUN update-ca-certificates && keytool -import -trustcacerts -keystore /usr/lib/j
 
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
-#RUN for f in /usr/share/jenkins/ref/plugins/*; do unzip -qqt $f; done
 # Modify built-in plugins.sh script, in order to add proxy to curl
 COPY plugins.sh /usr/local/bin/plugins.sh
 RUN chmod +x /usr/local/bin/plugins.sh
