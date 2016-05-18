@@ -6,6 +6,7 @@ def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_URL ="${OSE3_URL}".trim()
+def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
@@ -20,7 +21,7 @@ def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 //JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS =""
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${FRONT_IMAGE_VERSION}'
 // JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
 def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
@@ -68,7 +69,7 @@ job (buildJobName) {
             trigger(deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-                predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+                predefinedProp('FRONT_IMAGE_VERSION','${FRONT_IMAGE_VERSION}')
 
               }
             }
@@ -212,8 +213,8 @@ def updateParam(node, String paramName, String defaultValue) {
 // Docker job
 job (dockerJobName) {
   println "JOB: "+dockerJobName
-  label('wordpress-docker')
-  deliveryPipelineConfiguration('CI', 'Docker Build')
+  label('front-build-docker')
+  deliveryPipelineConfiguration('CI', 'Front Docker Build')
   parameters {
     stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
     credentialsParam('DOCKER_REGISTRY_CREDENTIAL') {
@@ -240,7 +241,7 @@ job (dockerJobName) {
         latestSuccessful(true)
       }
     }
-    shell('generate-and-push-wordpress-image.sh')
+    shell('generate-and-push-front-image.sh')
   }
 
   publishers {
@@ -260,38 +261,81 @@ job (dockerJobName) {
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
-  using('TL-seed-deploy')
-  disabled(false)
+  label('ose3-deploy')
   deliveryPipelineConfiguration('DEV', 'Deploy')
-  configure {
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+  parameters {
+    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-dev", 'OSE3 project name')
+    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
+    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    credentialsParam('OSE3_CREDENTIAL') {
+      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+      required(false)
+      defaultValue(SERENITY_CREDENTIAL)
+      description('OSE3 credentials')
+    }
+    stringParam('FRONT_IMAGE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    credentialsBinding {
+      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+    }
+  }
+  steps {
+    shell('deploy_in_ose3.sh')
+  }
+}
+
+def injectPasswords = {
+  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
+    injectGlobalPasswords(false)
+    maskPasswordParameters(true)
+    passwordEntries {
+      EnvInjectPasswordEntry {
+        name('OSE3_USERNAME')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+      EnvInjectPasswordEntry {
+        name('OSE3_PASSWORD')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+    }
   }
 }
 
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
-  using('TL-seed-deploy')
-  disabled(false)
+  label('ose3-deploy')
   deliveryPipelineConfiguration('PRE', 'Deploy')
+  parameters {
+    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pre", 'OSE3 project name')
+    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
+    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('FRONT_IMAGE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+  }
+  configure injectPasswords
   properties {
     promotions {
       promotion {
         name('Promote-PRO')
         icon('star-gold-e')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployProJobName ) {
+            trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_URL', '${OSE3_URL}')
-                predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
-                predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+                predefinedProp('FRONT_IMAGE_VERSION','${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -299,20 +343,29 @@ job (deployPreJobName) {
       }
     }
   }
-  configure {
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+  steps {
+    shell('deploy_in_ose3.sh')
   }
 }
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
-  using('TL-seed-deploy')
-  disabled(false)
+  println "JOB: " + deployProJobName
+  label('ose3-deploy')
   deliveryPipelineConfiguration('PRO', 'Deploy')
-  configure {
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+  parameters {
+    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
+    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pro", 'OSE3 project name')
+    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
+    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
+    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('FRONT_IMAGE_VERSION' , '', 'Pipeline version')
+  }
+  wrappers {
+    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+  }
+  configure injectPasswords
+  steps {
+    shell('deploy_in_ose3.sh')
   }
 }

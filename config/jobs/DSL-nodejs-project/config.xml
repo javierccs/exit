@@ -43,14 +43,14 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>APP_NAME_OSE3</name>
+          <name>OSE3_APP_NAME</name>
           <description>Name of the application to deploy in OpenShift</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
-          <defaultValue>serenity-alm-nginx:1.0</defaultValue>
+          <defaultValue>nginx-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
 
           <hudson.model.StringParameterDefinition>
