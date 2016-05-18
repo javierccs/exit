@@ -142,6 +142,9 @@ job (buildJobName) {
         shell('git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}')
       }
       preBuildSteps {
+        environmentVariables {
+          env('IS_RELEASE',true)
+        }
         shell('git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}')
       }
     } //release
@@ -150,6 +153,8 @@ job (buildJobName) {
   steps {
     shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
 	shell('parse_yaml.sh application.yml > env.properties')
+	shell('echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/front-version.js)" >> env.properties')
+	
 	environmentVariables {
       propertiesFile('env.properties')
     }
