@@ -148,7 +148,7 @@ job (buildJobName) {
   }
 
   steps {
-    shell("/scripts/front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
+    shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
 	shell('parse_yaml.sh application.yml > env.properties')
 	environmentVariables {
       propertiesFile('env.properties')
