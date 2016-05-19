@@ -160,6 +160,7 @@ mavenJob (buildJobName) {
   wrappers {
     credentialsBinding {
       usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
+      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
     buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
@@ -168,44 +169,10 @@ mavenJob (buildJobName) {
           binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
         }
       }
+      postSuccessfulBuildSteps {
+        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+      }
       configure {
-        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-          configVersion(2)
-          pushMerge(false)
-          pushOnlyIfSuccess(false)
-          forcePush(false)
-          tagsToPush {
-            'hudson.plugins.git.GitPublisher_-TagToPush' {
-              targetRepoName('origin')
-              tagName('v${POM_VERSION}')
-              tagMessage()
-              createTag(false)
-              updateTag(false)
-            }
-          }
-          branchesToPush {
-            'hudson.plugins.git.GitPublisher_-BranchToPush' {
-              targetRepoName('origin')
-              branchName(GIT_RELEASE_BRANCH)
-            }
-          }
-        }
-        postSuccessfulBuildSteps {
-          shell("git checkout ${GIT_INTEGRATION_BRANCH}")
-
-        }
-        it / 'postSuccessfulBuildSteps' << 'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-          configVersion(2)
-          pushMerge(false)
-          pushOnlyIfSuccess(false)
-          forcePush(false)
-          branchesToPush {
-            'hudson.plugins.git.GitPublisher_-BranchToPush' {
-              targetRepoName('origin')
-              branchName(GIT_INTEGRATION_BRANCH)
-            }
-          }
-        }
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
           url(nexusRepositoryUrl+'/content/repositories/releases')
@@ -253,6 +220,11 @@ mavenJob (buildJobName) {
   }
 
   publishers {
+    deployArtifacts {
+      repositoryId('serenity')
+      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      uniqueVersion(true)
+    }
     flexiblePublish {
       conditionalAction {
         condition { not {
@@ -260,11 +232,6 @@ mavenJob (buildJobName) {
           }
         }
         publishers {
-          deployArtifacts {
-            repositoryId('serenity')
-            repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
-            uniqueVersion(true)
-          }
           downstreamParameterized {
             trigger(deployDevJobName) {
               condition('SUCCESS')
@@ -272,6 +239,9 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
+                predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
+                predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
+
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                 predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
               }
@@ -306,6 +276,7 @@ mavenJob (buildJobName) {
 
   configure {
     if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
+    it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
   }
 } //job
 
@@ -314,6 +285,13 @@ def updateParam(node, String paramName, String defaultValue) {
     it.name != null && it.name.text() == paramName
   }
   aux.defaultValue[0].value = defaultValue
+}
+
+def removeParam(node, String paramName) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name.text() == paramName
+  }
+  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 
 /// HPALM JOBS ///
@@ -403,18 +381,13 @@ job (deployDevJobName) {
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
+  parameters {
+    stringParam('VALUE_URL', '', '')
+  }
   wrappers {
     credentialsBinding {
       usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
-  }
-  configure {
-    updateParam(it, 'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
   publishers {
     if (ADD_HPALM_AT_DEV == "true") {
@@ -428,6 +401,15 @@ job (deployDevJobName) {
       }
     } //HPALM
   }
+  configure {
+    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    updateParam(it, 'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
+    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    (it / builders).children().add(0, new XmlParser().parseText(envnode))
+    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+  }  
 }
 
 //Deploy in pre job
@@ -436,13 +418,8 @@ job (deployPreJobName) {
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
-  configure {
-    updateParam(it, 'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+  parameters {
+    stringParam('VALUE_URL', '', '')
   }
   properties {
     promotions {
@@ -480,6 +457,15 @@ job (deployPreJobName) {
       }
     } //HPALM
   }
+  configure {
+    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    updateParam(it, 'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
+    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    (it / builders).children().add(0, new XmlParser().parseText(envnode))
+    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+  }
 }
 
 //Deploy in pro job
@@ -488,7 +474,11 @@ job (deployProJobName) {
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
+  parameters {
+    stringParam('VALUE_URL', '', '')
+  }
   configure {
+    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)

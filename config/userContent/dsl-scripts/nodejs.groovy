@@ -110,7 +110,7 @@ job (buildJobName) {
         name('origin')
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
-	  extensions {
+      extensions {
         wipeOutWorkspace()
       }
     } //git
@@ -149,18 +149,15 @@ job (buildJobName) {
       }
     } //release
   }
-
   steps {
-	shell('parse_yaml.sh application.yml > env.properties\n' +
-	      'echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
-		  'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
-	environmentVariables {
+    shell('parse_yaml.sh application.yml > env.properties\n' +
+          'echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
+          'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
+    environmentVariables {
       propertiesFile('env.properties')
     }	 
     shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
-	
-	
-    shell('tar --append --file=front-tgz application.yml')
+    shell('tar --append --file=front.tgz application.yml')
     if (sq) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')

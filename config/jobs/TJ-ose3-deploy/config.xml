@@ -42,6 +42,11 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
+          <name>OSE3_AB_TESTING</name>
+          <description></description>
+          <defaultValue>OFF</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>PIPELINE_VERSION</name>
           <description>Pipeline version</description>
           <defaultValue></defaultValue>
@@ -71,7 +76,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>deploy_in_ose3.sh</command>
+      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING}</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>

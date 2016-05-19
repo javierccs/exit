@@ -191,19 +191,13 @@ job (buildJobName) {
 
   scm {
     git {
-      // Specify the branches to examine for changes and to build.
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
-      // Adds a repository browser for browsing the details of changes in an external system.
       browser {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
       } //browser
-      // Adds a remote.
       remote {
-        // Sets credentials for authentication with the remote repository.
         credentials(SERENITY_CREDENTIAL)
-        // Sets a name for the remote.
         name('origin')
-        // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
@@ -224,56 +218,25 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
+    credentialsBinding {
+      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
+    }
     buildName(OSE3_APP_NAME+'-${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["WORDPRESS_IMAGE_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","WORDPRESS_IMAGE_VERSION"]')
         }
       }
       // Adds build steps to run before the release.
       preBuildSteps {
+        environmentVariables {
+          env('IS_RELEASE',true)
+        }
         shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
-      configure {
-        it / delegate.postSuccessfulBuildSteps {
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            tagsToPush {
-              'hudson.plugins.git.GitPublisher_-TagToPush' {
-                targetRepoName('origin')
-                tagName('v${WORDPRESS_IMAGE_VERSION}')
-                tagMessage()
-                createTag(false)
-                updateTag(false)
-              }
-            }
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_RELEASE_BRANCH)
-              }
-            }
-          }
-          'hudson.tasks.Shell' {
-            command("git checkout ${GIT_INTEGRATION_BRANCH}")
-          }
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_INTEGRATION_BRANCH)
-              }
-            }
-          }
-        }
+      postSuccessfulBuildSteps {
+        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
     } //release
   } //wrappers
@@ -335,6 +298,7 @@ job (dockerJobName) {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
+      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
   steps {
@@ -355,6 +319,8 @@ job (dockerJobName) {
       trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
+          predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
+          predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD')
           predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
           predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
@@ -376,11 +342,6 @@ job (deployDevJobName) {
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
-  wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', SERENITY_CREDENTIAL)
-    }
-  }
   configure {
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
