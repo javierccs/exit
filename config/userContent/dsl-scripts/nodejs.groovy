@@ -131,7 +131,7 @@ job (buildJobName) {
     credentialsBinding {
       usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -157,7 +157,6 @@ job (buildJobName) {
       propertiesFile('env.properties')
     }	 
     shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
-    shell('tar --append --file=front.tgz application.yml')
     if (sq) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
@@ -222,7 +221,7 @@ job (dockerJobName) {
     stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
   }
   wrappers {
-    buildName('${ENV,var="$FRONT_IMAGE_NAME"}:{ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="FRONT_IMAGE_NAME"}:{ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }
