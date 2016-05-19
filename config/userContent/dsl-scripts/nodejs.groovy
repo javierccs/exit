@@ -131,7 +131,7 @@ job (buildJobName) {
     credentialsBinding {
       usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -139,25 +139,27 @@ job (buildJobName) {
         }
       }
       postSuccessfulBuildSteps {
-        shell('git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}')
+        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
       preBuildSteps {
         environmentVariables {
           env('IS_RELEASE',true)
         }
-        shell('git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}')
+        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
     } //release
   }
 
   steps {
-    shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
-	shell('parse_yaml.sh application.yml > env.properties')
-	shell('echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/front-version.js)" >> env.properties')
-	
+	shell('parse_yaml.sh application.yml > env.properties\n' +
+	      'echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
+		  'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
 	environmentVariables {
       propertiesFile('env.properties')
-    }
+    }	 
+    shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
+	
+	
     shell('tar --append --file=front-tgz application.yml')
     if (sq) {
       maven {
@@ -223,7 +225,7 @@ job (dockerJobName) {
     stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
   }
   wrappers {
-    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="$FRONT_IMAGE_NAME"}:{ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }

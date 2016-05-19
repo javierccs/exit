@@ -49,7 +49,7 @@
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
-          <description></description>
+          <description>OpenShift template to be used in deployment</description>
           <defaultValue>nginx-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
 
