@@ -27,6 +27,7 @@ def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
 def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
+def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 //Compose the template params, if blank we left the default pf PAAS
 if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 
@@ -169,26 +170,22 @@ job (buildJobName) {
   }
   publishers {
     archiveArtifacts('*.tgz')
-    flexiblePublish {
-      conditionalAction {
-        condition { not {
-            booleanCondition('${ENV,var="IS_RELEASE"}')
-          }
-        }
-        publishers {
-          downstreamParameterized {
-            trigger(dockerJobName) {
-              condition('SUCCESS')
-              parameters {
-                propertiesFile('env.properties', true)
-                predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${FRONT_IMAGE_VERSION}')
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-              }
-            }
-          }
-        }
-      } //conditionalAction
-    } // flexiblePublish
+	publishers {
+	  if (JUNIT_TESTS_PATTERN?.trim()){
+		archiveJunit(JUNIT_TESTS_PATTERN)
+	  }
+	  downstreamParameterized {
+		trigger(dockerJobName) {
+		  condition('SUCCESS')
+		  parameters {
+			propertiesFile('env.properties', true)
+			predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${FRONT_IMAGE_VERSION}')
+			predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+		  }
+		}
+	  }
+	}
+ 
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
       trigger(triggerName: 'Failure', includeCulprits: true)
@@ -221,7 +218,7 @@ job (dockerJobName) {
     stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
   }
   wrappers {
-    buildName('${ENV,var="FRONT_IMAGE_NAME"}:{ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }
