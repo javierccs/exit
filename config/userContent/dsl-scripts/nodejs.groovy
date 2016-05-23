@@ -132,7 +132,7 @@ job (buildJobName) {
     credentialsBinding {
       usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -152,8 +152,12 @@ job (buildJobName) {
   }
   steps {
     shell('parse_yaml.sh application.yml > env.properties\n' +
-          'echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
-          'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
+		'if ! [ "IS_RELEASE" = true ] ; then\n' +
+		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)-${BUILD_NUMBER}" >> env.properties\n' +
+		'else\n' +
+		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
+		'fi\n' +
+        'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
     environmentVariables {
       propertiesFile('env.properties')
     }	 
@@ -218,7 +222,7 @@ job (dockerJobName) {
     stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
   }
   wrappers {
-    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    buildName('${ENV,var="PIPELINE_VERSION_TEST"}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }
