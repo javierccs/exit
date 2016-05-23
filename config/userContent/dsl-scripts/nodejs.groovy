@@ -70,7 +70,7 @@ job (buildJobName) {
             trigger(deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-                predefinedProp('FRONT_IMAGE_VERSION','${FRONT_IMAGE_VERSION}')
+                predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -152,7 +152,7 @@ job (buildJobName) {
   }
   steps {
     shell('parse_yaml.sh application.yml > env.properties\n' +
-		'if ! [ "IS_RELEASE" = true ] ; then\n' +
+		'if ! [ "$IS_RELEASE" = true ] ; then\n' +
 		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)-${BUILD_NUMBER}" >> env.properties\n' +
 		'else\n' +
 		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
@@ -174,11 +174,10 @@ job (buildJobName) {
   }
   publishers {
     archiveArtifacts('*.tgz')
-	publishers {
-	  if (JUNIT_TESTS_PATTERN?.trim()){
+	if (JUNIT_TESTS_PATTERN?.trim()){
 		archiveJunit(JUNIT_TESTS_PATTERN)
-	  }
-	  downstreamParameterized {
+	}
+	downstreamParameterized {
 		trigger(dockerJobName) {
 		  condition('SUCCESS')
 		  parameters {
@@ -187,9 +186,10 @@ job (buildJobName) {
 			predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
 		  }
 		}
-	  }
 	}
- 
+	
+		 
+
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
       trigger(triggerName: 'Failure', includeCulprits: true)
@@ -239,20 +239,30 @@ job (dockerJobName) {
     }
     shell('generate-and-push-front-image.sh')
   }
-  publishers {
-    downstreamParameterized {
-      trigger(deployDevJobName) {
-        condition('SUCCESS')
-        parameters {
-		  predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
-		  predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-          predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+	publishers {
+		flexiblePublish {
+			conditionalAction {
+				condition {  not {
+						booleanCondition('${ENV,var="IS_RELEASE"}')
+					}
+				}
+				publishers {
+					downstreamParameterized {
+						trigger(deployDevJobName) {
+							condition('SUCCESS')
+								parameters {
+									predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
+									predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
+									predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+									predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
 
-        }
-      }
-    }
-  }
+								}
+						}
+					}
+				  }
+			}
+		}
+	}
 }
                                 
 //Deploy in dev job
@@ -288,7 +298,7 @@ job (deployPreJobName) {
             trigger(deployProJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+                predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
             }
           }
