@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_URL</name>
+          <description>OSE3 URL</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_PROJECT_NAME</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_USERNAME</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_PASSWORD</name>
+          <description></description>
+          <defaultValue>ofVvLjWt5RNSH+PoPiiLjw==</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_APP_NAME</name>
+          <description>OSE3 application name</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_NAME</name>
+          <description>OSE3 template params</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_PARAMS</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_AB_TESTING</name>
+          <description></description>
+          <defaultValue>OFF</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PIPELINE_VERSION</name>
+          <description>Pipeline version</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.sidebar__link.ProjectLinks plugin="sidebar-link@1.7">
+      <links>
+        <hudson.plugins.sidebar__link.LinkAction>
+          <url>#</url>
+          <text>&apos;OpenShift3&apos;</text>
+          <icon>/userContent/openshift_64x64.png</icon>
+        </hudson.plugins.sidebar__link.LinkAction>
+      </links>
+    </hudson.plugins.sidebar__link.ProjectLinks>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>ose3-deploy</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>true</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING}</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@1.92.1">
+      <info>
+        <propertiesFilePath>deploy_jenkins.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+    <hudson.plugins.groovy.SystemGroovy plugin="groovy@1.29">
+      <scriptSource class="hudson.plugins.groovy.StringScriptSource">
+        <command>/*** BEGIN META {
+  &quot;name&quot; : &quot;Update LinkAction url from environment variable&quot;,
+  &quot;parameters&quot; : LINK_URL,
+  &quot;authors&quot; : [
+    { name : &quot;fdelamor@isban.es&quot; }
+  ]
+} END META**/
+import hudson.plugins.sidebar_link.LinkAction
+
+def inst = build.getProject().getAction(LinkAction.class)
+if (inst != null) {
+  inst.url = build.getEnvironment(listener).get(binding.variables.get(&apos;LINK_URL&apos;))
+}</command>
+      </scriptSource>
+      <bindings>LINK_URL=OSE3_END_POINT_URL</bindings>
+      <classpath></classpath>
+    </hudson.plugins.groovy.SystemGroovy>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+      <template>${ENV,var=&quot;OSE3_APP_NAME&quot;}:${ENV,var=&quot;PIPELINE_VERSION&quot;}-${BUILD_NUMBER}</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>

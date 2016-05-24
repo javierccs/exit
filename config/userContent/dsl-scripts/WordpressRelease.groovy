@@ -3,11 +3,11 @@ import jenkins.model.*
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
-def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def OSE3_URL = "${OSE3_URL}".trim()
+def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
+def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
-def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
 //DEV
 def WORDPRESS_DB_HOST_DEV="${WORDPRESS_DB_HOST_DEV}".trim()
 def WORDPRESS_DB_USER_DEV="${WORDPRESS_DB_USER_DEV}".trim()
@@ -158,8 +158,8 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
-                predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE)
+                predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
           }
@@ -191,19 +191,13 @@ job (buildJobName) {
 
   scm {
     git {
-      // Specify the branches to examine for changes and to build.
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
-      // Adds a repository browser for browsing the details of changes in an external system.
       browser {
         gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
       } //browser
-      // Adds a remote.
       remote {
-        // Sets credentials for authentication with the remote repository.
         credentials(SERENITY_CREDENTIAL)
-        // Sets a name for the remote.
         name('origin')
-        // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
@@ -224,56 +218,25 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
+    credentialsBinding {
+      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
+    }
     buildName(OSE3_APP_NAME+'-${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["WORDPRESS_IMAGE_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","WORDPRESS_IMAGE_VERSION"]')
         }
       }
       // Adds build steps to run before the release.
       preBuildSteps {
+        environmentVariables {
+          env('IS_RELEASE',true)
+        }
         shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
-      configure {
-        it / delegate.postSuccessfulBuildSteps {
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            tagsToPush {
-              'hudson.plugins.git.GitPublisher_-TagToPush' {
-                targetRepoName('origin')
-                tagName('v${WORDPRESS_IMAGE_VERSION}')
-                tagMessage()
-                createTag(false)
-                updateTag(false)
-              }
-            }
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_RELEASE_BRANCH)
-              }
-            }
-          }
-          'hudson.tasks.Shell' {
-            command("git checkout ${GIT_INTEGRATION_BRANCH}")
-          }
-          'hudson.plugins.git.GitPublisher'(plugin: 'git@2.4.1') {
-            configVersion(2)
-            pushMerge(false)
-            pushOnlyIfSuccess(false)
-            forcePush(false)
-            branchesToPush {
-              'hudson.plugins.git.GitPublisher_-BranchToPush' {
-                targetRepoName('origin')
-                branchName(GIT_INTEGRATION_BRANCH)
-              }
-            }
-          }
-        }
+      postSuccessfulBuildSteps {
+        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
     } //release
   } //wrappers
@@ -294,8 +257,6 @@ job (buildJobName) {
         parameters {
           propertiesFile('env.properties', true)
           predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${WORDPRESS_IMAGE_VERSION}')
-          predefinedProp('DOCKER_REGISTRY_CREDENTIAL',SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_TEMPLATE_PARAMS_DEV',"${OSE3_TEMPLATE_PARAMS_DEV}")
         }
       }
     }
@@ -331,18 +292,13 @@ job (dockerJobName) {
   deliveryPipelineConfiguration('CI', 'Docker Build')
   parameters {
     stringParam('ARTIFACT_NAME', 'wordpress.zip', 'Wordpress artifact name')
-    credentialsParam('DOCKER_REGISTRY_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('Docker Registry credential')
-    }
   }
 
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', '${DOCKER_REGISTRY_CREDENTIAL}')
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
+      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
   steps {
@@ -363,79 +319,43 @@ job (dockerJobName) {
       trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_DEV}")
-          predefinedProp('WORDPRESS_IMAGE_VERSION', '${WORDPRESS_IMAGE_VERSION}')
+          predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
+          predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD')
+          predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
+          predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
       }
     }
   }
 }
 
+def updateParam(node, String paramName, String defaultValue) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name != null && it.name.text() == paramName
+  }
+  aux.defaultValue[0].value = defaultValue
+}
+
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-dev", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
-  }
-  steps {
-    shell('deploy_in_ose3.sh')
-  }
-}
-
-def injectPasswords = {
-  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
-    injectGlobalPasswords(false)
-    maskPasswordParameters(true)
-    passwordEntries {
-      EnvInjectPasswordEntry {
-        name('OSE3_USERNAME')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-      EnvInjectPasswordEntry {
-        name('OSE3_PASSWORD')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-    }
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
   }
 }
 
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pre", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-  }
-  configure injectPasswords
   properties {
     promotions {
       promotion {
@@ -448,8 +368,8 @@ job (deployPreJobName) {
           downstreamParameterized {
             trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRO}")
-                predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
+                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
             }
           }
@@ -457,29 +377,24 @@ job (deployPreJobName) {
       }
     }
   }
-  steps {
-    shell('deploy_in_ose3.sh')
+ configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
   }
 }
 
 //Deploy in pro job
 job (deployProJobName) {
   println "JOB: " + deployProJobName
-  label('ose3-deploy')
+  using('TJ-ose3-deploy')
+  disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
-  parameters {
-    stringParam('OSE3_APP_NAME', "${OSE3_APP_NAME}", 'OSE3 application name')
-    stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pro", 'OSE3 project name')
-    stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
-    stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
-    stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
-  }
-  wrappers {
-    buildName('${ENV,var="OSE3_APP_NAME"}:${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
-  }
-  configure injectPasswords
-  steps {
-    shell('deploy_in_ose3.sh')
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
   }
 }

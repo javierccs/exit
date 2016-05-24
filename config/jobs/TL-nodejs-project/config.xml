@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>GITLAB_PROJECT</name>
+          <description>GitLab Project (p.ej groupname/reponame)</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_RELEASE_BRANCH</name>
+          <description>Release branch</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH</name>
+          <description>Continuous Integration branch</description>
+          <defaultValue>development</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_PROJECT_NAME</name>
+          <description>Name of the OpenShift project.
+(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_APP_NAME</name>
+          <description>Name of the application to deploy in OpenShift</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_URL</name>
+          <description>OpenShift PAAS region URL</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+          <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>FRONT_CUSTOMIZE</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/nodejs_template_json.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+		
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>SERENITY_CREDENTIAL</name>
+          <description>Serenity LDAP username/password</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+	<EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <groovyScriptContent>
+import groovy.json.*
+def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
+
+def slurperFRONT_CUSTOMIZE = new JsonSlurper()
+def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
+
+return listFRONT_CUSTOMIZE
+</groovyScriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
+	
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
+      <targets>dsl-scripts/*.groovy</targets>
+      <usingScriptText>false</usingScriptText>
+      <ignoreExisting>false</ignoreExisting>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+      <additionalClasspath></additionalClasspath>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (nodejs)</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+    <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <excludes></excludes>
+      <flatten>false</flatten>
+      <includeAntExcludes>false</includeAntExcludes>
+      <hudsonHomeRelative>false</hudsonHomeRelative>
+      <relativeTo>userContent</relativeTo>
+    </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+  </buildWrappers>
+</project>
