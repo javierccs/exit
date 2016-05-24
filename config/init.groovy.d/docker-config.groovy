@@ -76,7 +76,7 @@ docker_settings =
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest',
           labelString: 'wordpress-build',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -104,7 +104,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:latest',
           labelString: 'wordpress-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -132,7 +132,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
           labelString: 'ose3-deploy',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -160,7 +160,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:latest',
           labelString: 'maven',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -188,7 +188,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:latest',
           labelString: 'hpalm_bridge',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -216,7 +216,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
           labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
