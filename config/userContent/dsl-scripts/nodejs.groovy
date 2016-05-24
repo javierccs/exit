@@ -151,7 +151,13 @@ job (buildJobName) {
     } //release
   }
   steps {
-    shell('parse_yaml.sh application.yml > env.properties\n' +
+    shell(
+		'if [ ! -f application.yml ]; then\n' +
+		'   echo "WARN: File application.yml not found. Default base image will be used"\n' +
+		'   echo "FRONT_SOURCE_IMAGE_NAME: registry.lvtc.gsnet.corp/serenity-alm/serenity-alm-nginx:1.0" >> env.properties\n' +
+		'else\n' +
+		'   parse_yaml.sh application.yml > env.properties\n' +
+		'fi\n' +
 		'if ! [ "$IS_RELEASE" = true ] ; then\n' +
 		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)-${BUILD_NUMBER}" >> env.properties\n' +
 		'else\n' +
@@ -242,9 +248,9 @@ job (dockerJobName) {
 	publishers {
 		flexiblePublish {
 			conditionalAction {
-				condition {  not {
-						booleanCondition('${ENV,var="IS_RELEASE"}')
-					}
+				condition { 
+					//if it is a SNAPSHOT deployment is triggered
+					expression('(.*)-(\\d)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
 				}
 				publishers {
 					downstreamParameterized {
