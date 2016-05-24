@@ -81,7 +81,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -90,7 +90,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -109,7 +109,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -118,7 +118,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
@@ -137,7 +137,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -146,7 +146,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -165,7 +165,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -174,7 +174,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
@@ -193,7 +193,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -202,7 +202,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
@@ -221,7 +221,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -230,7 +230,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -287,9 +287,9 @@ docker_settings =
 
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
       dockerTemplate.setMode(template.mode)
-      dockerTemplate.setNumExecutors(2)
+      dockerTemplate.setNumExecutors(1)
       dockerTemplate.setRemoveVolumes(true)
-      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(5))
+      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(2))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
       templates.add(dockerTemplate)
     }
@@ -309,3 +309,4 @@ docker_settings =
 
   Jenkins.instance.clouds.addAll(dockerClouds)
   println 'Configured docker cloud.'
+
