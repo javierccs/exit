@@ -99,15 +99,14 @@ mavenJob (buildJobName) {
         icon('star-gold-w')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName,'SUCCESS') {
+            trigger(deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
                 predefinedProp('OSE3_URL', OSE3_URL)
-                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                 predefinedProp('OSE3_APP_NAME',  APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
@@ -157,7 +156,9 @@ mavenJob (buildJobName) {
         // Sets the remote URL.
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
       } //remote
-      wipeOutWorkspace(true)
+      extensions {
+        wipeOutWorkspace()
+      }
     } //git
   } //scm
 
@@ -297,13 +298,26 @@ mavenJob (buildJobName) {
                         }
        } //conditionalAction
     } // flexiblePublish
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
+    extendedEmail {
+      defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+      contentType('text/html')
+      triggers {
+        always()
+        failure {
+          sendTo {
+            culprits()
+          }
+        }
+        unstable {
+          sendTo {
+            culprits()
+          }
+        }
+        fixedUnhealthy {
+          sendTo {
+            developers()
+          }
+        }
       }
     } //extendedEmail
   } //publishers
@@ -410,7 +424,6 @@ if (GITLAB_PROJECT_TEST == "") {
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
-      wipeOutWorkspace(true)
     } //git
 	} //scm
 	
@@ -490,7 +503,6 @@ else
         url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
-      wipeOutWorkspace(true)
     } //git
 	} //scm
 	
@@ -529,6 +541,23 @@ else
 }
 }//HPALM BRIDGE PRE
 
+def injectPasswords = {
+  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
+    injectGlobalPasswords(false)
+    maskPasswordParameters(true)
+    passwordEntries {
+      EnvInjectPasswordEntry {
+        name('OSE3_USERNAME')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+      EnvInjectPasswordEntry {
+        name('OSE3_PASSWORD')
+        value('CzYyIJFnWUx1/xdbbBfd4g==')
+      }
+    }
+  }
+}
+
 //Deploy in pre job
 job (deployPreJobName) {
   println "JOB: " + deployPreJobName
@@ -540,12 +569,6 @@ job (deployPreJobName) {
     stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
   properties {
@@ -554,26 +577,23 @@ job (deployPreJobName) {
     }
   }
   wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
     buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
+  configure injectPasswords
   properties {
     promotions {
      promotion {
        name('Promote-PRO')
        icon('star-gold-e')
          conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer') {}
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
          }
          actions {
            downstreamParameterized {
-             trigger(deployProJobName, 'SUCCESS') {
+             trigger(deployProJobName) {
                parameters {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
                  predefinedProp('OSE3_URL', OSE3_URL)
-                 predefinedProp('OSE3_CREDENTIAL', '${OSE3_CREDENTIAL}')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
                  predefinedProp('VALUE_URL','${VALUE_URL}')
@@ -624,12 +644,6 @@ job (deployProJobName) {
     stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
   properties {
@@ -638,11 +652,9 @@ job (deployProJobName) {
     }
   }
   wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
     buildName('${OSE3_PROJECT_NAME}:${OSE3_APP_NAME}-${BUILD_NUMBER}')
   }
+  configure injectPasswords
   steps {
     shell(
       'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +

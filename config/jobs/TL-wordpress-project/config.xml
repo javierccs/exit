@@ -27,7 +27,7 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_APP_NAME</name>
           <description>OSE3 Application name</description>
-          <defaultValue>wp-scf-demo</defaultValue>
+          <defaultValue>wordpress</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
@@ -88,7 +88,7 @@
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
-          <description>GreenLight LDAP username/password</description>
+          <description>LDAP username/password</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>

@@ -11,7 +11,7 @@ import com.nirima.jenkins.plugins.docker.*
 import com.nirima.jenkins.plugins.docker.launcher.*
 import com.nirima.jenkins.plugins.docker.strategy.*
 import java.util.logging.Logger
-
+import java.util.Random
 
 def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
 logger.info("Setting docker cloud...")
@@ -29,13 +29,15 @@ if (obj != null) {
   logger.info("Jenkins slave docker container credentials already exists. Updating...")
   domainCredentialsMap[Domain.global()].remove(obj)
 }
+Random rand = new Random()
+def password = 'jenkins'+rand.nextInt(100000)
 domainCredentialsMap[Domain.global()].add(
   new UsernamePasswordCredentialsImpl(
     CredentialsScope.SYSTEM,
     jenkinsSlaveCredentialsId,
     'Jenkins slave docker container credentials.',
     'jenkins',
-    'jenkins'
+    password
     )
 )
 logger.info('Added jenkins slave docker container credentials.')
@@ -76,10 +78,10 @@ docker_settings =
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.0',
           labelString: 'wordpress-build',
-          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -88,61 +90,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
-          dnsString: '',
-          dockerCommand: 'start',
-          volumesString: '',
-          volumesFromString: '',
-          hostname: '',
-          bindPorts: '',
-          bindAllPorts: false,
-          privileged: true,
-          tty: false,
-          macAddress: ''
-        ],
-        [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.0',
-          labelString: 'wordpress-docker',
-          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
-          remoteFs: '/home/jenkins',
-          credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
-          sshLaunchTimeoutMinutes: '1',
-          jvmOptions: '',
-          javaPath: '',
-          memoryLimit: 1024,
-          memorySwap: 0,
-          cpuShares: 2,
-          prefixStartSlaveCmd: '',
-          suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
-          dnsString: '',
-          dockerCommand: 'start',
-          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
-          volumesFromString: '',
-          hostname: '',
-          bindPorts: '',
-          bindAllPorts: false,
-          privileged: true,
-          tty: false,
-          macAddress: ''
-        ],
-        [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.0',
-          labelString: 'ose3-deploy',
-          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
-          remoteFs: '/home/jenkins',
-          credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
-          sshLaunchTimeoutMinutes: '1',
-          jvmOptions: '',
-          javaPath: '',
-          memoryLimit: 512,
-          memorySwap: 0,
-          cpuShares: 2,
-          prefixStartSlaveCmd: '',
-          suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -152,15 +100,72 @@ docker_settings =
           bindAllPorts: false,
           privileged: false,
           tty: false,
-          macAddress: ''
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE 
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.0',
+          labelString: 'wordpress-docker',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '2',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 1024,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: true,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.0',
+          labelString: 'ose3-deploy',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '2',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 512,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
         ],
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.0',
           labelString: 'maven',
-          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -169,7 +174,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
@@ -177,17 +182,18 @@ docker_settings =
           hostname: '',
           bindPorts: '',
           bindAllPorts: false,
-          privileged: true,
+          privileged: false,
           tty: false,
-          macAddress: ''
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
         ],
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.0',
           labelString: 'hpalm_bridge',
-          environmentsString: 'JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=jenkins',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -196,7 +202,7 @@ docker_settings =
           cpuShares: 2,
           prefixStartSlaveCmd: '',
           suffixStartSlaveCmd: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
@@ -204,9 +210,38 @@ docker_settings =
           hostname: '',
           bindPorts: '',
           bindAllPorts: false,
-          privileged: true,
+          privileged: false,
           tty: false,
-          macAddress: ''
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
+          labelString: '',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          idleTerminationMinutes: '2',
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          memoryLimit: 1024,
+          memorySwap: 0,
+          cpuShares: 2,
+          prefixStartSlaveCmd: '',
+          suffixStartSlaveCmd: '',
+          instanceCapStr: '',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.NORMAL
         ]
       ]
     ]
@@ -251,10 +286,10 @@ docker_settings =
       )
 
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
-      dockerTemplate.setMode(Node.Mode.EXCLUSIVE)
-      dockerTemplate.setNumExecutors(2)
+      dockerTemplate.setMode(template.mode)
+      dockerTemplate.setNumExecutors(1)
       dockerTemplate.setRemoveVolumes(true)
-      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(5))
+      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(2))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
       templates.add(dockerTemplate)
     }
@@ -274,3 +309,4 @@ docker_settings =
 
   Jenkins.instance.clouds.addAll(dockerClouds)
   println 'Configured docker cloud.'
+
