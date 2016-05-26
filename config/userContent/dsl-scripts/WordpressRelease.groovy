@@ -158,7 +158,6 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
                 predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
@@ -364,7 +363,6 @@ job (dockerJobName) {
         condition('SUCCESS')
         parameters {
           predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_DEV}")
           predefinedProp('WORDPRESS_IMAGE_VERSION', '${WORDPRESS_IMAGE_VERSION}')
         }
       }
@@ -382,7 +380,7 @@ job (deployDevJobName) {
     stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-dev", 'OSE3 project name')
     stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('OSE3_TEMPLATE_PARAMS' , "${OSE3_TEMPLATE_PARAMS_DEV}", 'OSE3 template params')
     credentialsParam('OSE3_CREDENTIAL') {
       type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
       required(false)
@@ -429,7 +427,7 @@ job (deployPreJobName) {
     stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pre", 'OSE3 project name')
     stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('OSE3_TEMPLATE_PARAMS' , "${OSE3_TEMPLATE_PARAMS_PRE}", 'OSE3 template params')
     stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
@@ -448,7 +446,6 @@ job (deployPreJobName) {
           downstreamParameterized {
             trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRO}")
                 predefinedProp('WORDPRESS_IMAGE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
@@ -472,7 +469,7 @@ job (deployProJobName) {
     stringParam('OSE3_PROJECT_NAME', "${OSE3_PROJECT_NAME}-pro", 'OSE3 project name')
     stringParam('OSE3_URL', "${OSE3_URL}", 'OSE3 URL')
     stringParam('OSE3_TEMPLATE_NAME', "${OSE3_TEMPLATE_NAME}", 'OSE3 template name')
-    stringParam('OSE3_TEMPLATE_PARAMS' , '', 'OSE3 template params')
+    stringParam('OSE3_TEMPLATE_PARAMS' , "${OSE3_TEMPLATE_PARAMS_PRO}", 'OSE3 template params')
     stringParam('WORDPRESS_IMAGE_VERSION' , '', 'Pipeline version')
   }
   wrappers {
