@@ -186,11 +186,7 @@
           <permission>hudson.scm.SCM.Tag</permission>
           <permission>hudson.model.Item.Discover</permission>
         </permissions>
-        <assignedSIDs>
-          <sid>impes-product-owner</sid>
-          <sid>impes-technical-lead</sid>
-          <sid>impes-developer</sid>
-        </assignedSIDs>
+        <assignedSIDs/>
       </role>
     </roleMap>
     <roleMap type="slaveRoles"/>
