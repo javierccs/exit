@@ -158,7 +158,6 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE)
                 predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
@@ -321,7 +320,6 @@ job (dockerJobName) {
         parameters {
           predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
           predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
-          predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
           predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
       }
@@ -347,6 +345,7 @@ job (deployDevJobName) {
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV) 
   }
 }
 
@@ -368,7 +367,6 @@ job (deployPreJobName) {
           downstreamParameterized {
             trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
             }
@@ -382,6 +380,7 @@ job (deployPreJobName) {
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE) 
   }
 }
 
@@ -396,5 +395,6 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
   }
 }
