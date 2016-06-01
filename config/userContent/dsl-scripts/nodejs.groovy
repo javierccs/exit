@@ -7,7 +7,7 @@ def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
-def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
+def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
 // Static values
@@ -19,9 +19,10 @@ def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
+def COMPILER = "${COMPILER}".trim()
 
 //JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${FRONT_IMAGE_VERSION}'
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
 // JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
 def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
@@ -129,10 +130,11 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
+	preBuildCleanup()
     credentialsBinding {
       usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
     }
-    buildName('${ENV,var="FRONT_IMAGE_NAME"}:${ENV,var="FRONT_IMAGE_VERSION"}')
+	buildName( REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}')
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
@@ -140,34 +142,33 @@ job (buildJobName) {
         }
       }
       postSuccessfulBuildSteps {
-        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+//If No compilation application.yaml versioning is used
+if ( COMPILER.equals ( "None" )) {
+        shell ( "application_yaml_git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH} ")
+} else {
+	    shell ( "git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+}
+			  
       }
       preBuildSteps {
         environmentVariables {
           env('IS_RELEASE',true)
-        }
-        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
-      }
+		}
+ if ( COMPILER.equals ( "None" )) {
+		shell( "application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+} else {	
+		shell( "git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}" )
+}       }
     } //release
   }
   steps {
     shell(
-		'if [ ! -f application.yml ]; then\n' +
-		'   echo "WARN: File application.yml not found. Default base image will be used"\n' +
-		'   echo "FRONT_SOURCE_IMAGE_NAME: registry.lvtc.gsnet.corp/serenity-alm/serenity-alm-nginx:1.0" >> env.properties\n' +
-		'else\n' +
-		'   parse_yaml.sh application.yml > env.properties\n' +
-		'fi\n' +
-		'if ! [ "$IS_RELEASE" = true ] ; then\n' +
-		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)-${BUILD_NUMBER}" >> env.properties\n' +
-		'else\n' +
-		'	echo "FRONT_IMAGE_VERSION=$(node /opt/serenity-alm/front/json-reader.js package.json version)" >> env.properties\n' +
-		'fi\n' +
-        'echo "FRONT_IMAGE_NAME=$(node /opt/serenity-alm/front/json-reader.js package.json name)" >> env.properties')
+	    "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
+		)
     environmentVariables {
       propertiesFile('env.properties')
     }	 
-    shell("front-compiler.sh front.tgz '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}'")
+    shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}'")
     if (sq) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
@@ -179,7 +180,7 @@ job (buildJobName) {
     }
   }
   publishers {
-    archiveArtifacts('*.tgz')
+    archiveArtifacts('*.zip')
 if (JUNIT_TESTS_PATTERN?.trim()) {
     archiveJunit(JUNIT_TESTS_PATTERN)
 }
@@ -188,7 +189,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
         condition('SUCCESS')
         parameters {
           propertiesFile('env.properties', true)
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${FRONT_IMAGE_VERSION}')
+          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}')
           predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
         }
       } //conditionalAction
@@ -222,17 +223,18 @@ job (dockerJobName) {
   label('front-build-docker')
   deliveryPipelineConfiguration('CI', 'Front Docker Build')
   parameters {
-    stringParam('ARTIFACT_NAME', 'front.tgz', 'Front artifact name')
+    stringParam('ARTIFACT_NAME', "${REPOSITORY_NAME}", 'Front artifact name')
   }
   wrappers {
-    buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+    //buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
+	buildName('${ENV,var="PIPELINE_VERSION_TEST"}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
   steps {
     copyArtifacts(buildJobName) {
-      includePatterns('front.tgz')
+      includePatterns("${REPOSITORY_NAME}.zip")
       flatten()
       optional(false)
       fingerprintArtifacts(false)
