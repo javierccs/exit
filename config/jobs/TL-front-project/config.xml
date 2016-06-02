@@ -27,7 +27,23 @@
 (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
+		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>COMPILER</name>
+          <description>Static files compilation mode</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/frontCompilerModeList.properties</propertyFile>
+          <propertyKey>compilerModes</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+		<hudson.model.StringParameterDefinition>
+          <name>DIST_DIR</name>
+          <description>Distribution directory (i.e.  &quot;dist &quot;,  &quot;. &quot;,...)</description>
+          <defaultValue>dist</defaultValue>
+        </hudson.model.StringParameterDefinition>
+		<hudson.model.StringParameterDefinition>
           <name>OSE3_APP_NAME</name>
           <description>Name of the application to deploy in OpenShift</description>
           <defaultValue></defaultValue>

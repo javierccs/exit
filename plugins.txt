@@ -71,3 +71,4 @@ extended-choice-parameter:0.56
 #Flexible Publish Plugin
 flexible-publish:0.15.2
 run-condition:0.7
+ws-cleanup:0.29
