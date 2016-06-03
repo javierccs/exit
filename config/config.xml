@@ -173,16 +173,23 @@
       <role name="user" pattern=".*">
         <permissions>
           <permission>hudson.model.Hudson.Read</permission>
+          <permission>hudson.model.Hudson.Read</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update</permission>
+          <permission>hudson.model.Computer.Connect</permission>
           <permission>hudson.model.Item.Create</permission>
           <permission>hudson.model.Item.Workspace</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains</permission>
+          <permission>hudson.model.Computer.Create</permission>
+          <permission>hudson.model.Computer.Build</permission>
           <permission>hudson.model.View.Read</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.plugins.release.ReleaseWrapper.Release</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View</permission>
+          <permission>hudson.model.Computer.Configure</permission>
           <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create</permission>
+          <permission>hudson.model.Computer.Delete</permission>
+          <permission>hudson.model.Computer.Disconnect</permission>
           <permission>hudson.scm.SCM.Tag</permission>
           <permission>hudson.model.Item.Discover</permission>
         </permissions>
