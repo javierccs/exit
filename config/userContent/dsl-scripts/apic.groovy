@@ -218,9 +218,7 @@ job (publishDevJobName) {
         latestSuccessful(true)
       }
     }
-    shell('echo "Publishing...\n"' +
-		" apic login -s $APIC_SERVER " + ' -u $APIC_USERNAME -p $APIC_PASSWORD\n ' +
-		" apic config:set catalog=apic-catalog://${APIC_SERVER}/orgs/${APIC_ORGANIZATION}/catalogs/${APIC_DEV_CATALOG}")
+    shell('deploy_in_apimanager.sh')
 
 	
   }
