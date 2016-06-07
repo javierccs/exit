@@ -58,8 +58,8 @@ system_creds.save()
 def CLOUD_NAME = 'serenity'
 def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
 assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
-def mavenDataContainer = System.getenv("MAVEN_DATA").trim()
-def nodeJSDataContainer = System.getenv("NODEJS_DATA").trim()
+def mavenDataContainer = System.getenv("MAVEN_DATA")
+def nodeJSDataContainer = System.getenv("NODEJS_DATA")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
