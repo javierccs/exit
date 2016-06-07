@@ -106,7 +106,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -221,7 +221,7 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '5',
+          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -271,12 +271,7 @@ docker_settings =
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          memoryLimit: 1024,
-          memorySwap: 0,
-          cpuShares: 2,
-          prefixStartSlaveCmd: '',
-          suffixStartSlaveCmd: '',
-          instanceCapStr: '',
+          instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -287,7 +282,7 @@ docker_settings =
           privileged: false,
           tty: false,
           macAddress: '',
-          mode: Node.Mode.NORMAL
+          mode: Node.Mode.EXCLUSIVE
         ]
       ]
     ]
