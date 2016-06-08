@@ -5,12 +5,12 @@ LABEL description="Serenity ALM Jenkins image"
 LABEL com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="1.1"
+      com.serenity.image.version="1.2"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="1.1"
+    com.serenity.image.version="1.2"
 	
 USER root
 
@@ -60,3 +60,4 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 COPY config/ /usr/share/jenkins/ref/
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
+

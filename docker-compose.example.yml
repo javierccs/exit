@@ -1,0 +1,58 @@
+jenkins-master:
+  restart: always
+  build: .
+#  image: registry.lvtc.gsnet.corp/serenity-alm/jenkins
+#  ports:
+#    - "8080:8080"
+#    - "50000:50000"
+  volumes_from:
+    - jenkins-data
+  labels:
+    - "io.rancher.container.network=true"
+  environment:
+    # JENKINS CONFIG
+    - JENKINS_URL=${JENKINS_URL}
+    - JENKINS_EMAIL=serenity-alm@isban.com
+    - JENKINS_PASSWORD=admin123
+    - JAVA_OPTS=-Xmx1024m
+    # LDAP CONFIG
+    - LDAP_SERVER=ldap.produban.pre.corp
+    - LDAP_BIND_DN=uid=admtc,ou=People,o=Produban,c=es,o=Grupo Santander
+    - LDAP_PASSWORD=${LDAP_PASSWORD}
+    - LDAP_BASE=ou=users,ou=lvtc,cn=BanksphereIntranet,o=Produban,c=es,o=Grupo Santander
+    - LDAP_GROUP_BASE=ou=groups,ou=lvtc,cn=BanksphereIntranet,o=Produban,c=es,o=Grupo Santander
+    - LDAP_GROUP_FILTER=(&(cn={0})(objectClass=groupOfNames))
+    - LDAP_GROUPS=alm-technical-lead,alm-developer,alm-product-owner
+    # MAVEN CONFIG
+    - MAVEN_DEPLOYER_LOGIN=deployment
+    - MAVEN_DEPLOYER_PASSWD=${MAVEN_DEPLOYER_PASSWD}
+    - NEXUS_BASE_URL=$https://nexus.ci.gsnet.corp/nexus
+    # MAIL CONFIG
+    - SMTP_HOST=${SMTP_HOST}
+    - SMTP_PORT=25
+    # GITLAB_CONFIG
+    - GITLAB_URL=${GITLAB_URL}
+    - GITLAB_API_TOKEN=${GITLAB_API_TOKEN}
+    # DOCKER CLOUD CONFIG
+    - SWARM_MASTER_URL=${SWARM_MASTER_URL}
+    - MAVEN_DATA=maven-data
+    - NODEJS_DATA=nodejs-data
+
+jenkins-data:
+  build: .
+  container_name: jenkins-data
+  command: echo "data-only container for Jenkins"
+  entrypoint: /bin/bash
+
+maven-data:
+  image: registry.lvtc.gsnet.corp/serenity-alm/jslave-maven
+  container_name: maven-data
+  command: echo "data-only container for maven"
+  entrypoint: /bin/bash 
+
+nodejs-data:
+  image: registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs
+  container_name: nodejs-data
+  command: echo "data-only container for nodejs"
+  entrypoint: /bin/bash 
+
