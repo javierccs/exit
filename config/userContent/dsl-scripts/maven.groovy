@@ -433,10 +433,7 @@ job (deployPreJobName) {
           downstreamParameterized {
             trigger(deployProJobName) {
               parameters {
-                predefinedProp('OSE3_URL', '${OSE3_URL}')
-                predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
-                predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
+                predefinedProp('VALUE_URL','${VALUE_URL}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
             }
