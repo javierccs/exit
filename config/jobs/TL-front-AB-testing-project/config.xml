@@ -12,20 +12,34 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>GIT_RELEASE_BRANCH</name>
-          <description>Release branch</description>
+          <name>GIT_RELEASE_BRANCH_FEATURE_A</name>
+          <description>Release branch of FEATURE-A for A/B Testing</description>
           <defaultValue>master</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>GIT_INTEGRATION_BRANCH</name>
-          <description>Continuous Integration branch</description>
+          <name>GIT_INTEGRATION_BRANCH_FEATURE_A</name>
+          <description>Continuous Integration branch feature A</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>OSE3_PROJECT_NAME</name>
-          <description>Name of the OpenShift project.
-(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
-          <defaultValue></defaultValue>
+          <name>APP_NAME_OSE3_FEATURE_A</name>
+          <description>Name of the application to deploy in OpenShift</description>
+          <defaultValue>app-feature-A</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_RELEASE_BRANCH_FEATURE_B</name>
+          <description>Release branch of FEATURE-B for A/B Testing</description>
+          <defaultValue>master-B</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH_FEATURE_B</name>
+          <description>Continuous Integration branch for Feature B</description>
+          <defaultValue>development-B</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>APP_NAME_OSE3_FEATURE_B</name>
+          <description>Name of the application to deploy in OpenShift for Feature B</description>
+          <defaultValue>app-feature-B</defaultValue>
         </hudson.model.StringParameterDefinition>
 		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>COMPILER</name>
@@ -44,8 +58,9 @@
           <defaultValue>dist</defaultValue>
         </hudson.model.StringParameterDefinition>
 		<hudson.model.StringParameterDefinition>
-          <name>OSE3_APP_NAME</name>
-          <description>Name of the application to deploy in OpenShift</description>
+          <name>OSE3_PROJECT_NAME</name>
+          <description>Name of the OpenShift project.
+(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
@@ -62,7 +77,7 @@
 		<hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description>OpenShift template to be used in deployment</description>
-          <defaultValue>nginx-alm-1.0</defaultValue>
+          <defaultValue>nginx-ab-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
 	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>FRONT_CUSTOMIZE</name>
@@ -132,7 +147,7 @@ return listFRONT_CUSTOMIZE
       <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (nodejs)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/nodejs_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/gitLabWebHooks_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

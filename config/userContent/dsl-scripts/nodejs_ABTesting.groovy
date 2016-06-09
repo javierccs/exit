@@ -3,42 +3,68 @@ import groovy.util.*
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
-def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
-def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
+def GIT_INTEGRATION_BRANCH_FEATURE_A = "${GIT_INTEGRATION_BRANCH_FEATURE_A}".trim()
+def GIT_INTEGRATION_BRANCH_FEATURE_B = "${GIT_INTEGRATION_BRANCH_FEATURE_B}".trim()
+def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
+def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
+
 def OSE3_URL ="${OSE3_URL}".trim()
-def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
+
+
+
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
+// APP_name for OSE3 -it doesnt allow uppercase chars!!
+def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
+def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
-def buildJobName = GITLAB_PROJECT+'-ci-build'
-def dockerJobName = GITLAB_PROJECT+'-ci-docker'
+def buildJobName_a = GITLAB_PROJECT+'-ci-build-feature-A'
+def buildJobName_b = GITLAB_PROJECT+'-ci-build-feature-B'
+
+def dockerJobName_a = GITLAB_PROJECT+'-ci-docker-feature-A'
+def dockerJobName_b = GITLAB_PROJECT+'-ci-docker-feature-B'
+
+
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 def COMPILER = "${COMPILER}".trim()
 
-//JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
-// JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
-def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
 def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
-//Compose the template params, if blank we left the default pf PAAS
-if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
+
+
+def updateParam(node, String paramName, String defaultValue) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name != null && it.name.text() == paramName
+  }
+  aux.defaultValue[0].value = defaultValue
+}
 
 //SONARQUBE
 String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
-job (buildJobName) {
-  println "JOB: "+buildJobName
+String[][] abTestingData = [ [ buildJobName_a, GIT_INTEGRATION_BRANCH_FEATURE_A, GIT_RELEASE_BRANCH_FEATURE_A, APP_NAME_OSE3_FEATURE_A, dockerJobName_a ], 
+  [ buildJobName_b, GIT_INTEGRATION_BRANCH_FEATURE_B, GIT_RELEASE_BRANCH_FEATURE_B, APP_NAME_OSE3_FEATURE_B, dockerJobName_b ] ]
+
+
+  
+//Start AB Testing
+for ( data in abTestingData ) {
+
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
+def TZ="${TZ}".trim()
+if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
+job (data[0]) {
+  println "JOB: "+data[0]
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -51,9 +77,9 @@ job (buildJobName) {
                 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin',
                 'GitLab source repo name (only for MERGE events from forked repositories)')
-    stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH,
+    stringParam('gitlabSourceBranch', data[1],
                 'Gitlab source branch (only for MERGE events from forked repositories)')
-    stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH,
+    stringParam('gitlabTargetBranch', data[1],
                 'GitLab target branch (only for MERGE events)')
   }
 
@@ -125,7 +151,7 @@ job (buildJobName) {
       setBuildDescription(true)
       useCiFeatures(true)
       allowAllBranches(false)
-      includeBranches(GIT_INTEGRATION_BRANCH)
+      includeBranches(data[1])
     }
   } //triggers
 
@@ -144,9 +170,9 @@ job (buildJobName) {
       postSuccessfulBuildSteps {
 //If No compilation application.yaml versioning is used
 if ( COMPILER.equals ( "None" )) {
-        shell ( "application_yaml_git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH} ")
+        shell ( "application_yaml_git-flow-release-finish.sh " + data[1] + " " + data[2])
 } else {
-	    shell ( "git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+	    shell ( "git-flow-release-finish.sh " + data[1] + " " + data[2])
 }
 			  
       }
@@ -155,9 +181,9 @@ if ( COMPILER.equals ( "None" )) {
           env('IS_RELEASE',true)
 		}
  if ( COMPILER.equals ( "None" )) {
-		shell( "application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+		shell( "application_yaml_git-flow-release-start.sh " + data[1] + " " + data[2])
 } else {	
-		shell( "git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}" )
+		shell( "git-flow-release-start.sh " + data[1] + " " + data[2])
 }       }
     } //release
   }
@@ -185,7 +211,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
     archiveJunit(JUNIT_TESTS_PATTERN)
 }
     downstreamParameterized {
-      trigger(dockerJobName) {
+      trigger(data[4]) {
         condition('SUCCESS')
         parameters {
           propertiesFile('env.properties', true)
@@ -210,16 +236,9 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
   }
 } //job
 
-def updateParam(node, String paramName, String defaultValue) {
-  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
-    it.name != null && it.name.text() == paramName
-  }
-  aux.defaultValue[0].value = defaultValue
-}
-
 // Docker job
-job (dockerJobName) {
-  println "JOB: "+dockerJobName
+job (data[4]) {
+  println "JOB: "+data[4]
   label('front-build-docker')
   deliveryPipelineConfiguration('CI', 'Front Docker Build')
   parameters {
@@ -233,7 +252,7 @@ job (dockerJobName) {
     }
   }
   steps {
-    copyArtifacts(buildJobName) {
+    copyArtifacts(data[0]) {
       includePatterns("${REPOSITORY_NAME}.zip")
       flatten()
       optional(false)
@@ -259,7 +278,8 @@ job (dockerJobName) {
                 predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
                 predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-                predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+                predefinedProp('OSE3_APP_NAME', data[3])
+				predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -268,7 +288,7 @@ job (dockerJobName) {
     }
   }
 }
-                                
+} // end for AB Testing                               
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
@@ -278,8 +298,8 @@ job (deployDevJobName) {
   configure {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+	updateParam(it, 'OSE3_AB_TESTING', 'ON')
 	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }
@@ -314,8 +334,9 @@ job (deployPreJobName) {
   configure {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
+    updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+	updateParam(it, 'OSE3_AB_TESTING', 'ON')
 	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }
@@ -329,8 +350,9 @@ job (deployProJobName) {
   configure {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
+    updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+	updateParam(it, 'OSE3_AB_TESTING', 'ON')
 	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }

@@ -6,7 +6,7 @@ def GIT_INTEGRATION_BRANCH_FEATURE_A = "${GIT_INTEGRATION_BRANCH_FEATURE_A}".tri
 def GIT_INTEGRATION_BRANCH_FEATURE_B = "${GIT_INTEGRATION_BRANCH_FEATURE_B}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
-def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
+
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def OSE3_URL ="${OSE3_URL}".trim() 
 
@@ -589,7 +589,7 @@ job (deployDevJobName) {
   	  environmentVariables{
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
-    shell('deploy_in_ose3.sh --ab_testing=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -847,7 +847,7 @@ job (deployPreJobName) {
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
-   shell('deploy_in_ose3.sh --ab_testing=ON')
+   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -893,6 +893,6 @@ job (deployProJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
 
-    shell('deploy_in_ose3.sh --ab_testing=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
   }
 }
