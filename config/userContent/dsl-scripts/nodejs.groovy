@@ -34,8 +34,8 @@ if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 
 //SONARQUBE
 String NAME="Serenity SonarQube"
-def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+//def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
+//boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
 job (buildJobName) {
   println "JOB: "+buildJobName
@@ -169,15 +169,15 @@ if ( COMPILER.equals ( "None" )) {
       propertiesFile('env.properties')
     }	 
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}'")
-    if (sq) {
-      maven {
-        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
-        providedSettings('Serenity Maven Settings')
-        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
-                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
-      }
-    }
+//    if (sq) {
+//      maven {
+//        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
+//        providedSettings('Serenity Maven Settings')
+//        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
+//                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
+//                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
+//      }
+//    }
   }
   publishers {
     archiveArtifacts('*.zip')
@@ -206,7 +206,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
   } //publishers
 
   configure {
-    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
+//    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
   }
 } //job
 
