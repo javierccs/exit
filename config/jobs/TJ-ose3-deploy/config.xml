@@ -81,7 +81,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --createTemplate=${OSE3_CREATE_TEMPLATE}</command>
+      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE}</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>
