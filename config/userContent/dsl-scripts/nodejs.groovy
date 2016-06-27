@@ -153,31 +153,23 @@ if ( COMPILER.equals ( "None" )) {
       preBuildSteps {
         environmentVariables {
           env('IS_RELEASE',true)
-		}
- if ( COMPILER.equals ( "None" )) {
-		shell( "application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
-} else {	
-		shell( "git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}" )
-}       }
+        }
+      }
     } //release
   }
   steps {
+if ( COMPILER.equals ( "None" )) {
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
+} else {	
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
+}       
     shell(
-	    "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
+      "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
 		)
     environmentVariables {
       propertiesFile('env.properties')
     }	 
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}'")
-//    if (sq) {
-//      maven {
-//        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
-//        providedSettings('Serenity Maven Settings')
-//        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
-//                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-//                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
-//      }
-//    }
   }
   publishers {
     archiveArtifacts('*.zip')
@@ -206,7 +198,6 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
   } //publishers
 
   configure {
-//    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
   }
 } //job
 

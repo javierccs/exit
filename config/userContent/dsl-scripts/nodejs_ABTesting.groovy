@@ -47,16 +47,9 @@ def updateParam(node, String paramName, String defaultValue) {
   aux.defaultValue[0].value = defaultValue
 }
 
-//SONARQUBE
-//String NAME="Serenity SonarQube"
-//def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-//boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-
 String[][] abTestingData = [ [ buildJobName_a, GIT_INTEGRATION_BRANCH_FEATURE_A, GIT_RELEASE_BRANCH_FEATURE_A, APP_NAME_OSE3_FEATURE_A, dockerJobName_a ], 
   [ buildJobName_b, GIT_INTEGRATION_BRANCH_FEATURE_B, GIT_RELEASE_BRANCH_FEATURE_B, APP_NAME_OSE3_FEATURE_B, dockerJobName_b ] ]
 
-
-  
 //Start AB Testing
 for ( data in abTestingData ) {
 
@@ -174,20 +167,20 @@ if ( COMPILER.equals ( "None" )) {
 } else {
 	    shell ( "git-flow-release-finish.sh " + data[1] + " " + data[2])
 }
-			  
       }
       preBuildSteps {
         environmentVariables {
           env('IS_RELEASE',true)
-		}
- if ( COMPILER.equals ( "None" )) {
-		shell( "application_yaml_git-flow-release-start.sh " + data[1] + " " + data[2])
-} else {	
-		shell( "git-flow-release-start.sh " + data[1] + " " + data[2])
-}       }
+        }
+      }
     } //release
   }
   steps {
+if ( COMPILER.equals ( "None" )) {
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then application_yaml_git-flow-release-start.sh " + data[1] + " " + data[2] + "; fi")
+} else {	
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh " + data[1] + " " + data[2] + "; fi")
+}       
     shell(
 	    "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
 		)
@@ -195,15 +188,6 @@ if ( COMPILER.equals ( "None" )) {
       propertiesFile('env.properties')
     }	 
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}'")
-//    if (sq) {
-//      maven {
-//        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
-//        providedSettings('Serenity Maven Settings')
-//        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
-//                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-//                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
-//      }
-//    }
   }
   publishers {
     archiveArtifacts('*.zip')
@@ -232,7 +216,6 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
   } //publishers
 
   configure {
- //   if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
   }
 } //job
 

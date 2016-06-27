@@ -164,6 +164,11 @@ mavenJob (buildJobName) {
     }
     buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
+      preBuildSteps {
+        environmentVariables {
+          env('IS_RELEASE', 'true')
+        }
+      } 
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
           binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
@@ -180,24 +185,20 @@ mavenJob (buildJobName) {
           evenIfUnstable(false)
         }
         it / 'preBuildSteps' << 'org.jenkinsci.plugins.configfiles.builder.ConfigFileBuildStep' (plugin: 'config-file-provider@2.10.0') {
-            managedFiles {
-              'org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile' {
-                fileId('org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig')
-                targetLocation('/tmp/settings.xml')
-                variable('MAVEN_SETTINGS')
-              }
+          managedFiles {
+            'org.jenkinsci.plugins.configfiles.buildwrapper.ManagedFile' {
+              fileId('org.jenkinsci.plugins.configfiles.maven.MavenSettingsConfig')
+              variable('MAVEN_SETTINGS')
             }
-          }
-        it / 'preBuildSteps' << 'hudson.tasks.Shell' {
-          command("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
-        }
-        it / 'preBuildSteps' << 'EnvInjectBuilder' (plugin: 'envinject@1.92.1') {
-          info {
-            propertiesContent('IS_RELEASE=true')
           }
         }
       }
     } //release
+  }
+
+  // Fix buildWrappers order issue moving preBuildSteps out of release
+  preBuildSteps {
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
   }
 
   goals('clean verify')
@@ -241,7 +242,6 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
                 predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
                 predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
-
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                 predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
               }

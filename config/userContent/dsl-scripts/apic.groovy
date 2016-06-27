@@ -132,11 +132,11 @@ job (buildJobName) {
         environmentVariables {
           env('IS_RELEASE',true) 
         }
-        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
     } //release
   }
   steps {
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell(
 	     ' echo "INFO Validating project yamls"...\n'  +
 	     " for f in $APIC_SRC_DIRECTORY/*_Product_*.yaml; do\n" +
