@@ -398,7 +398,7 @@ mavenJob (buildJobName_b) {
         }
       }
       postSuccessfulBuildSteps {
-        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH_FEATURE_A} ${GIT_RELEASE_BRANCH_FEATURE_A}")
+        shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH_FEATURE_B} ${GIT_RELEASE_BRANCH_FEATURE_B}")
       }
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
@@ -421,7 +421,7 @@ mavenJob (buildJobName_b) {
 
   // Fix buildWrappers order issue moving preBuildSteps out of release
   preBuildSteps {
-    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH_FEATURE_A} ${GIT_RELEASE_BRANCH_FEATURE_A}; fi")
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH_FEATURE_B} ${GIT_RELEASE_BRANCH_FEATURE_B}; fi")
   }
 
   goals('clean verify')
