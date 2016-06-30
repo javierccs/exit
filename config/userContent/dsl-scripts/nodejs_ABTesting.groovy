@@ -89,6 +89,7 @@ job (data[0]) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
+			    predefinedProp('OSE3_APP_NAME', data[3])
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
@@ -251,7 +252,7 @@ job (data[4]) {
       conditionalAction {
         condition { 
           //if it is a SNAPSHOT deployment is triggered
-          expression('(.*)-(\\d)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
+          expression('(.*)-(\\d+)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
         }
         publishers {
           downstreamParameterized {
@@ -307,6 +308,7 @@ job (deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+				predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
               }
             }
           }
