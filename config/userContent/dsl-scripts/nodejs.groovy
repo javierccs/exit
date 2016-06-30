@@ -249,7 +249,7 @@ job (dockerJobName) {
       conditionalAction {
         condition { 
           //if it is a SNAPSHOT deployment is triggered
-          expression('(.*)-(\\d)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
+          expression('(.*)-(\\d+)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
         }
         publishers {
           downstreamParameterized {
