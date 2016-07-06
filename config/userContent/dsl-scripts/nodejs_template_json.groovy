@@ -35,17 +35,11 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 					"default": "",
 					"propertyOrder": 3
 				},
-				"OSE3_TEMPLATE_NAME": {
-					"type": "string",
-					"description": "OpenShift template to be used in deployment",
-					"default": "nginx-alm-1.0",
-					"propertyOrder": 4
-				},
 				"TZ": {
 					"type": "string",
 					"description": "TimeZone for the running containers",
 					"default": "",
-					"propertyOrder": 5
+					"propertyOrder": 4
 				}
     
 			}

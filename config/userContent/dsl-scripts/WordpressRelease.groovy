@@ -232,7 +232,6 @@ job (buildJobName) {
         environmentVariables {
           env('IS_RELEASE',true)
         }
-        shell("git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
       }
       postSuccessfulBuildSteps {
         shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
@@ -241,6 +240,7 @@ job (buildJobName) {
   } //wrappers
 
   steps {
+    shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell('parse_yaml.sh application.yml > env.properties')
     environmentVariables {
       propertiesFile('env.properties')
