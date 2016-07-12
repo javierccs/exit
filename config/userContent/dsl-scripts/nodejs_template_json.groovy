@@ -35,11 +35,17 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 					"default": "",
 					"propertyOrder": 3
 				},
+				"CONFIG_DIRECTORY": {
+					"type": "string",
+					"description": "Config files directory to archive. This files will be passed to docker image if additional webserver configuration is desired (i.e. ngnix-conf)",
+					"default": "",
+					"propertyOrder": 4
+				},
 				"TZ": {
 					"type": "string",
 					"description": "TimeZone for the running containers",
 					"default": "",
-					"propertyOrder": 4
+					"propertyOrder": 5
 				}
     
 			}
