@@ -20,6 +20,7 @@ def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 def COMPILER = "${COMPILER}".trim()
+def CONFIG_DIRECTORY = "${CONFIG_DIRECTORY}".trim()
 
 //JAVASE TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
@@ -169,7 +170,7 @@ if ( COMPILER.equals ( "None" )) {
     environmentVariables {
       propertiesFile('env.properties')
     }	 
-    shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}'")
+    shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}' '${CONFIG_DIRECTORY}'")
   }
   publishers {
     archiveArtifacts('*.zip')
@@ -225,7 +226,7 @@ job (dockerJobName) {
   }
   steps {
     copyArtifacts(buildJobName) {
-      includePatterns("${REPOSITORY_NAME}.zip")
+      includePatterns("*.zip")
       flatten()
       optional(false)
       fingerprintArtifacts(false)
