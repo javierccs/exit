@@ -4,8 +4,8 @@ import jenkins.model.*
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_URL = "${OSE3_URL}".trim()
-def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
-def OSE3_APP_NAME="${OSE3_APP_NAME}".trim()
+def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
+def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
 //DEV
