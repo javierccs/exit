@@ -39,3 +39,4 @@ docker run -d \
  -e SERENITY_FLUENTD_SERVER=<Fluentd aggregation server> (like srnalmboae202.eng.gsnetcloud.corp )
  -e SERENITY_FLUENTD_PORT=<Fluentd aggregation port> (24224 by default) 
  -e SERENITY_TENANT=<Tenant name> (default-tenant by default)
+ 
