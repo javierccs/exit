@@ -32,10 +32,11 @@ job(buildJobName) {
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
     parameters {
         stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
+        stringParam('gitLabIntegrationBranch', params.gitLabIntegrationBranch, 'GitLab integration branch')
     }
     scm {
         git {
-            branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
+            branch('${gitlabSourceRepoName}/${gitLabIntegrationBranch}')
             browser {
                 gitLab(params.gitLabHost + '/' + params.gitLabProject, '8.6')
             } //browser
@@ -89,22 +90,18 @@ job(buildJobName) {
 
     wrappers {
         credentialsBinding {
-            usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', params.serenityCredential)
-        }
-        credentialsBinding {
+            usernamePassword('GITLAB_CREDENTIAL', params.serenityCredential)
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
-        buildName(params.gitLabProject.tokenize('/')[1] + ':${ENV,var="${BUILD_NUMBER}')
+
         release {
 
             postSuccessfulBuildSteps {
-                shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+                shell("git merge -m ${BUILD_DISPLAY_NAME} ${gitlabSourceRepoName}/${GIT_INTEGRATION_BRANCH} ${gitlabSourceRepoName}/${GIT_RELEASE_BRANCH}")
+                shell("install_template_in_ose3.sh")
+                shell("")
             }
-            preBuildSteps {
-                environmentVariables {
-                    env('IS_RELEASE',true)
-                }
-            }
+
         } //release
     }
 }
