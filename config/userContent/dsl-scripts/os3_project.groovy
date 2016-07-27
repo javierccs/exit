@@ -20,13 +20,13 @@ def inputData() {
             serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
-println "JOB: " + buildJobName
+
 println "Params: $params";
 def buildJobName = params.gitLabProject+'-ci-build';
 
 job(buildJobName) {
     def params = inputData();
-
+    println "JOB: " + buildJobName
     label('os3')
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
     parameters {
