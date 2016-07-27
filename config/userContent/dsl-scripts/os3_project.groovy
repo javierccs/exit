@@ -22,7 +22,7 @@ def inputData() {
 }
 
 
-os3ProjectJob(buildJobName) {
+job(buildJobName) {
     def params = inputData();
     println "JOB: " + buildJobName
     println "Params: $params";
