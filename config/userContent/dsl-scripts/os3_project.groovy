@@ -20,10 +20,10 @@ def inputData() {
             serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
+def params = inputData();
 def gitlabSourceRepoName = "origin";
 def gitLabIntegrationBranch = params.gitLabIntegrationBranch;
 def gitLabReleaseBranch = params.gitLabReleaseBranch;
-def params = inputData();
 println "Params: $params";
 def buildJobName = params.gitLabProject + '-ci-build';
 
