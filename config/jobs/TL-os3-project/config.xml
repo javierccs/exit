@@ -9,7 +9,7 @@
                 <hudson.model.StringParameterDefinition>
                     <name>GITLAB_PROJECT</name>
                     <description>GitLab Project with os3 template(p.ej groupname/reponame)</description>
-
+                    <defaultValue>xi317699/tlose3-javase</defaultValue>
                 </hudson.model.StringParameterDefinition>
 
                 <hudson.model.StringParameterDefinition>
@@ -56,7 +56,7 @@
                 <hudson.model.StringParameterDefinition>
                     <name>OSE3_TEMPLATE_PATH</name>
                     <description>Openshift Template Path</description>
-                    <defaultValue></defaultValue>
+                    <defaultValue>openshift/javase-template.yaml</defaultValue>
                 </hudson.model.StringParameterDefinition>
 
 
