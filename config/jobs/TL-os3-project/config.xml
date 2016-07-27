@@ -9,7 +9,7 @@
                 <hudson.model.StringParameterDefinition>
                     <name>GITLAB_PROJECT</name>
                     <description>GitLab Project with os3 template(p.ej groupname/reponame)</description>
-                    <defaultValue></defaultValue>
+
                 </hudson.model.StringParameterDefinition>
 
                 <hudson.model.StringParameterDefinition>
@@ -41,7 +41,7 @@
                     <name>OSE3_PROJECT_NAME</name>
                     <description>Name of the OpenShift project.
                         (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
-                    <defaultValue></defaultValue>
+                    <defaultValue>serenity-alm-wqa-dev</defaultValue>
                 </hudson.model.StringParameterDefinition>
 
                 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">

@@ -27,7 +27,7 @@ def buildJobName = params.gitLabProject+'-ci-build';
 job(buildJobName) {
     def params = inputData();
     println "JOB: " + buildJobName
-    label('os3')
+    label('ose3-deploy')
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
     parameters {
         stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
