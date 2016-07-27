@@ -59,7 +59,7 @@ job(buildJobName) {
             setBuildDescription(true)
             useCiFeatures(true)
             allowAllBranches(false)
-            includeBranches(param.gitLabIntegrationBranch)
+            includeBranches(params.gitLabIntegrationBranch)
         }
     } //triggers
 }
