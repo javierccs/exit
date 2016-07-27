@@ -20,7 +20,9 @@ def inputData() {
             serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
-
+def gitlabSourceRepoName = "origin";
+def gitLabIntegrationBranch = params.gitLabIntegrationBranch;
+def gitLabReleaseBranch = params.gitLabReleaseBranch;
 def params = inputData();
 println "Params: $params";
 def buildJobName = params.gitLabProject + '-ci-build';
@@ -31,8 +33,9 @@ job(buildJobName) {
     label('ose3-deploy')
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
     parameters {
-        stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
-        stringParam('gitLabIntegrationBranch', params.gitLabIntegrationBranch, 'GitLab integration branch')
+        stringParam('gitlabSourceRepoName', gitlabSourceRepoName, 'GitLab source repo name (only for MERGE events from forked repositories)')
+        stringParam('gitLabIntegrationBranch', gitLabIntegrationBranch, 'GitLab integration branch')
+        stringParam('gitLabReleaseBranch', gitLabReleaseBranch, 'GitLab release branch')
     }
     scm {
         git {
@@ -97,7 +100,7 @@ job(buildJobName) {
         release {
 
             postSuccessfulBuildSteps {
-                shell("git merge -m ${BUILD_DISPLAY_NAME} ${gitlabSourceRepoName}/${GIT_INTEGRATION_BRANCH} ${gitlabSourceRepoName}/${GIT_RELEASE_BRANCH}")
+                shell("git merge -m ${BUILD_DISPLAY_NAME} ${gitlabSourceRepoName}/${gitLabIntegrationBranch} ${gitlabSourceRepoName}/${gitLabReleaseBranch}")
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
