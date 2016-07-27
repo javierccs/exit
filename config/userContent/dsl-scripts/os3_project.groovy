@@ -94,9 +94,9 @@ job(buildJobName) {
         credentialsBinding {
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
-        buildName("$GROUP_NAME" + ':${ENV,var="${BUILD_NUMBER}')
+        buildName(params.gitLabProject.tokenize('/')[1] + ':${ENV,var="${BUILD_NUMBER}')
         release {
-            
+
             postSuccessfulBuildSteps {
                 shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
             }
