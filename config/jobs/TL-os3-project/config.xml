@@ -45,7 +45,7 @@
                 </hudson.model.StringParameterDefinition>
 
                 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
-                    <name>OSE3_CREDENTIAL</name>
+                    <name>SERENITY_CREDENTIAL</name>
                     <description>Serenity Openshift username/password</description>
                     <defaultValue></defaultValue>
                     <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>

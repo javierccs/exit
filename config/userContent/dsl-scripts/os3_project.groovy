@@ -17,7 +17,7 @@ def inputData() {
             gitLabIntegrationBranch: no_spaces("${GIT_INTEGRATION_BRANCH}"),
             openShiftUrl           : no_spaces("${OSE3_URL}"),
             openShiftProjectName   : no_spaces_and_lowercase("${OSE3_PROJECT_NAME}"),
-            openShiftCredentials   : "${SERENITY_CREDENTIAL}"
+            serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
 
@@ -35,6 +35,32 @@ os3ProjectJob(buildJobName) {
         stringParam('gitlabSourceBranch', params.gitLabIntegrationBranch, 'Gitlab source branch (only for MERGE events from forked repositories)')
         stringParam('gitlabTargetBranch', params.gitLabIntegrationBranch, 'GitLab target branch (only for MERGE events)')
     }
+    scm {
+        git {
+            branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
+            browser {
+                gitLab(params.gitLabHost + '/' + params.gitLabProject, '8.6')
+            } //browser
+            remote {
+                credentials(params.serenityCredential)
+                name('origin')
+                url(params.gitLabHost + '/' + params.gitLabProject + '.git')
+            } //remote
+            extensions {
+                wipeOutWorkspace()
+            }
+        } //git
+    } //scm
+    triggers {
+        gitlabPush {
+            buildOnPushEvents(true)
+            buildOnMergeRequestEvents(false)
+            setBuildDescription(true)
+            useCiFeatures(true)
+            allowAllBranches(false)
+            includeBranches(param.gitLabIntegrationBranch)
+        }
+    } //triggers
 }
 
 
