@@ -14,8 +14,8 @@ docker run --name=jenkins -d -v /root/jenkins/data \
          -e NEXUS_BASE_URL="https://nexus.ci.gsnet.corp/nexus" \
          -e JENKINS_PASSWORD=admin1 \
          -e JENKINS_EMAIL=xxxxx -e JENKINS_URL="http://oclubunc017.isbcloud.isban.corp:8081" \
-         -e GITLAB_URL=http://oclubunc014.isbcloud.isban.corp:10080 \
-         -e GITLAB_API_TOKEN=HSMawzyp2hUUP22ySiy1 \
+         -e GITLAB_URL=http://srnalmgpro303.eng.gsnetcloud.corp:10080 \
+         -e GITLAB_API_TOKEN=JHnZMionVSMUexsAW19S \
          -e SWARM_MASTER_URL="http://oclubunc017.isbcloud.isban.corp:2375" \
          -e LDAP_SERVER=ldap.produban.pre.corp \
          -e LDAP_PASSWORD=Caracol2015 \
