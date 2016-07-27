@@ -1,29 +1,41 @@
 import jenkins.model.*;
 
-String no_spaces(value){
+String no_spaces(value) {
     return value.trim();
 }
 
-String no_spaces_and_lowercase(value){
+String no_spaces_and_lowercase(value) {
     return no_spaces(value).toLowerCase();
 }
 
 //Retrieve execution input parameters
 def inputData() {
     return [
-            gitLabProject: no_spaces("${GITLAB_PROJECT}"),
-            gitLabReleaseBranch: no_spaces("${GIT_RELEASE_BRANCH}"),
+            gitLabHost             : Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl(),
+            gitLabProject          : no_spaces("${GITLAB_PROJECT}"),
+            gitLabReleaseBranch    : no_spaces("${GIT_RELEASE_BRANCH}"),
             gitLabIntegrationBranch: no_spaces("${GIT_INTEGRATION_BRANCH}"),
-            openShiftUrl: no_spaces("${OSE3_URL}"),
-            openShiftProjectName: no_spaces_and_lowercase("${OSE3_PROJECT_NAME}"),
-            openShiftCredentials: "${SERENITY_CREDENTIAL}"
+            openShiftUrl           : no_spaces("${OSE3_URL}"),
+            openShiftProjectName   : no_spaces_and_lowercase("${OSE3_PROJECT_NAME}"),
+            openShiftCredentials   : "${SERENITY_CREDENTIAL}"
     ];
 }
 
-//Invoke method that return a map with the build parameters.
-def params = inputData();
 
-println "Params: $params";
+os3ProjectJob(buildJobName) {
+    def params = inputData();
+    println "JOB: " + buildJobName
+    println "Params: $params";
+    label('os3')
+    logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
+    parameters {
+        stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
+        stringParam('gitlabSourceRepoURL', params.gitLabHost + '/' + params.gitLabProject + '.git', 'GitLab Source Repository')
+        stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
+        stringParam('gitlabSourceBranch', params.gitLabIntegrationBranch, 'Gitlab source branch (only for MERGE events from forked repositories)')
+        stringParam('gitlabTargetBranch', params.gitLabIntegrationBranch, 'GitLab target branch (only for MERGE events)')
+    }
+}
 
 
 

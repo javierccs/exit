@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git pull origin feature_273_JOB_Template_OS3_Project
+
 docker stop $(docker ps -q -f name=jenkins)
 
 docker rm $(docker ps -aq -f name=jenkins)
