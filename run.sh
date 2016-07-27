@@ -1,8 +1,8 @@
 #!/bin/bash
 
-docker stop $(docker ps -q -f name=ics)
+docker stop $(docker ps -q -f name=jenkins)
 
-docker rm $(docker ps -aq -f name=ics)
+docker rm $(docker ps -aq -f name=jenkins)
 
 docker build -t ics .
 
