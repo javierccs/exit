@@ -20,9 +20,10 @@ def inputData() {
             serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
+
 def params = inputData();
 println "Params: $params";
-def buildJobName = params.gitLabProject+'-ci-build';
+def buildJobName = params.gitLabProject + '-ci-build';
 
 job(buildJobName) {
 
@@ -30,11 +31,7 @@ job(buildJobName) {
     label('ose3-deploy')
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
     parameters {
-        stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
-        stringParam('gitlabSourceRepoURL', params.gitLabHost + '/' + params.gitLabProject + '.git', 'GitLab Source Repository')
         stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
-        stringParam('gitlabSourceBranch', params.gitLabIntegrationBranch, 'Gitlab source branch (only for MERGE events from forked repositories)')
-        stringParam('gitlabTargetBranch', params.gitLabIntegrationBranch, 'GitLab target branch (only for MERGE events)')
     }
     scm {
         git {
@@ -62,6 +59,54 @@ job(buildJobName) {
             includeBranches(params.gitLabIntegrationBranch)
         }
     } //triggers
+
+    publishers {
+
+
+        extendedEmail {
+            defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+            contentType('text/html')
+            triggers {
+                always()
+                failure {
+                    sendTo {
+                        culprits()
+                    }
+                }
+                unstable {
+                    sendTo {
+                        culprits()
+                    }
+                }
+                fixedUnhealthy {
+                    sendTo {
+                        developers()
+                    }
+                }
+            }
+        } //extendedEmail
+    } //publishers
+
+    wrappers {
+        credentialsBinding {
+            usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', params.serenityCredential)
+        }
+        credentialsBinding {
+            usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
+        }
+        buildName("$GROUP_NAME" + ':${ENV,var="${BUILD_NUMBER}')
+        release {
+            
+            postSuccessfulBuildSteps {
+                shell("git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
+            }
+            preBuildSteps {
+                environmentVariables {
+                    env('IS_RELEASE',true)
+                }
+            }
+        } //release
+    }
 }
 
 
