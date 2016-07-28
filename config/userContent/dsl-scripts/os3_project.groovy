@@ -75,7 +75,7 @@ job(buildJobName) {
         }
         release {
             postSuccessfulBuildPublishers{
-
+                publishers {
                     git {
                         forcePush(true)
                         //tag("origin","BUILD_\${BUILD_NUMBER}")
@@ -104,7 +104,7 @@ job(buildJobName) {
                             }
                         }
                     } //extendedEmail
-                
+                } //publishers
             }
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
