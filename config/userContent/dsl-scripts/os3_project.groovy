@@ -74,10 +74,8 @@ job(buildJobName) {
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
         release {
-            postSuccessfulBuildSteps {
-                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
+            postSuccessfulBuildPublishers{
 
-                publishers {
                     git {
                         forcePush(true)
                         //tag("origin","BUILD_\${BUILD_NUMBER}")
@@ -106,7 +104,11 @@ job(buildJobName) {
                             }
                         }
                     } //extendedEmail
-                } //publishers
+                
+            }
+            postSuccessfulBuildSteps {
+                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
+
 
                 shell("install_template_in_ose3.sh")
                 shell("")
