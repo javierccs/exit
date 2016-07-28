@@ -38,10 +38,11 @@ build-pipeline-plugin:1.5.1
 delivery-pipeline-plugin:0.9.8
 
 #job dsl
-config-file-provider:2.10.0
+config-file-provider:2.11
 managed-scripts:1.2.1
-promoted-builds:2.26
-job-dsl:1.45
+promoted-builds:2.27
+job-dsl:1.48
+structs:1.1
 
 #email-ext
 email-ext:2.40.5

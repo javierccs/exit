@@ -79,13 +79,40 @@ job(buildJobName) {
 
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
-
             }
 
-/**
- publishers {git {forcePush(true)
- //tag("origin","BUILD_\${BUILD_NUMBER}")
- branch("origin", params.gitLabReleaseBranch)}}**/
+            postSuccessfulBuildPublishers {
+                git {
+
+                    forcePush(true)
+                    branch("origin", params.gitLabReleaseBranch)
+
+                }
+                extendedEmail {
+                    defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+                    contentType('text/html')
+                    triggers {
+                        always()
+                        failure {
+                            sendTo {
+                                culprits()
+                            }
+                        }
+                        unstable {
+                            sendTo {
+                                culprits()
+                            }
+                        }
+                        fixedUnhealthy {
+                            sendTo {
+                                developers()
+                            }
+                        }
+                    }
+                }
+            }
+
+
         } //release
 
     }
@@ -95,36 +122,7 @@ job(buildJobName) {
         shell("")
     }
 
-    publishers {
-        git {
-
-            forcePush(true)
-            branch("origin", params.gitLabReleaseBranch)
-
-        }
-        extendedEmail {
-            defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
-            contentType('text/html')
-            triggers {
-                always()
-                failure {
-                    sendTo {
-                        culprits()
-                    }
-                }
-                unstable {
-                    sendTo {
-                        culprits()
-                    }
-                }
-                fixedUnhealthy {
-                    sendTo {
-                        developers()
-                    }
-                }
-            }
-        }
-    }
+    
 
 }
 
