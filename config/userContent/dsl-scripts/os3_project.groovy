@@ -74,7 +74,7 @@ job(buildJobName) {
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
         release {
-            postSuccessfulBuildPublishers{
+            postSuccessfulBuildPublishers(
                 publishers {
                     git {
                         forcePush(true)
@@ -104,7 +104,8 @@ job(buildJobName) {
                             }
                         }
                     } //extendedEmail
-                } //publishers
+                }
+                )//publishers
             }
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
