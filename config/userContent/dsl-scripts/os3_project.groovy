@@ -74,14 +74,16 @@ job(buildJobName) {
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
         release {
-            postSuccessfulBuildPublishers(
-                publishers {
+            postSuccessfulBuildPublishers{
+
+                publisher {
                     git {
                         forcePush(true)
                         //tag("origin","BUILD_\${BUILD_NUMBER}")
-                        branch("origin",params.gitLabReleaseBranch)
+                        branch("origin", params.gitLabReleaseBranch)
                     }
-
+                }
+                publisher {
                     extendedEmail {
                         defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
                         contentType('text/html')
@@ -105,7 +107,7 @@ job(buildJobName) {
                         }
                     } //extendedEmail
                 }
-                )//publishers
+                
             }
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
