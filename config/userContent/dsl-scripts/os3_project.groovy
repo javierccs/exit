@@ -85,7 +85,10 @@ job(buildJobName) {
                 git {
 
                     forcePush(true)
-                    branch("origin", params.gitLabReleaseBranch)
+                    branch(gitlabSourceRepoName, params.gitLabReleaseBranch)
+                    tag(gitlabSourceRepoName, "BUILD_\${BUILD_NUMBER}"){
+                        create(true)
+                    }
 
                 }
                 extendedEmail {
@@ -121,8 +124,6 @@ job(buildJobName) {
         shell("install_template_in_ose3.sh")
         shell("")
     }
-
-    
 
 }
 
