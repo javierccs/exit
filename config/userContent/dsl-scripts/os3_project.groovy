@@ -65,7 +65,9 @@ job(buildJobName) {
     } //triggers
 
     publishers {
+        gitPublisher {
 
+        }
 
         extendedEmail {
             defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
@@ -92,20 +94,26 @@ job(buildJobName) {
     } //publishers
 
     wrappers {
+
+        release {
+            postSuccessfulBuildSteps {
+                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
+
+            }
+
+        } //release
         credentialsBinding {
             usernamePassword('GITLAB_CREDENTIAL', params.serenityCredential)
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
         release {
             postSuccessfulBuildSteps {
-                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
-            }
-            postBuildSteps {
+                
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
 
-        } //release
+        }
     }
 }
 
