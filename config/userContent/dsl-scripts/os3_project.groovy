@@ -65,8 +65,10 @@ job(buildJobName) {
     } //triggers
 
     publishers {
-        gitPublisher {
-
+        git {
+            pushOnlyIfSuccess(true)
+            pushMerge(true)
+            //tag("BUILD_\${BUILD_NUMBER}")
         }
 
         extendedEmail {
@@ -108,7 +110,7 @@ job(buildJobName) {
         }
         release {
             postSuccessfulBuildSteps {
-                
+
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
