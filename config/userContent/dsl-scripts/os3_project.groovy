@@ -76,14 +76,10 @@ job(buildJobName) {
         release {
             postSuccessfulBuildPublishers{
 
-                publisher {
-                    git {
-                        forcePush(true)
-                        //tag("origin","BUILD_\${BUILD_NUMBER}")
-                        branch("origin", params.gitLabReleaseBranch)
-                    }
-                }
-                publisher {
+
+
+
+
                     extendedEmail {
                         defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
                         contentType('text/html')
@@ -106,18 +102,32 @@ job(buildJobName) {
                             }
                         }
                     } //extendedEmail
-                }
-                
+
+
             }
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
 
+            }
 
-                shell("install_template_in_ose3.sh")
-                shell("")
+            publishers {
+                git {
+                    forcePush(true)
+                    //tag("origin","BUILD_\${BUILD_NUMBER}")
+                    branch("origin", params.gitLabReleaseBranch)
+                }
             }
 
         } //release
+
+    }
+
+    steps {
+        shell("install_template_in_ose3.sh")
+        shell("")
+    }
+
+    publishers {
 
     }
 }
