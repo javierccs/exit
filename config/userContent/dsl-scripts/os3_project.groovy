@@ -46,7 +46,7 @@ job(buildJobName) {
             } //browser
             remote {
                 credentials(params.serenityCredential)
-                name('origin')
+                name(gitlabSourceRepoName)
                 url(params.gitLabHost + '/' + params.gitLabProject + '.git')
             } //remote
             extensions {
@@ -65,38 +65,7 @@ job(buildJobName) {
         }
     } //triggers
 
-    publishers {
-        git {
-            pushOnlyIfSuccess(true)
-            pushMerge(true)
-            forcePush(true)
-            //tag("origin","BUILD_\${BUILD_NUMBER}")
-            branch("origin","master")
-        }
 
-        extendedEmail {
-            defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
-            contentType('text/html')
-            triggers {
-                always()
-                failure {
-                    sendTo {
-                        culprits()
-                    }
-                }
-                unstable {
-                    sendTo {
-                        culprits()
-                    }
-                }
-                fixedUnhealthy {
-                    sendTo {
-                        developers()
-                    }
-                }
-            }
-        } //extendedEmail
-    } //publishers
 
     wrappers {
 
@@ -107,6 +76,38 @@ job(buildJobName) {
         release {
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
+
+                publishers {
+                    git {
+                        forcePush(true)
+                        //tag("origin","BUILD_\${BUILD_NUMBER}")
+                        branch("origin",params.gitLabReleaseBranch)
+                    }
+
+                    extendedEmail {
+                        defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+                        contentType('text/html')
+                        triggers {
+                            always()
+                            failure {
+                                sendTo {
+                                    culprits()
+                                }
+                            }
+                            unstable {
+                                sendTo {
+                                    culprits()
+                                }
+                            }
+                            fixedUnhealthy {
+                                sendTo {
+                                    developers()
+                                }
+                            }
+                        }
+                    } //extendedEmail
+                } //publishers
+
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
