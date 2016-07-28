@@ -25,5 +25,6 @@ docker run --name=jenkins -d -v /root/jenkins/data \
          -e LDAP_BASE="ou=users,ou=lvtc,cn=BanksphereIntranet,o=Produban,c=es,o=Grupo Santander" \
          -e LDAP_GROUP_BASE="ou=groups,ou=lvtc,cn=BanksphereIntranet,o=Produban,c=es,o=Grupo Santander" \
          -e LDAP_GROUP_FILTER="(&(cn={0})(objectClass=groupOfNames))" \
+         -e LDAP_GROUPS=alm-technical-lead,alm-developer,alm-product-owner \
           -p 8081:8080 -p 50000:50000 -e HOSTNAME=$(hostname) \
           -e SERENITY_FLUENTD_SERVER=180.46.38.195 -e SERENITY_FLUENTD_PORT=24224 -e SERENITY_TENANT=ics ics
