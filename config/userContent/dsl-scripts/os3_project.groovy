@@ -20,6 +20,7 @@ def inputData() {
             serenityCredential     : "${SERENITY_CREDENTIAL}"
     ];
 }
+
 def params = inputData();
 def gitlabSourceRepoName = "origin";
 def gitLabIntegrationBranch = params.gitLabIntegrationBranch;
@@ -68,7 +69,9 @@ job(buildJobName) {
         git {
             pushOnlyIfSuccess(true)
             pushMerge(true)
-            //tag("BUILD_\${BUILD_NUMBER}")
+            forcePush(true)
+            //tag("origin","BUILD_\${BUILD_NUMBER}")
+            branch("origin","master")
         }
 
         extendedEmail {
@@ -97,25 +100,19 @@ job(buildJobName) {
 
     wrappers {
 
-        release {
-            postSuccessfulBuildSteps {
-                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
-
-            }
-
-        } //release
         credentialsBinding {
             usernamePassword('GITLAB_CREDENTIAL', params.serenityCredential)
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
         release {
             postSuccessfulBuildSteps {
-
+                shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
 
-        }
+        } //release
+
     }
 }
 
