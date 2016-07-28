@@ -99,9 +99,12 @@ job(buildJobName) {
         release {
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${gitlabSourceRepoName}/\${gitLabIntegrationBranch} \${gitlabSourceRepoName}/\${gitLabReleaseBranch}")
+            }
+            postBuildSteps {
                 shell("install_template_in_ose3.sh")
                 shell("")
             }
+
         } //release
     }
 }
