@@ -6,7 +6,7 @@ docker rm $(docker ps -aq -f name=jenkins)
 
 docker build -t ics .
 
-docker run --name=jenkins -d -v /root/jenkins/data \
+docker run --name=jenkins -d -v /var/jenkins_home/ \
          -e SMTP_HOST=mailintra.gsnet.corp \
          -e SMTP_PORT=25 \
          -e MAVEN_DEPLOYER_LOGIN=deployment \
