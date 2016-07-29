@@ -9,7 +9,7 @@
                 <hudson.model.StringParameterDefinition>
                     <name>GITLAB_PROJECT</name>
                     <description>GitLab Project with os3 template(p.ej groupname/reponame)</description>
-                    <defaultValue>xi317699/tlose3-javase</defaultValue>
+                    <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
 
                 <hudson.model.StringParameterDefinition>
@@ -25,7 +25,8 @@
                     <defaultValue>development</defaultValue>
                 </hudson.model.StringParameterDefinition>
 
-                <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+                <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition
+                        plugin="extended-choice-parameter@0.56">
                     <name>OSE3_URL</name>
                     <description>OpenShift PAAS region URL</description>
                     <quoteValue>false</quoteValue>
@@ -40,15 +41,17 @@
                 <hudson.model.StringParameterDefinition>
                     <name>OSE3_PROJECT_NAME</name>
                     <description>Name of the OpenShift project.
-                        (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
-                    <defaultValue>serenity-alm-wqa-dev</defaultValue>
+                        (Openshift project name excluding the prefix &quot;-dev&quot;)
+                    </description>
+                    <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
 
                 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
                     <name>SERENITY_CREDENTIAL</name>
                     <description>Serenity Openshift username/password</description>
                     <defaultValue></defaultValue>
-                    <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+                    <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl
+                    </credentialType>
                     <required>true</required>
                 </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
 
@@ -56,7 +59,7 @@
                 <hudson.model.StringParameterDefinition>
                     <name>OSE3_TEMPLATE_PATH</name>
                     <description>Openshift Template Path</description>
-                    <defaultValue>openshift/javase-template.yaml</defaultValue>
+                    <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
 
                 <hudson.model.StringParameterDefinition>
@@ -97,7 +100,9 @@
             <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (os3)</template>
         </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
         <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-            <includes>dsl-scripts/os3_project.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+            <includes>
+                dsl-scripts/os3_project.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy
+            </includes>
             <excludes></excludes>
             <flatten>false</flatten>
             <includeAntExcludes>false</includeAntExcludes>
