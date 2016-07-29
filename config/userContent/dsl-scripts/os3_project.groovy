@@ -16,9 +16,12 @@ def inputData() {
             gitLabReleaseBranch    : no_spaces("${GIT_RELEASE_BRANCH}"),
             gitLabIntegrationBranch: no_spaces("${GIT_INTEGRATION_BRANCH}"),
             openShiftUrl           : no_spaces("${OSE3_URL}"),
-            openShiftProjectName   : no_spaces_and_lowercase("${OSE3_PROJECT_NAME}"),
+            openShiftProjectName   : [
+                    dev: no_spaces_and_lowercase("${OSE3_PROJECT_NAME}") + "-dev"
+            ],
             openShiftTemplatePath  : no_spaces("${OSE3_TEMPLATE_PATH}"),
-            serenityCredential     : "${SERENITY_CREDENTIAL}"
+            serenityCredential     : "${SERENITY_CREDENTIAL}",
+            testCommand            : "${TEST_COMMAND}"
     ];
 }
 
@@ -39,7 +42,7 @@ job(buildJobName) {
         stringParam('GIT_INTEGRATION_BRANCH', params.gitLabIntegrationBranch, 'GitLab integration branch');
         stringParam('GIT_RELEASE_BRANCH', params.gitLabReleaseBranch, 'GitLab release branch');
         stringParam('OSE3_URL', params.openShiftUrl, 'Openshift Url');
-        stringParam('OSE3_PROJECT_NAME', params.openShiftProjectName, 'Openshift project name');
+        stringParam('OSE3_PROJECT_NAME', params.openShiftProjectName.dev, 'Openshift project name');
         stringParam('OSE3_TEMPLATE_PATH', params.openShiftTemplatePath, 'Path to openshift template');
     }
     scm {
@@ -122,8 +125,8 @@ job(buildJobName) {
     }
 
     steps {
-        shell("install_template_in_ose3.sh")
-        shell("")
+        shell("install_template_in_ose3.sh");
+        shell(params.testCommand);
     }
 
 }

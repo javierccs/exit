@@ -59,6 +59,12 @@
                     <defaultValue>openshift/javase-template.yaml</defaultValue>
                 </hudson.model.StringParameterDefinition>
 
+                <hudson.model.StringParameterDefinition>
+                    <name>TEST_COMMAND</name>
+                    <description>Test command</description>
+                    <defaultValue></defaultValue>
+                </hudson.model.StringParameterDefinition>
+
 
             </parameterDefinitions>
         </hudson.model.ParametersDefinitionProperty>
