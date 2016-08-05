@@ -60,6 +60,7 @@ def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
 assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 def mavenDataContainer = System.getenv("MAVEN_DATA")
 def nodeJSDataContainer = System.getenv("NODEJS_DATA")
+def defaultRootPathForVolumes = System.getenv("DOCKER_SLAVES_VOLUMES_ROOT")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
@@ -205,7 +206,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (mavenDataContainer?.trim())? '':'/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
+          volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
@@ -228,7 +229,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (mavenDataContainer?.trim())? '':'/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
+          volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
@@ -251,7 +252,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (nodeJSDataContainer?.trim())? '':'/srv/Jenkins/nodejs-cache:/cache',
+          volumesString: (nodeJSDataContainer?.trim())? '':"$defaultRootPathForVolumes/nodejs-cache:/cache",
           volumesFromString: (nodeJSDataContainer?.trim())? nodeJSDataContainer:'',
           hostname: '',
           bindPorts: '',
