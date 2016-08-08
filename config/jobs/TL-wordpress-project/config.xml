@@ -57,7 +57,7 @@
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>5</visibleItemCount>
           <type>PT_JSON</type>
-          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json.groovy</groovyScriptFile>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_wordpress_template_json_dev.groovy</groovyScriptFile>
           <bindings></bindings>
           <groovyClasspath></groovyClasspath>
           <multiSelectDelimiter>,</multiSelectDelimiter>
@@ -69,7 +69,7 @@
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>5</visibleItemCount>
           <type>PT_JSON</type>
-          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json_pre.groovy</groovyScriptFile>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_wordpress_template_json_pre.groovy</groovyScriptFile>
           <bindings></bindings>
           <groovyClasspath></groovyClasspath>
           <multiSelectDelimiter>,</multiSelectDelimiter>
@@ -81,14 +81,14 @@
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>5</visibleItemCount>
           <type>PT_JSON</type>
-          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/wordpress_btsync_template_json_pro.groovy</groovyScriptFile>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_wordpress_template_json_pro.groovy</groovyScriptFile>
           <bindings></bindings>
           <groovyClasspath></groovyClasspath>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
           <name>SERENITY_CREDENTIAL</name>
-          <description>LDAP username/password</description>
+          <description>Corporative LDAP username/password</description>
           <defaultValue></defaultValue>
           <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>true</required>

@@ -38,6 +38,11 @@ String NAME="Serenity SonarQube"
 //def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
 //boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
+//TOKEN_OSE3
+def TOKEN_PROJECT_OSE3_DEV="${TOKEN_PROJECT_OSE3_DEV}".trim()
+def TOKEN_PROJECT_OSE3_PRE="${TOKEN_PROJECT_OSE3_PRE}".trim()
+def TOKEN_PROJECT_OSE3_PRO="${TOKEN_PROJECT_OSE3_PRO}".trim()
+
 job (buildJobName) {
   println "JOB: "+buildJobName
   label('nodejs')
@@ -248,8 +253,7 @@ job (dockerJobName) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
-                predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
+	        predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
@@ -272,7 +276,8 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_DEV)
   }
 }
 
@@ -308,7 +313,8 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRE)
   }
 }
 
@@ -322,7 +328,8 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRO)
   }
 }

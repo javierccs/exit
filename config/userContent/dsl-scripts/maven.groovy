@@ -59,6 +59,12 @@ String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
+//TOKEN_OSE3
+def TOKEN_PROJECT_OSE3_DEV="${TOKEN_PROJECT_OSE3_DEV}".trim()
+def TOKEN_PROJECT_OSE3_PRE="${TOKEN_PROJECT_OSE3_PRE}".trim()
+def TOKEN_PROJECT_OSE3_PRO="${TOKEN_PROJECT_OSE3_PRO}".trim()
+
+
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -94,6 +100,7 @@ mavenJob (buildJobName) {
               parameters {
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
                 predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
+		predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_PRE}')
               }
             }
           }
@@ -160,7 +167,6 @@ mavenJob (buildJobName) {
   wrappers {
     credentialsBinding {
       usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
-      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
     buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
@@ -240,8 +246,7 @@ mavenJob (buildJobName) {
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
-                predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
-                predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
+                predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                 predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
               }
@@ -407,6 +412,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_DEV)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }  
@@ -460,6 +466,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRE)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
@@ -480,6 +487,7 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRO)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }

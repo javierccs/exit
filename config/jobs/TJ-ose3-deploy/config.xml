@@ -16,13 +16,8 @@
           <description></description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_USERNAME</name>
-          <description></description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
-          <name>OSE3_PASSWORD</name>
+          <name>TOKEN_PROJECT_OSE3</name>
           <description></description>
           <defaultValue>ofVvLjWt5RNSH+PoPiiLjw==</defaultValue>
         </hudson.model.PasswordParameterDefinition>
