@@ -67,6 +67,7 @@ docker-plugin:0.16.0
 
 #Extended Choice Parameter plugin
 extended-choice-parameter:0.56
+validating-string-parameter:2.3
 
 #Flexible Publish Plugin
 flexible-publish:0.15.2

@@ -1,5 +1,10 @@
 import jenkins.model.*
 import groovy.util.*
+import java.util.regex.*;
+
+// Shared functions
+def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -8,12 +13,24 @@ def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
+def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
 // Static values
-def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
-def GITLAB_SERVER = gitlab.getGitlabHostUrl()
-def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
+final String regex = "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher(GITLAB_PROJECT);
+assert matcher.matches() : "[ERROR] Syntax error: " + GITLAB_PROJECT + " doesn't match expected url pattern."
+def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
+def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def GITLAB_URL = matcher.group(1) ?: GITLAB_SERVER;
+def GROUP_NAME = matcher.group(2);
+def REPOSITORY_NAME = matcher.group(3);
+out.println("GitLab URL: " + GITLAB_URL);
+out.println("GitLab Group: " + GROUP_NAME);
+out.println("GitLab Project: " + REPOSITORY_NAME);
+GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
+
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
@@ -48,7 +65,7 @@ job (buildJobName) {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH',
                 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git',
+    stringParam('gitlabSourceRepoURL', GITLAB_URL+GITLAB_PROJECT+'.git',
                 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin',
                 'GitLab source repo name (only for MERGE events from forked repositories)')
@@ -106,12 +123,12 @@ job (buildJobName) {
     git {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.6')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.6')
       } //browser
       remote {
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         name('origin')
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()
@@ -132,9 +149,9 @@ job (buildJobName) {
 
   wrappers {
 	preBuildCleanup()
-    credentialsBinding {
-      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
-    }
+//    credentialsBinding {
+//      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
+//    }
 	buildName( REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}')
     release {
       postBuildSteps {
@@ -272,7 +289,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }
 
@@ -308,7 +325,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }
 
@@ -323,6 +340,8 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
   }
 }
+
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
