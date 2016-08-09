@@ -9,11 +9,13 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
           <name>GITLAB_PROJECT</name>
-          <description>GitLab Project (p.ej groupname/reponame)</description>
+          <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>GIT_RELEASE_BRANCH</name>
           <description>Release branch</description>
@@ -24,6 +26,13 @@
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GITLAB_CREDENTIAL</name>
+          <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_APP_NAME</name>
           <description>OSE3 Application name</description>
@@ -143,7 +152,7 @@ return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScript
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy</includes>
+      <includes>dsl-scripts/WordpressRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
@@ -151,7 +160,7 @@ return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScript
       <relativeTo>userContent</relativeTo>
     </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
     <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}-&gt;${OSE3_PROJECT_NAME} (wordpress)</template>
+      <template>#${BUILD_NUMBER}: ${OSE3_APP_NAME}-&gt;${OSE3_PROJECT_NAME} (wordpress)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
   </buildWrappers>
 </project>
