@@ -17,7 +17,7 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
-          <name>TOKEN_PROJECT_OSE3</name>
+          <name>OSE3_TOKEN_PROJECT</name>
           <description></description>
           <defaultValue>ofVvLjWt5RNSH+PoPiiLjw==</defaultValue>
         </hudson.model.PasswordParameterDefinition>
@@ -76,7 +76,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE}</command>
+      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE} --login_with_token=ON</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>

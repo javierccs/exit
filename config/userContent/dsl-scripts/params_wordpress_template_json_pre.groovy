@@ -17,9 +17,9 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			  "collapsed": true
 		   },	
 	  "properties": {
-		"TOKEN_PROJECT_OSE3_PRE": {
+		"OSE3_TOKEN_PROJECT_PRE": {
                       "type": "string",
-                      "description": "This is the token OSE3 project. Click here in order to know to generate it",
+                      "description": "This is the token OSE3 project",
                       "default": "CHANGEME",
                       "propertyOrder": 1
               },
