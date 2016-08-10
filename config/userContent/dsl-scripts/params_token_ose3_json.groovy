@@ -10,28 +10,28 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         theme: "bootstrap3",
         iconlib:"foundation3",
 		schema: {
-	  "title": "Wordpress OSE3 Template parameters - Development environment",
-	  "description" : "Customizable Wordpress OSE3 template parameters (Do not use quotes). <br>The parameters in blank are leave with the PAAS's default values(consult PAAS page for more information)",
+	  "title": "OSE3 Token Management",
+	  "description" : "Please include token value for each Openshift project (Do not use quotes",
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
 		   },	
 	  "properties": {
- 		"TOKEN_PROJECT_OSE3_DEV": {
+ 		"OSE3_TOKEN_PROJECT_DEV": {
 			"type": "string",
-			"description": "This is the token OSE3 project. Click here in order to know to generate it",
+			"description": "This is the token OSE3 project.",
 			"default": "CHANGEME",
                         "propertyOrder": 1
 		},
- 		"TOKEN_PROJECT_OSE3_PRE": {
+ 		"OSE3_TOKEN_PROJECT_PRE": {
 			"type": "string",
-			"description": "This is the token OSE3 project. Click here in order to know to generate it",
+			"description": "This is the token OSE3 project.",
 			"default": "CHANGEME",
                         "propertyOrder": 2
 		},
- 		"TOKEN_PROJECT_OSE3_PRO": {
+ 		"OSE3_TOKEN_PROJECT_PRO": {
 			"type": "string",
-			"description": "This is the token OSE3 project. Click here in order to know to generate it",
+			"description": "This is the token OSE3 project.",
 			"default": "CHANGEME",
                         "propertyOrder": 3
 		}

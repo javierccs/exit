@@ -45,9 +45,9 @@ def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
 def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
 //TOKEN_OSE3
-def TOKEN_PROJECT_OSE3_DEV="${TOKEN_PROJECT_OSE3_DEV}".trim()
-def TOKEN_PROJECT_OSE3_PRE="${TOKEN_PROJECT_OSE3_PRE}".trim()
-def TOKEN_PROJECT_OSE3_PRO="${TOKEN_PROJECT_OSE3_PRO}".trim()
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
 
 
 //JAVASE TEMPLATE VARS
@@ -111,7 +111,6 @@ mavenJob (buildJobName_a) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
-                predefinedProp('TOKEN_PROJECT_OSE3', '${TOKEN_PROJECT_OSE3_PRE}')
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
               }
             }
@@ -244,12 +243,10 @@ mavenJob (buildJobName_a) {
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-			        predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_A)
                                 predefinedProp('OSE3_URL', OSE3_URL)
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
                                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
-                                predefinedProp('TOKEN_PROJECT_OSE3', '${TOKEN_PROJECT_OSE3_DEV}')
                                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                                }
                               }
@@ -325,7 +322,6 @@ mavenJob (buildJobName_b) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
                 predefinedProp('OSE3_URL', OSE3_URL)
-                predefinedProp('TOKEN_PROJECT_OSE3', '${TOKEN_PROJECT_OSE3_PRE}')
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
               }
             }
@@ -458,7 +454,6 @@ mavenJob (buildJobName_b) {
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-                                predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_B)
                                 predefinedProp('OSE3_URL', OSE3_URL) 
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -519,13 +514,13 @@ job (deployDevJobName) {
     //  description('OSE3 credentials')
     //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('TOKEN_PROJECT_OSE3' , '', '${TOKEN_PROJECT_OSE3_DEV}')
+    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_DEV})
     
   }
   wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
+   // credentialsBinding {
+   //   usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+   // }
     steps {
   	  shell(
   	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -534,7 +529,7 @@ job (deployDevJobName) {
   	  environmentVariables{
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -756,7 +751,7 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('TOKEN_PROJECT_OSE3' , '', '${TOKEN_PROJECT_OSE3_PRE}')
+    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_OSE3_PRE})
 
   }
   properties {
@@ -777,7 +772,6 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_APP_VERSION','${POM_VERSION}')
                  predefinedProp('OSE3_URL',OSE3_URL)
                  predefinedProp('VALUE_URL','${VALUE_URL}')
-                 predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_PRO}')
                }
              }
            }
@@ -795,7 +789,7 @@ job (deployPreJobName) {
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
-   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
@@ -830,7 +824,7 @@ job (deployProJobName) {
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('TOKEN_PROJECT_OSE3' , '', '${TOKEN_PROJECT_OSE3_PRO}')
+    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_PRO})
 
   }
   configure injectPasswords
@@ -843,6 +837,6 @@ job (deployProJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
 
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
   }
 }

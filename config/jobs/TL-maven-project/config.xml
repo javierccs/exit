@@ -103,6 +103,7 @@
         <groovyScriptContent>import groovy.json.*
 def BRIDGE = &quot;${BRIDGE}&quot;.trim()
 def JAVASE_OSE3_PARAMS= &quot;${JAVASE_OSE3_PARAMS}&quot;.trim()
+def OSE3_TOKEN_PARAMS= &quot;${OSE3_TOKEN_PARAMS}&quot;.trim()
 
 def slurperBridge = new JsonSlurper()
 def listBridge = slurperBridge.parseText(BRIDGE)
@@ -111,7 +112,11 @@ def listBridge = slurperBridge.parseText(BRIDGE)
 def slurperOSE3_PARAMS = new JsonSlurper()
 def listOSE3_PARAMS = slurperOSE3_PARAMS.parseText(JAVASE_OSE3_PARAMS)
 
-return listBridge + listOSE3_PARAMS </groovyScriptContent>
+def slurperOSE3_TOKEN_PARAMS = new JsonSlurper()
+def listOSE3_TOKEN_PARAMS = slurperOSE3_PARAMS.parseText(OSE3_TOKEN_PARAMS)
+
+
+return listBridge + listOSE3_PARAMS + listOSE3_TOKEN_PARAMS </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>
       <on>true</on>
