@@ -514,7 +514,7 @@ job (deployDevJobName) {
     //  description('OSE3 credentials')
     //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_DEV , '')
+    stringParam('OSE3_TOKEN_PROJECT', OSE3_TOKEN_PROJECT_DEV, '')
     
   }
   wrappers {
@@ -530,10 +530,10 @@ job (deployDevJobName) {
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
     shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
-    //    environmentVariables
-    //    {
-    //      propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-    //	}
+        environmentVariables
+        {
+          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+    	}
     }
     //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
     //  binding('LINK_URL', 'OSE3_END_POINT_URL')
@@ -779,7 +779,7 @@ job (deployPreJobName) {
        }
      }
    }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
     
 	shell(
@@ -827,7 +827,7 @@ job (deployProJobName) {
     stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
 
   }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +

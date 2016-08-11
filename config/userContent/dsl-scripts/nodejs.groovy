@@ -253,7 +253,6 @@ job (dockerJobName) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-	        predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }

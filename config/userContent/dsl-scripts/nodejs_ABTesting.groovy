@@ -95,7 +95,7 @@ job (data[0]) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-			    predefinedProp('OSE3_APP_NAME', data[3])
+	        predefinedProp('OSE3_APP_NAME', data[3])
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
@@ -267,7 +267,7 @@ job (data[4]) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('OSE3_APP_NAME', data[3])
-				predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+		predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -289,7 +289,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 

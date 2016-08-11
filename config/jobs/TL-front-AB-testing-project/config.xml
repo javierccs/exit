@@ -80,7 +80,7 @@
           <defaultValue>nginx-ab-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
 	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
-          <name>TOKEN_OSE3</name>
+          <name>OSE3_TOKEN_MANAGEMENT</name>
           <description></description>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
@@ -117,11 +117,16 @@
         <groovyScriptContent>
 import groovy.json.*
 def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
+def OSE3_TOKEN_MANAGEMENT= &quot;${OSE3_TOKEN_MANAGEMENT}&quot;.trim()
 
 def slurperFRONT_CUSTOMIZE = new JsonSlurper()
 def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
 
-return listFRONT_CUSTOMIZE
+def slurperOSE3_TOKEN_MANAGEMENT = new JsonSlurper()
+def listOSE3_TOKEN_MANAGEMENT = slurperOSE3_TOKEN_MANAGEMENT.parseText(OSE3_TOKEN_MANAGEMENT)
+
+
+return listFRONT_CUSTOMIZE + listOSE3_TOKEN_MANAGEMENT
 </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>

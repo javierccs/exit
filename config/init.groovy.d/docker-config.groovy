@@ -124,7 +124,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:latest',
+          image: 'sergio:front',
           labelString: 'front-build-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -136,7 +136,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02\n/lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
@@ -159,7 +159,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02\n//lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02\n/lib/x86_64-linux-gnu/libsystemd-journal.so.0:/lib/x86_64-linux-gnu/libsystemd-journal.so.0',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
