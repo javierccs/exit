@@ -39,9 +39,9 @@ String NAME="Serenity SonarQube"
 //boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
 //TOKEN_OSE3
-def TOKEN_PROJECT_OSE3_DEV="${TOKEN_PROJECT_OSE3_DEV}".trim()
-def TOKEN_PROJECT_OSE3_PRE="${TOKEN_PROJECT_OSE3_PRE}".trim()
-def TOKEN_PROJECT_OSE3_PRO="${TOKEN_PROJECT_OSE3_PRO}".trim()
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
 
 job (buildJobName) {
   println "JOB: "+buildJobName
@@ -277,7 +277,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_DEV)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -314,7 +314,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRE)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
   }
 }
 
@@ -330,6 +330,6 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRO)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   }
 }

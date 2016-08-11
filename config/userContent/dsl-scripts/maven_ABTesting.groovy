@@ -514,7 +514,7 @@ job (deployDevJobName) {
     //  description('OSE3 credentials')
     //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_DEV})
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_DEV , '')
     
   }
   wrappers {
@@ -530,10 +530,10 @@ job (deployDevJobName) {
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
     shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+    //    environmentVariables
+    //    {
+    //      propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+    //	}
     }
     //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
     //  binding('LINK_URL', 'OSE3_END_POINT_URL')
@@ -751,7 +751,7 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_OSE3_PRE})
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRE,'')
 
   }
   properties {
@@ -790,10 +790,10 @@ job (deployPreJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+   //     environmentVariables
+   //     {
+   //       propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+   //	}
     }
 if( ADD_HPALM_AT_PRE == "true")
 {
@@ -824,7 +824,7 @@ job (deployProJobName) {
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , ${OSE3_TOKEN_PROJECT_PRO})
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
 
   }
   configure injectPasswords

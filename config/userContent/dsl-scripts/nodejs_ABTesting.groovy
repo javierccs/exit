@@ -41,9 +41,9 @@ def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 
 //TOKEN_OSE3
-def TOKEN_PROJECT_OSE3_DEV="${TOKEN_PROJECT_OSE3_DEV}".trim()
-def TOKEN_PROJECT_OSE3_PRE="${TOKEN_PROJECT_OSE3_PRE}".trim()
-def TOKEN_PROJECT_OSE3_PRO="${TOKEN_PROJECT_OSE3_PRO}".trim()
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
 
 
 def updateParam(node, String paramName, String defaultValue) {
@@ -265,7 +265,6 @@ job (data[4]) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-		predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('OSE3_APP_NAME', data[3])
 				predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
@@ -290,7 +289,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_DEV)
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -329,7 +328,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRE)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
   }
 }
 
@@ -346,6 +345,6 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-    updateParam(it,'TOKEN_PROJECT_OSE3',TOKEN_PROJECT_OSE3_PRO)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   }
 }
