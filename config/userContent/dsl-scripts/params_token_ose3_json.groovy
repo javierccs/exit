@@ -11,7 +11,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         iconlib:"foundation3",
 		schema: {
 	  "title": "OSE3 Token Management",
-	  "description" : "Please include token value for each Openshift project (Do not use quotes",
+	  "description" : "Please include token value for each Openshift project (Do not use quotes)",
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
