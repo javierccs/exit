@@ -23,6 +23,8 @@ jenkins-master:
     - LDAP_GROUP_BASE=ou=groups,ou=lvtc,cn=BanksphereIntranet,o=Produban,c=es,o=Grupo Santander
     - LDAP_GROUP_FILTER=(&(cn={0})(objectClass=groupOfNames))
     - LDAP_GROUPS=alm-technical-lead,alm-developer,alm-product-owner
+    - LDAP_USER_SEARCH=corpaliaslocal={0}
+    - LDAP_DISPLAY_NAME=cn
     # MAVEN CONFIG
     - MAVEN_DEPLOYER_LOGIN=deployment
     - MAVEN_DEPLOYER_PASSWD=${MAVEN_DEPLOYER_PASSWD}
