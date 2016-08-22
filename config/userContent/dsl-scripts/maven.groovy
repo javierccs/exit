@@ -1,5 +1,6 @@
 import jenkins.model.*
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -76,6 +77,13 @@ String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -176,9 +184,21 @@ mavenJob (buildJobName) {
 
   wrappers {
     credentialsBinding {
-//      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+        println("GITLAB_CREDENTIAL: " + GITLAB_CREDENTIAL);
+        println("GITLAB_CREDENTIAL: " + GITLAB_CREDENTIAL.class);
+
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
     buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {

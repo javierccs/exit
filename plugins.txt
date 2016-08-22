@@ -73,3 +73,6 @@ validating-string-parameter:2.3
 flexible-publish:0.15.2
 run-condition:0.7
 ws-cleanup:0.29
+
+ssh-agent:1.13
+bouncycastle-api:1.648.3
