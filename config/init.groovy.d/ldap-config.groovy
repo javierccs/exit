@@ -11,6 +11,8 @@ String groupSearchBase = System.getenv('LDAP_GROUP_BASE')
 String groupSearchFilter = System.getenv('LDAP_GROUP_FILTER')
 String managerDN = System.getenv('LDAP_BIND_DN')
 String managerPassword = System.getenv('LDAP_PASSWORD')
+String userSearchFilter = System.getenv('LDAP_USER_SEARCH')
+String displayNameAttributeName = System.getenv('LDAP_DISPLAY_NAME')
 
 if (!(server?.trim() && userSearchBase?.trim() && groupSearchBase?.trim()
     && groupSearchFilter?.trim() && managerDN?.trim() && managerPassword?.trim())) {
@@ -18,12 +20,20 @@ if (!(server?.trim() && userSearchBase?.trim() && groupSearchBase?.trim()
   return
 }
 
+if ( !(userSearchFilter?.trim() )) {
+  userSearchFilter = ''
+}
+
+if ( !(displayNameAttributeName?.trim() )) {
+  displayNameAttributeName = 'cn'
+}
+
 boolean inhibitInferRootDN = true
 boolean disableMailAddressResolver = false
-String displayNameAttributeName = 'cn'
+
 String mailAddressAttributeName = 'mail'
 
-SecurityRealm ldap_realm = new LDAPSecurityRealm(server, '', userSearchBase, '', groupSearchBase, groupSearchFilter, null, managerDN, Secret.fromString(managerPassword), inhibitInferRootDN, disableMailAddressResolver, null, null, displayNameAttributeName, mailAddressAttributeName)
+SecurityRealm ldap_realm = new LDAPSecurityRealm(server, '', userSearchBase, userSearchFilter, groupSearchBase, groupSearchFilter, null, managerDN, Secret.fromString(managerPassword), inhibitInferRootDN, disableMailAddressResolver, null, null, displayNameAttributeName, mailAddressAttributeName)
 Jenkins.instance.setSecurityRealm(ldap_realm)
 
 def list = System.getenv('LDAP_GROUPS')

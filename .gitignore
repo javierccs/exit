@@ -1,1 +1,5 @@
 docker-compose.yml
+.idea
+*.iml
+run.sh
+run-local.sh

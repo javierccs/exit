@@ -158,7 +158,7 @@ return listBridge + listOSE3_PARAMS </groovyScriptContent>
       <template>#${BUILD_NUMBER}: ${APP_NAME_OSE3_FEATURE_A}/${APP_NAME_OSE3_FEATURE_B}->${OSE3_PROJECT_NAME} (maven)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/maven_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/maven_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

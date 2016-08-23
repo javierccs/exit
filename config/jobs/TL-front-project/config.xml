@@ -141,7 +141,7 @@ return listFRONT_CUSTOMIZE
       <template>#${BUILD_NUMBER}: ${OSE3_APP_NAME}->${OSE3_PROJECT_NAME} (nodejs)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
