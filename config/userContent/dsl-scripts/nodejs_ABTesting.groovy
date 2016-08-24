@@ -1,6 +1,7 @@
 import jenkins.model.*
 import groovy.util.*
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -63,6 +64,13 @@ def updateParam(node, String paramName, String defaultValue) {
 
 String[][] abTestingData = [ [ buildJobName_a, GIT_INTEGRATION_BRANCH_FEATURE_A, GIT_RELEASE_BRANCH_FEATURE_A, APP_NAME_OSE3_FEATURE_A, dockerJobName_a ], 
   [ buildJobName_b, GIT_INTEGRATION_BRANCH_FEATURE_B, GIT_RELEASE_BRANCH_FEATURE_B, APP_NAME_OSE3_FEATURE_B, dockerJobName_b ] ]
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 
 //Start AB Testing
 for ( data in abTestingData ) {
@@ -165,9 +173,19 @@ job (data[0]) {
 
   wrappers {
 	preBuildCleanup()
-//    credentialsBinding {
-//      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
-//    }
+    credentialsBinding {
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
 	buildName( REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}')
     release {
       postBuildSteps {

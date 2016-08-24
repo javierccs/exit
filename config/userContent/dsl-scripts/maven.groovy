@@ -1,5 +1,6 @@
 import jenkins.model.*
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -76,6 +77,13 @@ String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -94,6 +102,7 @@ mavenJob (buildJobName) {
                 'Gitlab source branch (only for MERGE events from forked repositories)')
     stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH,
                 'GitLab target branch (only for MERGE events)')
+
   }
 
   properties{
@@ -176,9 +185,18 @@ mavenJob (buildJobName) {
 
   wrappers {
     credentialsBinding {
-//      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
     buildName('${ENV,var="POM_DISPLAYNAME"}:${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {
@@ -230,7 +248,7 @@ mavenJob (buildJobName) {
       maven {
         goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
         providedSettings('Serenity Maven Settings')
-        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL', 'sonar.analysis.mode': 'preview',
+        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL',
                    'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
                    'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
       }
@@ -292,7 +310,7 @@ mavenJob (buildJobName) {
   } //publishers
 
   configure {
-    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.3")}
+    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.4.4")}
     it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
   }
 } //job

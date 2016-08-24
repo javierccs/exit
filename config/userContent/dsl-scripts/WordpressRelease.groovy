@@ -1,5 +1,6 @@
 import jenkins.model.*
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -33,7 +34,6 @@ def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
 def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
-
 
 //DEV
 def WORDPRESS_DB_HOST_DEV="${WORDPRESS_DB_HOST_DEV}".trim()
@@ -137,6 +137,13 @@ if (BTSYNC_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",BTSYNC_MEMORY="+B
 
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
+
 // Build job
 job (buildJobName) {
   println "JOB: "+buildJobName
@@ -225,9 +232,19 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
-//    credentialsBinding {
-//      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
-//    }
+    credentialsBinding {
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
     buildName(OSE3_APP_NAME+'-${ENV,var="WORDPRESS_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {

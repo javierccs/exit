@@ -1,5 +1,6 @@
 import jenkins.model.*
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -83,6 +84,14 @@ if(WILY_MOM_FQDN != "")
  OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_FQDN="+WILY_MOM_FQDN
 if(WILY_MOM_PORT != "")
  OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
+
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 
 mavenJob (buildJobName_a) {
   println "JOB: "+buildJobName_a
@@ -187,9 +196,19 @@ mavenJob (buildJobName_a) {
   } //triggers
 
   wrappers {
-//    credentialsBinding {
-//      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
-//    }
+    credentialsBinding {
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {
@@ -399,9 +418,18 @@ mavenJob (buildJobName_b) {
   } //triggers
 
   wrappers {
-//    credentialsBinding {
-//      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
-//    }
+    credentialsBinding {
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {

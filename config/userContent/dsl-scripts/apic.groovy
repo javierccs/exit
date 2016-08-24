@@ -1,5 +1,7 @@
 import jenkins.model.*
 import groovy.util.*
+import util.Utilities;
+
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -22,6 +24,13 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 def publishDevJobName = GITLAB_PROJECT+'-ose3-dev-publish'
 def publishPreJobName = GITLAB_PROJECT+'-ose3-pre-publish'
 def publishProJobName = GITLAB_PROJECT+'-ose3-pro-publish'
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 
 
 job (buildJobName) {
@@ -115,9 +124,14 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
-    credentialsBinding {
-      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
-    }
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
     buildName("$GROUP_NAME" + ':${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
