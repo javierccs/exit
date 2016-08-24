@@ -102,6 +102,7 @@ mavenJob (buildJobName) {
                 'Gitlab source branch (only for MERGE events from forked repositories)')
     stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH,
                 'GitLab target branch (only for MERGE events)')
+
   }
 
   properties{

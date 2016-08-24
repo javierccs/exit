@@ -173,6 +173,7 @@ job (data[0]) {
 
   wrappers {
 	preBuildCleanup()
+    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
