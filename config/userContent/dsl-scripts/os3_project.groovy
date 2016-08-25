@@ -1,5 +1,6 @@
 import jenkins.model.*;
 import java.util.regex.*;
+import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -51,6 +52,14 @@ def GIT_INTEGRATION_BRANCH = params.gitLabIntegrationBranch;
 def GIT_RELEASE_BRANCH = params.gitLabReleaseBranch;
 def buildJobName = GITLAB_PROJECT + '-ci-build';
 
+ //creck gitlab credentials
+ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+ if ( gitlabCredsType == null ) {
+   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+ }
+ println ("GitLab credential type " + gitlabCredsType );
+ 
+
 job(buildJobName) {
     label('ose3-deploy')
     logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
@@ -91,9 +100,16 @@ job(buildJobName) {
 
     wrappers {
         credentialsBinding {
-//            usernamePassword('GITLAB_CREDENTIAL', params.serenityCredential)
+ //If user password credentials are provided bind is required
+ if ( gitlabCredsType == 'UserPassword' ){
+           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+ }
             usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
         }
+ //if ssh credentials ssAgent is added
+ if ( gitlabCredsType == 'SSH' ){
+       sshAgent(GITLAB_CREDENTIAL)
+ }
         release {
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${GIT_SOURCE_REPO}/\${GIT_INTEGRATION_BRANCH} \${GIT_SOURCE_REPO}/\${GIT_RELEASE_BRANCH}")
