@@ -1,5 +1,11 @@
 import jenkins.model.*
 import groovy.util.*
+import java.util.regex.*;
+import util.Utilities;
+
+// Shared functions
+def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -9,19 +15,28 @@ def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
 
 def OSE3_URL ="${OSE3_URL}".trim()
-
-
-
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
+def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
 def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
 // Static values
-def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
-def GITLAB_SERVER = gitlab.getGitlabHostUrl()
-def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
+final String regex = "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher(GITLAB_PROJECT);
+assert matcher.matches() : "[ERROR] Syntax error: " + GITLAB_PROJECT + " doesn't match expected url pattern."
+def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
+def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def GITLAB_URL = matcher.group(1) ?: GITLAB_SERVER;
+def GROUP_NAME = matcher.group(2);
+def REPOSITORY_NAME = matcher.group(3);
+out.println("GitLab URL: " + GITLAB_URL);
+out.println("GitLab Group: " + GROUP_NAME);
+out.println("GitLab Project: " + REPOSITORY_NAME);
+
+GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
 def buildJobName_a = GITLAB_PROJECT+'-ci-build-feature-A'
 def buildJobName_b = GITLAB_PROJECT+'-ci-build-feature-B'
 
@@ -40,6 +55,11 @@ def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -50,6 +70,13 @@ def updateParam(node, String paramName, String defaultValue) {
 
 String[][] abTestingData = [ [ buildJobName_a, GIT_INTEGRATION_BRANCH_FEATURE_A, GIT_RELEASE_BRANCH_FEATURE_A, APP_NAME_OSE3_FEATURE_A, dockerJobName_a ], 
   [ buildJobName_b, GIT_INTEGRATION_BRANCH_FEATURE_B, GIT_RELEASE_BRANCH_FEATURE_B, APP_NAME_OSE3_FEATURE_B, dockerJobName_b ] ]
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
 
 //Start AB Testing
 for ( data in abTestingData ) {
@@ -90,7 +117,7 @@ job (data[0]) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-			    predefinedProp('OSE3_APP_NAME', data[3])
+	        predefinedProp('OSE3_APP_NAME', data[3])
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
@@ -126,12 +153,12 @@ job (data[0]) {
     git {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.6')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.6')
       } //browser
       remote {
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         name('origin')
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()
@@ -153,8 +180,18 @@ job (data[0]) {
   wrappers {
 	preBuildCleanup()
     credentialsBinding {
-      usernamePassword('GITLAB_USERNAME', 'GITLAB_PASSWORD', SERENITY_CREDENTIAL)
-    }
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
 	buildName( REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}')
     release {
       postBuildSteps {
@@ -260,11 +297,9 @@ job (data[4]) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
-                predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('OSE3_APP_NAME', data[3])
-				predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+		predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -284,8 +319,9 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_AB_TESTING', 'ON')
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_AB_TESTING', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -309,7 +345,7 @@ job (deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-				predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
+		predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
               }
             }
           }
@@ -322,10 +358,11 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_AB_TESTING', 'ON')
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-  }
-}
+    updateParam(it, 'OSE3_AB_TESTING', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
+	  }
+	}
 
 //Deploy in pro job
 job (deployProJobName) {
@@ -338,7 +375,11 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-	updateParam(it, 'OSE3_AB_TESTING', 'ON')
-	updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_AB_TESTING', 'ON')
+    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   }
 }
+
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName_a)
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName_b)

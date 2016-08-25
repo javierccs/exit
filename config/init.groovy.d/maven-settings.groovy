@@ -28,7 +28,7 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
  
   domainCredentialsMap[Domain.global()].add(
     new UsernamePasswordCredentialsImpl(
-      CredentialsScope.SYSTEM,
+      CredentialsScope.GLOBAL,
       mavenDeployerCredentialsId,
       'Maven deployer credentials',
       mavenDeployerLogin,

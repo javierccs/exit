@@ -6,11 +6,13 @@
   <properties>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
           <name>GITLAB_PROJECT</name>
-          <description>GitLab Project (p.ej groupname/reponame)</description>
+          <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>GIT_RELEASE_BRANCH_FEATURE_A</name>
           <description>Release branch of FEATURE-A for A/B Testing</description>
@@ -21,6 +23,13 @@
           <description>Continuous Integration branch feature A</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GITLAB_CREDENTIAL</name>
+          <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>APP_NAME_OSE3_FEATURE_A</name>
           <description>Name of the application to deploy in OpenShift</description>
@@ -80,6 +89,18 @@
           <defaultValue>nginx-ab-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
 	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TOKEN_MANAGEMENT</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_token_ose3_json.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>FRONT_CUSTOMIZE</name>
           <description></description>
           <quoteValue>false</quoteValue>
@@ -105,11 +126,16 @@
         <groovyScriptContent>
 import groovy.json.*
 def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
+def OSE3_TOKEN_MANAGEMENT= &quot;${OSE3_TOKEN_MANAGEMENT}&quot;.trim()
 
 def slurperFRONT_CUSTOMIZE = new JsonSlurper()
 def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
 
-return listFRONT_CUSTOMIZE
+def slurperOSE3_TOKEN_MANAGEMENT = new JsonSlurper()
+def listOSE3_TOKEN_MANAGEMENT = slurperOSE3_TOKEN_MANAGEMENT.parseText(OSE3_TOKEN_MANAGEMENT)
+
+
+return listFRONT_CUSTOMIZE + listOSE3_TOKEN_MANAGEMENT
 </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>
@@ -144,10 +170,10 @@ return listFRONT_CUSTOMIZE
   <publishers/>
   <buildWrappers>
     <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (nodejs)</template>
+      <template>#${BUILD_NUMBER}: ${APP_NAME_OSE3_FEATURE_A}/${APP_NAME_OSE3_FEATURE_B}->${OSE3_PROJECT_NAME} (nodejs)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/nodejs_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/gitLabWebHooks_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/nodejs_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

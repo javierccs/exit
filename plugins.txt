@@ -74,7 +74,7 @@ monitoring:1.58.0
 
 # delivery pipeline
 rebuild:1.22
-promoted-builds:2.24.1
+promoted-builds:2.27
 jquery:1.11.2-0
 parameterized-trigger:2.30
 build-name-setter:1.5.1
@@ -84,7 +84,6 @@ delivery-pipeline-plugin:0.9.8
 #job dsl
 config-file-provider:2.11
 managed-scripts:1.2.1
-promoted-builds:2.27
 job-dsl:1.48
 
 #Integrations
@@ -101,6 +100,7 @@ role-strategy:2.2.0
 
 #Extended Choice Parameter plugin
 extended-choice-parameter:0.56
+validating-string-parameter:2.3
 
 #Flexible Publish Plugin
 flexible-publish:0.15.2

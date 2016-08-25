@@ -6,25 +6,30 @@
     <properties>
         <hudson.model.ParametersDefinitionProperty>
             <parameterDefinitions>
-                <hudson.model.StringParameterDefinition>
+                <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
                     <name>GITLAB_PROJECT</name>
-                    <description>GitLab Project with os3 template(p.ej groupname/reponame)</description>
+                    <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
                     <defaultValue></defaultValue>
-                </hudson.model.StringParameterDefinition>
-
+                    <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+                    <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+                </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
                 <hudson.model.StringParameterDefinition>
                     <name>GIT_RELEASE_BRANCH</name>
                     <description>Release branch</description>
                     <defaultValue>master</defaultValue>
                 </hudson.model.StringParameterDefinition>
-
-
                 <hudson.model.StringParameterDefinition>
                     <name>GIT_INTEGRATION_BRANCH</name>
                     <description>Continuous Integration branch</description>
                     <defaultValue>development</defaultValue>
                 </hudson.model.StringParameterDefinition>
-
+                <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+                    <name>GITLAB_CREDENTIAL</name>
+                    <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+                    <defaultValue></defaultValue>
+                    <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+                    <required>true</required>
+                </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
                 <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition
                         plugin="extended-choice-parameter@0.56">
                     <name>OSE3_URL</name>
@@ -37,7 +42,6 @@
                     <propertyKey>regions</propertyKey>
                     <multiSelectDelimiter>,</multiSelectDelimiter>
                 </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-
                 <hudson.model.StringParameterDefinition>
                     <name>OSE3_PROJECT_NAME</name>
                     <description>Name of the OpenShift project.
@@ -45,7 +49,6 @@
                     </description>
                     <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
-
                 <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
                     <name>SERENITY_CREDENTIAL</name>
                     <description>Serenity Openshift username/password</description>
@@ -54,27 +57,21 @@
                     </credentialType>
                     <required>true</required>
                 </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-
-
                 <hudson.model.StringParameterDefinition>
                     <name>OSE3_TEMPLATE_PATH</name>
                     <description>Openshift Template Path</description>
                     <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
-
                 <hudson.model.StringParameterDefinition>
                     <name>TEST_COMMAND</name>
                     <description>Test command</description>
                     <defaultValue></defaultValue>
                 </hudson.model.StringParameterDefinition>
-
-
             </parameterDefinitions>
         </hudson.model.ParametersDefinitionProperty>
         <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
             <autoRebuild>false</autoRebuild>
         </com.sonyericsson.rebuild.RebuildSettings>
-
     </properties>
     <scm class="hudson.scm.NullSCM"/>
     <canRoam>true</canRoam>
@@ -97,11 +94,11 @@
     <publishers/>
     <buildWrappers>
         <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-            <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (os3)</template>
+            <template>#${BUILD_NUMBER}: ${OSE3_TEMPLATE_PATH}->${OSE3_PROJECT_NAME} (os3)</template>
         </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
         <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
             <includes>
-                dsl-scripts/os3_project.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy
+                dsl-scripts/os3_project.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy, dsl-scripts/util/Utilities.groovy
             </includes>
             <excludes></excludes>
             <flatten>false</flatten>
