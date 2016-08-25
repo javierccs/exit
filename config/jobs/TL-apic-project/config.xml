@@ -106,7 +106,7 @@ return listAPIC_CUSTOMIZE
       <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT} (apic)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/apic.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/apic.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

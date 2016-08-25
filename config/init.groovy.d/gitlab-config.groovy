@@ -16,13 +16,13 @@ if (!(System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.
 } else {
   def gitlab = inst.getDescriptorByType(com.dabsquared.gitlabjenkins.GitLabPushTrigger.DescriptorImpl)
   gitlab.gitlabApiToken = System.getenv("GITLAB_API_TOKEN")
-  gitlab.gitlabHostUrl = System.getenv("GITLAB_URL")
+  gitlab.gitlabHostUrl = (System.getenv("GITLAB_URL").endsWith('/'))? System.getenv("GITLAB_URL") : System.getenv("GITLAB_URL") + '/';
   gitlab.ignoreCertificateErrors = true
   logger.info("GitLab config: {url=\""+gitlab.getGitlabHostUrl()+"\", token=\""+gitlab.getGitlabApiToken().replaceAll('.', '*')+"\"}")
   gitlab.save()
 
   //testing connection
-  def url = new URL(gitlab.getGitlabHostUrl()+"/api/v3/projects?private_token="+gitlab.getGitlabApiToken())
+  def url = new URL(gitlab.getGitlabHostUrl()+"api/v3/projects?private_token="+gitlab.getGitlabApiToken())
   def connection = url.openConnection()
   connection.setRequestMethod("GET")
   connection.connect()

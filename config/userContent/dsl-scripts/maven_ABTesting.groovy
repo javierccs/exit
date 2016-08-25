@@ -1,4 +1,10 @@
 import jenkins.model.*
+import java.util.regex.*;
+import util.Utilities;
+
+// Shared functions
+def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -6,14 +12,26 @@ def GIT_INTEGRATION_BRANCH_FEATURE_A = "${GIT_INTEGRATION_BRANCH_FEATURE_A}".tri
 def GIT_INTEGRATION_BRANCH_FEATURE_B = "${GIT_INTEGRATION_BRANCH_FEATURE_B}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
-
+def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
 def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
-def OSE3_URL ="${OSE3_URL}".trim() 
+def OSE3_URL ="${OSE3_URL}".trim()
+def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 
 // Static values
-def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
-def GITLAB_SERVER = gitlab.getGitlabHostUrl()
-def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
+final String regex = "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher(GITLAB_PROJECT);
+assert matcher.matches() : "[ERROR] Syntax error: " + GITLAB_PROJECT + " doesn't match expected url pattern."
+def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
+def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def GITLAB_URL = matcher.group(1) ?: GITLAB_SERVER;
+def GROUP_NAME = matcher.group(2);
+def REPOSITORY_NAME = matcher.group(3);
+out.println("GitLab URL: " + GITLAB_URL);
+out.println("GitLab Group: " + GROUP_NAME);
+out.println("GitLab Project: " + REPOSITORY_NAME);
+GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
+
 def buildJobName_a = GITLAB_PROJECT+'-ci-build-feature-A'
 def buildJobName_b = GITLAB_PROJECT+'-ci-build-feature-B'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
@@ -44,6 +62,12 @@ def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
 def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+
+
 //JAVASE TEMPLATE VARS
 def OTHER_OSE3_TEMPLATE_PARAMS =""
 JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
@@ -67,6 +91,14 @@ if(WILY_MOM_FQDN != "")
 if(WILY_MOM_PORT != "")
  OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
 
+
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println ("GitLab credential type " + gitlabCredsType );
+
 mavenJob (buildJobName_a) {
   println "JOB: "+buildJobName_a
   label('maven')
@@ -77,7 +109,7 @@ mavenJob (buildJobName_a) {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH',
                 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git',
+    stringParam('gitlabSourceRepoURL', GITLAB_URL+GITLAB_PROJECT+'.git',
                 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin',
                 'GitLab source repo name (only for MERGE events from forked repositories)')
@@ -141,16 +173,16 @@ mavenJob (buildJobName_a) {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       // Adds a repository browser for browsing the details of changes in an external system.
       browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.2')
       } //browser
       // Adds a remote.
       remote {
         // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()
@@ -171,8 +203,18 @@ mavenJob (buildJobName_a) {
 
   wrappers {
     credentialsBinding {
-      usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
-    }
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
+
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {
@@ -237,7 +279,6 @@ mavenJob (buildJobName_a) {
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-                                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_A)
                                 predefinedProp('OSE3_URL', OSE3_URL)
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -289,7 +330,7 @@ mavenJob (buildJobName_b) {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH',
                 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git',
+    stringParam('gitlabSourceRepoURL', GITLAB_URL+GITLAB_PROJECT+'.git',
                 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin',
                 'GitLab source repo name (only for MERGE events from forked repositories)')
@@ -353,16 +394,16 @@ mavenJob (buildJobName_b) {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       // Adds a repository browser for browsing the details of changes in an external system.
       browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.2')
       } //browser
       // Adds a remote.
       remote {
         // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()
@@ -383,8 +424,17 @@ mavenJob (buildJobName_b) {
 
   wrappers {
     credentialsBinding {
-      usernamePassword('GITLAB_CREDENTIAL', SERENITY_CREDENTIAL)
-    }
+//If user password credentials are provided bind is required
+if ( gitlabCredsType == 'UserPassword' ){
+          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+}
+     //adds ose3 credentials
+       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
+     }
+//if ssh credentials ssAgent is added
+if ( gitlabCredsType == 'SSH' ){
+      sshAgent(GITLAB_CREDENTIAL)
+}
     buildName('${ENV,var="POM_DISPLAYNAME"}-${ENV,var="POM_VERSION"}-${BUILD_NUMBER}')
     release {
       preBuildSteps {
@@ -449,7 +499,6 @@ mavenJob (buildJobName_b) {
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-                                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_B)
                                 predefinedProp('OSE3_URL', OSE3_URL) 
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -503,18 +552,20 @@ job (deployDevJobName) {
     stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
+    //credentialsParam('OSE3_CREDENTIAL') {
+    //  type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+    //  required(false)
+    //  defaultValue(SERENITY_CREDENTIAL)
+    //  description('OSE3 credentials')
+    //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT', OSE3_TOKEN_PROJECT_DEV, '')
+    
   }
   wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
+   // credentialsBinding {
+   //   usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+   // }
     steps {
   	  shell(
   	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -523,11 +574,11 @@ job (deployDevJobName) {
   	  environmentVariables{
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+    	}
     }
     //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
     //  binding('LINK_URL', 'OSE3_END_POINT_URL')
@@ -571,27 +622,27 @@ job (BridgeHPALMJobNameDEV)
       browser {
 if(GITLAB_PROJECT_TEST == "")
 {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.2')
 }
 else
 {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT_TEST, '8.2')
 }
       } //browser
       // Adds a remote.
       remote {
         // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
 if(GITLAB_PROJECT_TEST == "")
 {
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
 }
 else
 {
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
     } //git
@@ -654,27 +705,27 @@ job (BridgeHPALMJobName)
       browser {
 if(GITLAB_PROJECT_TEST == "")
 {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT, '8.2')
 }
 else
 {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST, '8.2')
+        gitLab(GITLAB_SERVER+GITLAB_PROJECT_TEST, '8.2')
 }
       } //browser
       // Adds a remote.
       remote {
         // Sets credentials for authentication with the remote repository.
-        credentials(SERENITY_CREDENTIAL)
+        credentials(GITLAB_CREDENTIAL)
         // Sets a name for the remote.
         name('origin')
         // Sets the remote URL.
 if(GITLAB_PROJECT_TEST == "")
 {
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
 }
 else
 {
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT_TEST+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT_TEST+'.git')
 }
       } //remote
     } //git
@@ -745,6 +796,8 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRE,'')
+
   }
   properties {
     promotions {
@@ -771,7 +824,7 @@ job (deployPreJobName) {
        }
      }
    }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
     
 	shell(
@@ -781,11 +834,11 @@ job (deployPreJobName) {
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
-   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
+   //     environmentVariables
+   //     {
+   //       propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+   //	}
     }
 if( ADD_HPALM_AT_PRE == "true")
 {
@@ -816,8 +869,10 @@ job (deployProJobName) {
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
+
   }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -827,6 +882,9 @@ job (deployProJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
 
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
   }
 }
+
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName_a)
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName_b)

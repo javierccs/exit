@@ -10,106 +10,112 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         theme: "bootstrap3",
         iconlib:"foundation3",
 		schema: {
-	  "title": "Wordpress OSE3 Template parameters - Preproduction environment",
+	  "title": "Wordpress OSE3 Template parameters - Production environment",
 	  "description" : "Customizable Wordpress OSE3 template parameters (Do not use quotes). <br>The parameters in blank are leave with the PAAS's default values(consult PAAS page for more information)",
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
 		   },	
 	  "properties": {
- 		"WORDPRESS_DB_HOST_PRE": {
+		"OSE3_TOKEN_PROJECT_PRO": {
+                      "type": "string",
+                      "description": "This is the token OSE3 project",
+                      "default": "CHANGEME",
+                      "propertyOrder": 1
+              },
+ 		"WORDPRESS_DB_HOST_PRO": {
 			"type": "string",
 			"description": "WordPress Database host:port",
 			"default": "external-mysql:3306",
-                        "propertyOrder": 1
+                        "propertyOrder": 2
 		},  
-		"WORDPRESS_DB_USER_PRE": {
+		"WORDPRESS_DB_USER_PRO": {
 			"type": "string",
 			"description": "WordPress Database user.",
 			"default": "admin",
-                        "propertyOrder": 2
+                        "propertyOrder": 3
 		}, 
-		"WORDPRESS_DB_PASSWORD_PRE": {
+		"WORDPRESS_DB_PASSWORD_PRO": {
 			"type": "string",
 			"description": "WordPress Database user password.",
 			"default": "aquielpassword",
-                        "propertyOrder": 3
+                        "propertyOrder": 4
 		}, 
-		"WORDPRESS_DB_NAME_PRE": {
+		"WORDPRESS_DB_NAME_PRO": {
 			"type": "string",
 			"description": "WordPress MySql Database name.",
 			"default": "wordpress",
-                        "propertyOrder": 4
+                        "propertyOrder": 5
 		},
-		"CONFIGURATION_GIT_PRE": {
+		"CONFIGURATION_GIT_PRO": {
 			"type": "string",
 			"description": "Git repository for PHP and Apache configuration",
 			"default": "",
-                        "propertyOrder": 5
+                        "propertyOrder": 6
 		},
-		"S3_BACKUP_HOST_PRE": {
+		"S3_BACKUP_HOST_PRO": {
 			"type": "string",
 			"description": "The S3 host fqdn where the backup is stored.",
-                        "propertyOrder": 6
+                        "propertyOrder": 7
 		}, 
-		"S3_BACKUP_BUCKET_PRE": {
+		"S3_BACKUP_BUCKET_PRO": {
 			"type": "string",
 			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
-                        "propertyOrder": 7
-		},
-		"S3_BACKUP_ACCESS_KEY_PRE": {
-			"type": "string",
-			"description": "The S3 access key to download the backup.",
                         "propertyOrder": 8
 		},
-		"S3_BACKUP_SECRET_KEY_PRE": {
+		"S3_BACKUP_ACCESS_KEY_PRO": {
+			"type": "string",
+			"description": "The S3 access key to download the backup.",
+                        "propertyOrder": 9
+		},
+		"S3_BACKUP_SECRET_KEY_PRO": {
 			"type": "string",
 			"description": "The S3 secret key to download the backup.",
-                        "propertyOrder": 9
+                        "propertyOrder": 10
 		}, 
-		"HTTP_PROXY_PRE": {
+		"HTTP_PROXY_PRO": {
 			"type": "string",
 			"description": "Http Proxy environment variable.",
-			"propertyOrder": 10
+			"propertyOrder": 11
 		}, 
-		"HTTPS_PROXY_PRE": {
+		"HTTPS_PROXY_PRO": {
 			"type": "string",
 			"description": "Https Proxy environment variable.",
-                        "propertyOrder": 11
+                        "propertyOrder": 12
 		}, 
-		"NO_PROXY_PRE": {
+		"NO_PROXY_PRO": {
 			"type": "string",
 			"description": "No Proxy environment variable.",
 			"default": "s3.boae.paas.gsnetcloud.corp",
-                        "propertyOrder": 12
+                        "propertyOrder": 13
 		},
-		"TZ_PRE": {
+		"TZ_PRO": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
 			"dafault": "Europe\/Madrid",
-                        "propertyOrder": 13
-		},
-		"IGNORELIST_PRE": {
-			"type": "string",
-			"description": "Bittorent Sync Ignore List. (Use comma separator)",
                         "propertyOrder": 14
 		},
-		"SECRETBTSYNC_PRE": {
+		"IGNORELIST_PRO": {
 			"type": "string",
-			"description": "Secret Key for Bittorent Sync communication", 
+			"description": "Bittorent Sync Ignore List. (Use comma separator)",
                         "propertyOrder": 15
 		},
-		"CONTAINER_MEMORY_PRE": {
+		"SECRETBTSYNC_PRO": {
+			"type": "string",
+			"description": "Secret Key for Bittorent Sync communication", 
+                        "propertyOrder": 16
+		},
+		"CONTAINER_MEMORY_PRO": {
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
 			"default": "512M",
-                        "propertyOrder": 16
+                        "propertyOrder": 17
 		},
-		"BTSYNC_MEMORY_PRE": {
+		"BTSYNC_MEMORY_PRO": {
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)",
 			"default": "100M",                         
-                        "propertyOrder": 17
+                        "propertyOrder": 18
 		}
     
       }
