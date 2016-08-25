@@ -105,3 +105,6 @@ extended-choice-parameter:0.56
 #Flexible Publish Plugin
 flexible-publish:0.15.2
 run-condition:0.7
+
+ssh-agent:1.13
+bouncycastle-api:1.648.3
