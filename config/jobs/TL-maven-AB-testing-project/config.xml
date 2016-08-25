@@ -57,13 +57,6 @@
 (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
           <defaultValue>serenity-alm</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
-          <name>SERENITY_CREDENTIAL</name>
-          <description>Serenity LDAP username/password</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_URL</name>
           <description>OpenShift PAAS region URL</description>
@@ -73,6 +66,18 @@
           <type>PT_SINGLE_SELECT</type>
           <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
           <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TOKEN_PARAMS</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_token_ose3_json.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
@@ -116,6 +121,7 @@
         <groovyScriptContent>import groovy.json.*
 def BRIDGE = &quot;${BRIDGE}&quot;.trim()
 def JAVASE_OSE3_PARAMS= &quot;${JAVASE_OSE3_PARAMS}&quot;.trim()
+def OSE3_TOKEN_PARAMS= &quot;${OSE3_TOKEN_PARAMS}&quot;.trim()
 
 def slurperBridge = new JsonSlurper()
 def listBridge = slurperBridge.parseText(BRIDGE)
@@ -124,7 +130,11 @@ def listBridge = slurperBridge.parseText(BRIDGE)
 def slurperOSE3_PARAMS = new JsonSlurper()
 def listOSE3_PARAMS = slurperOSE3_PARAMS.parseText(JAVASE_OSE3_PARAMS)
 
-return listBridge + listOSE3_PARAMS </groovyScriptContent>
+def slurperOSE3_TOKEN_PARAMS = new JsonSlurper()
+def listOSE3_TOKEN_PARAMS = slurperOSE3_PARAMS.parseText(OSE3_TOKEN_PARAMS)
+
+return listBridge + listOSE3_PARAMS + listOSE3_TOKEN_PARAMS </groovyScriptContent>
+
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>
       <on>true</on>

@@ -62,6 +62,12 @@ def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
 def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+
+
 //JAVASE TEMPLATE VARS
 def OTHER_OSE3_TEMPLATE_PARAMS =""
 JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
@@ -273,7 +279,6 @@ if ( gitlabCredsType == 'SSH' ){
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-                                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_A)
                                 predefinedProp('OSE3_URL', OSE3_URL)
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -494,7 +499,6 @@ if ( gitlabCredsType == 'SSH' ){
                             condition('SUCCESS')
                              parameters {
                                 predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-                                predefinedProp('OSE3_CREDENTIAL', SERENITY_CREDENTIAL)
                                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3_FEATURE_B)
                                 predefinedProp('OSE3_URL', OSE3_URL) 
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
@@ -548,18 +552,20 @@ job (deployDevJobName) {
     stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    credentialsParam('OSE3_CREDENTIAL') {
-      type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-      required(false)
-      defaultValue(SERENITY_CREDENTIAL)
-      description('OSE3 credentials')
-    }
+    //credentialsParam('OSE3_CREDENTIAL') {
+    //  type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
+    //  required(false)
+    //  defaultValue(SERENITY_CREDENTIAL)
+    //  description('OSE3 credentials')
+    //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT', OSE3_TOKEN_PROJECT_DEV, '')
+    
   }
   wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
-    }
+   // credentialsBinding {
+   //   usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
+   // }
     steps {
   	  shell(
   	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -568,11 +574,11 @@ job (deployDevJobName) {
   	  environmentVariables{
   	    propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
   	  }
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
         environmentVariables
         {
           propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+    	}
     }
     //systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/UpdateLinkAction.groovy')) {
     //  binding('LINK_URL', 'OSE3_END_POINT_URL')
@@ -790,6 +796,8 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRE,'')
+
   }
   properties {
     promotions {
@@ -816,7 +824,7 @@ job (deployPreJobName) {
        }
      }
    }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
     
 	shell(
@@ -826,11 +834,11 @@ job (deployPreJobName) {
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
-   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
-        environmentVariables
-        {
-          propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
-  	}
+   shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
+   //     environmentVariables
+   //     {
+   //       propertiesFile('${WORKSPACE}/deploy_jenkins.properties')
+   //	}
     }
 if( ADD_HPALM_AT_PRE == "true")
 {
@@ -861,8 +869,10 @@ job (deployProJobName) {
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
+    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
+
   }
-  configure injectPasswords
+  //configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
@@ -872,7 +882,7 @@ job (deployProJobName) {
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
           }
 
-    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON')
+    shell('deploy_in_ose3.sh --ab_testing=ON --create_template=ON --login_with_token=ON')
   }
 }
 

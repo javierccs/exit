@@ -63,6 +63,10 @@ if ( gitlabCredsType == null ) {
 }
 println ("GitLab credential type " + gitlabCredsType );
 
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
 
 job (buildJobName) {
   println "JOB: "+buildJobName
@@ -285,8 +289,6 @@ job (dockerJobName) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
-                predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
@@ -310,6 +312,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -346,6 +349,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
   }
 }
 
@@ -359,8 +363,9 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   }
 }
 

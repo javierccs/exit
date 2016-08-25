@@ -36,6 +36,7 @@ def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
 def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
 
 //DEV
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def WORDPRESS_DB_HOST_DEV="${WORDPRESS_DB_HOST_DEV}".trim()
 def WORDPRESS_DB_USER_DEV="${WORDPRESS_DB_USER_DEV}".trim()
 def WORDPRESS_DB_PASSWORD_DEV="${WORDPRESS_DB_PASSWORD_DEV}".trim()
@@ -69,6 +70,7 @@ if (BTSYNC_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",BTSYNC_MEMORY="+B
 def OSE3_TEMPLATE_PARAMS_DEV="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_DEV}"
 
 //PRE
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
 def WORDPRESS_DB_HOST_PRE="${WORDPRESS_DB_HOST_PRE}".trim()
 def WORDPRESS_DB_USER_PRE="${WORDPRESS_DB_USER_PRE}".trim()
 def WORDPRESS_DB_PASSWORD_PRE="${WORDPRESS_DB_PASSWORD_PRE}".trim()
@@ -103,6 +105,7 @@ if (BTSYNC_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",BTSYNC_MEMORY="+B
 def OSE3_TEMPLATE_PARAMS_PRE="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRE}"
 
 //PRO
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
 def WORDPRESS_DB_HOST_PRO="${WORDPRESS_DB_HOST_PRO}".trim()
 def WORDPRESS_DB_USER_PRO="${WORDPRESS_DB_USER_PRO}".trim()
 def WORDPRESS_DB_PASSWORD_PRO="${WORDPRESS_DB_PASSWORD_PRO}".trim()
@@ -322,7 +325,6 @@ job (dockerJobName) {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
       usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
-      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
   }
   steps {
@@ -343,8 +345,7 @@ job (dockerJobName) {
       trigger(deployDevJobName) {
         condition('SUCCESS')
         parameters {
-          predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
-          predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
+          predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
           predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
       }
@@ -371,6 +372,7 @@ job (deployDevJobName) {
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
     updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV) 
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -406,6 +408,8 @@ job (deployPreJobName) {
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
     updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE) 
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
+
   }
 }
 
@@ -421,7 +425,9 @@ job (deployProJobName) {
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
     updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
-  }
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+  
+}
 }
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

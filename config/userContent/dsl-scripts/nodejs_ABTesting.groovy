@@ -55,6 +55,12 @@ def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+
+
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
     it.name != null && it.name.text() == paramName
@@ -111,7 +117,7 @@ job (data[0]) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-			    predefinedProp('OSE3_APP_NAME', data[3])
+	        predefinedProp('OSE3_APP_NAME', data[3])
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
@@ -291,11 +297,9 @@ job (data[4]) {
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-                predefinedProp('OSE3_USERNAME', '${DOCKER_REGISTRY_USERNAME}')
-                predefinedProp('OSE3_PASSWORD', '${DOCKER_REGISTRY_PASSWORD}')
                 predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
                 predefinedProp('OSE3_APP_NAME', data[3])
-				predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+		predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
               }
             }
           }
@@ -317,6 +321,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
 
@@ -340,7 +345,7 @@ job (deployPreJobName) {
               parameters {
                 predefinedProp('OSE3_TEMPLATE_PARAMS','${OSE3_TEMPLATE_PARAMS}')
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-				predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
+		predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
               }
             }
           }
@@ -355,8 +360,9 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
-  }
-}
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
+	  }
+	}
 
 //Deploy in pro job
 job (deployProJobName) {
@@ -371,6 +377,7 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
     updateParam(it, 'OSE3_AB_TESTING', 'ON')
     updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   }
 }
 

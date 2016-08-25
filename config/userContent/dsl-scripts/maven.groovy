@@ -11,7 +11,6 @@ def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GIT_INTEGRATION_BRANCH = "${GIT_INTEGRATION_BRANCH}".trim()
 def GIT_RELEASE_BRANCH = "${GIT_RELEASE_BRANCH}".trim()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
@@ -84,6 +83,13 @@ if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
 println ("GitLab credential type " + gitlabCredsType );
+//TOKEN_OSE3
+def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+
+
+
 mavenJob (buildJobName) {
   println "JOB: "+buildJobName
   label('maven')
@@ -189,8 +195,6 @@ mavenJob (buildJobName) {
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
-     //adds ose3 credentials
-      usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
@@ -275,8 +279,6 @@ if ( gitlabCredsType == 'SSH' ){
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
-                predefinedProp('OSE3_USERNAME','${OSE3_USERNAME}')
-                predefinedProp('OSE3_PASSWORD','${OSE3_PASSWORD}')
                 predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
                 predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
               }
@@ -419,11 +421,6 @@ job (deployDevJobName) {
   parameters {
     stringParam('VALUE_URL', '', '')
   }
-  wrappers {
-    credentialsBinding {
-      usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', SERENITY_CREDENTIAL)
-    }
-  }
   publishers {
     if (ADD_HPALM_AT_DEV == "true") {
       downstreamParameterized {
@@ -442,6 +439,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }  
@@ -495,6 +493,7 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
@@ -515,6 +514,7 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
