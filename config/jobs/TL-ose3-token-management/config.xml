@@ -81,7 +81,7 @@
   </builders>
   <publishers>
     <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.40.5">
-      <recipientList>bcc:serenity-alm@isban.com,bcc:${EMAIL_ACCOUNT}</recipientList>
+      <recipientList>bcc:${EMAIL_ACCOUNT}</recipientList>
       <configuredTriggers>
         <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
           <email>
