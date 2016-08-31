@@ -44,5 +44,11 @@ docker run -d \
  -e SERENITY_FLUENTD_PORT=<Fluentd aggregation port> (24224 by default) 
  -e SERENITY_TENANT=<Tenant name> (default-tenant by default)
  
+ Additional optional environment can be set to change Jenkins Theme:
+
+ -e SERENITYALM_CSS=<CSS to apply> by default 'css/serenity-alm/serenity-alm.css'
+ -e SERENITYALM_JS=<JS to apply to theme> by default 'scripts/serenity-alm/serenity-alm.js'
+ -e SERENITYALM_PORTAL=<ALM Serenity portal URL> by default 'http://portalserenity.eng.gsnetcloud.corp:8080/web/alm'
+ 
 
 IMPORTANT NOTE: Environment variable JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true" must be set in order to backward compatibility this jenkins version with release plugin and inject variables plugin.
