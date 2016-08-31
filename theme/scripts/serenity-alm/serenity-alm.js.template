@@ -1,0 +1,11 @@
+//changes jenkins logo and
+//removes jenkins name image
+//adds links to jenkins portal
+jQuery(function(e){
+	jQuery("#jenkins-head-icon").attr("src",'/images/serenity-alm/logotipo_ALM_blanco.png');
+	jQuery("#jenkins-name-icon").remove();
+	jQuery(".jenkins_ver").after("<span class='jenkins_ver'><a href='${SERENITYALM_PORTAL}/changelog'>Serenity ALM ver. ${com_serenity_image_version}</a></span>")
+	//add serenity alm log visible
+	jQuery("#header").find(".logo").css('display', 'inline-block');
+	}
+)

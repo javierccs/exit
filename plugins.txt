@@ -74,3 +74,10 @@ ws-cleanup:0.29
 
 ssh-agent:1.13
 bouncycastle-api:1.648.3
+
+ansicolor:0.4.2
+#jenkins themes
+simple-theme-plugin:0.3
+#for jenkins-atlasian theme
+gravatar:2.1
+
