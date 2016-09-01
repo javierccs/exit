@@ -7,5 +7,8 @@ jQuery(function(e){
 	jQuery(".jenkins_ver").after("<span class='jenkins_ver'><a href='${SERENITYALM_PORTAL}/changelog'>Serenity ALM ver. ${com_serenity_image_version}</a></span>")
 	//add serenity alm log visible
 	jQuery("#header").find(".logo").css('display', 'inline-block');
+	//workaround to show up icons properly
+	jQuery('.task-icon-link[href="/"]').attr('href', '${JENKINS_URL}');
+        jQuery('.task-link[href="/"]').attr('href', '${JENKINS_URL}');
 	}
 )
