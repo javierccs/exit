@@ -8,4 +8,9 @@ jQuery(function(e){
 
 	jQuery("form[name='login'").parent().parent().parent().replaceWith(content);
 
+
+	//workaround to show up icons properly
+	jQuery('.task-icon-link[href="/"]').attr('href', '${JENKINS_URL}');
+        jQuery('.task-link[href="/"]').attr('href', '${JENKINS_URL}');
 });
+
