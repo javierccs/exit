@@ -85,8 +85,8 @@ if ( gitlabCredsType == null ) {
 println ("GitLab credential type " + gitlabCredsType );
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
-def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
-def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+def OSE3_TOKEN_PROJECT_PRE=""
+def OSE3_TOKEN_PROJECT_PRO=""
 
 
 

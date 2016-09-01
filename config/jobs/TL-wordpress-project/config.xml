@@ -54,6 +54,11 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_TOKEN_PROJECT_DEV</name>
+          <description>A valid OSE3 token for dev project</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
