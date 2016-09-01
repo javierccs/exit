@@ -9,11 +9,11 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_USER</name>
           <description>A valid OSE3 user</description>
           <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_PASSWORD</name>
           <description>Password for this OSE3 user</description>
@@ -30,16 +30,17 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT</name>
-          <description>Project for which you want to create a OSE token</description>
+          <description>Project for which you want to create a OSE token.
+(Openshift project name including the suffix of the environment that you need: &quot;-dev&quot; or &quot;-pre&quot; or &quot;-pro&quot;.  For example: my-project-dev)</description>
           <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_SERVICE_ACCOUNT</name>
           <description>Name as you want to call this service account</description>
           <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>EMAIL_ACCOUNT</name>
           <description>Email account where you want to receive information about the OSE token</description>
