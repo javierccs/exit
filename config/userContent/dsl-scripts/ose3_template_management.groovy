@@ -25,10 +25,10 @@ def inputData() {
             gitLabCredential       : "${GITLAB_CREDENTIAL}",
             openShiftUrl           : no_spaces("${OSE3_URL}"),
             openShiftProjectName   : [
-                    dev: no_spaces_and_lowercase("${OSE3_PROJECT_NAME}") + "-dev"
+                    dev: no_spaces_and_lowercase("${OSE3_PROJECT_NAME}")
             ],
+            ose3TokenDev	   : no_spaces("${OSE3_TOKEN_PROJECT_DEV}"),
             openShiftTemplatePath  : no_spaces("${OSE3_TEMPLATE_PATH}"),
-            serenityCredential     : "${SERENITY_CREDENTIAL}",
             testCommand            : "${TEST_COMMAND}"
     ];
 }
@@ -52,6 +52,7 @@ def GIT_INTEGRATION_BRANCH = params.gitLabIntegrationBranch;
 def GIT_RELEASE_BRANCH = params.gitLabReleaseBranch;
 def buildJobName = GITLAB_PROJECT + '-ci-build';
 
+
  //creck gitlab credentials
  def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
  if ( gitlabCredsType == null ) {
@@ -70,6 +71,8 @@ job(buildJobName) {
         stringParam('OSE3_URL', params.openShiftUrl, 'Openshift Url');
         stringParam('OSE3_PROJECT_NAME', params.openShiftProjectName.dev, 'Openshift project name');
         stringParam('OSE3_TEMPLATE_PATH', params.openShiftTemplatePath, 'Path to openshift template');
+        stringParam('OSE3_TOKEN_PROJECT_DEV', params.ose3TokenDev, 'ose3 token dev');
+
     }
     scm {
         git {
@@ -100,11 +103,10 @@ job(buildJobName) {
 
     wrappers {
         credentialsBinding {
- //If user password credentials are provided bind is required
- if ( gitlabCredsType == 'UserPassword' ){
-           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
- }
-            usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', params.serenityCredential)
+		 //If user password credentials are provided bind is required
+		 if ( gitlabCredsType == 'UserPassword' ){
+		           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+		 }
         }
  //if ssh credentials ssAgent is added
  if ( gitlabCredsType == 'SSH' ){
