@@ -37,11 +37,6 @@
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>OSE3_SERVICE_ACCOUNT</name>
-          <description>Name as you want to call this service account</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
           <name>EMAIL_ACCOUNT</name>
           <description>Email account where you want to receive information about the OSE token</description>
           <defaultValue></defaultValue>
