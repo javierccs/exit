@@ -6,11 +6,13 @@
   <properties>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
           <name>GITLAB_PROJECT</name>
-          <description>GitLab Project (p.ej groupname/reponame)</description>
+          <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>         
         <hudson.model.StringParameterDefinition>
           <name>GIT_RELEASE_BRANCH_FEATURE_A</name>
           <description>Release branch of FEATURE-A for A/B Testing</description>
@@ -41,6 +43,13 @@
           <description>Name of the application to deploy in OpenShift for Feature B</description>
           <defaultValue>app-feature-B</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GITLAB_CREDENTIAL</name>
+          <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
 
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
@@ -48,13 +57,6 @@
 (Openshift project name excluding the prefix &quot;-dev&quot;)</description>
           <defaultValue>serenity-alm</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
-          <name>SERENITY_CREDENTIAL</name>
-          <description>Serenity LDAP username/password</description>
-          <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
-          <required>true</required>
-        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_URL</name>
           <description>OpenShift PAAS region URL</description>
@@ -66,6 +68,11 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_TOKEN_PROJECT_DEV</name>
+          <description>A valid OSE3 token for dev project</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>JAVASE_OSE3_PARAMS</name>
           <description></description>
@@ -94,7 +101,7 @@
           <name>HPALM_CREDS</name>
           <description>(optional ) HP ALM credentials. Only necessary if the functional tests are configured. </description>
           <defaultValue></defaultValue>
-          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
           <required>false</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
       </parameterDefinitions>
@@ -115,7 +122,9 @@ def listBridge = slurperBridge.parseText(BRIDGE)
 def slurperOSE3_PARAMS = new JsonSlurper()
 def listOSE3_PARAMS = slurperOSE3_PARAMS.parseText(JAVASE_OSE3_PARAMS)
 
+
 return listBridge + listOSE3_PARAMS </groovyScriptContent>
+
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>
       <on>true</on>
@@ -145,8 +154,11 @@ return listBridge + listOSE3_PARAMS </groovyScriptContent>
   </builders>
   <publishers/>
   <buildWrappers>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+      <template>#${BUILD_NUMBER}: ${APP_NAME_OSE3_FEATURE_A}/${APP_NAME_OSE3_FEATURE_B}->${OSE3_PROJECT_NAME} (maven)</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/maven_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/gitLabWebHooks_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/maven_ABTesting.groovy,dsl-scripts/DeliveryPipeline_ABTesting.groovy,dsl-scripts/util/InjectBuildParameters.groovy,,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

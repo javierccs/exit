@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+    <actions/>
+    <description>This job is designed to help you to deploy an own Openshift template in a ose3 project of development.</description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
+                    <name>GITLAB_PROJECT</name>
+                    <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
+                    <defaultValue></defaultValue>
+                    <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+                    <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+                </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>GIT_RELEASE_BRANCH</name>
+                    <description>Release branch</description>
+                    <defaultValue>master</defaultValue>
+                </hudson.model.StringParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>GIT_INTEGRATION_BRANCH</name>
+                    <description>Continuous Integration branch</description>
+                    <defaultValue>development</defaultValue>
+                </hudson.model.StringParameterDefinition>
+		<com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+                    <name>GITLAB_CREDENTIAL</name>
+                    <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+                    <defaultValue></defaultValue>
+                    <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+                    <required>true</required>
+                </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+                <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition
+                        plugin="extended-choice-parameter@0.56">
+                    <name>OSE3_URL</name>
+                    <description>OpenShift PAAS region URL</description>
+                    <quoteValue>false</quoteValue>
+                    <saveJSONParameterToFile>false</saveJSONParameterToFile>
+                    <visibleItemCount>5</visibleItemCount>
+                    <type>PT_SINGLE_SELECT</type>
+                    <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+                    <propertyKey>regions</propertyKey>
+                    <multiSelectDelimiter>,</multiSelectDelimiter>
+                </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>OSE3_PROJECT_NAME</name>
+                    <description>Name of the OpenShift project.
+(Openshift project name including the suffix of the environment that you need: "-dev".  For example: my-project-dev)
+                    </description>
+                    <defaultValue></defaultValue>
+                </hudson.model.StringParameterDefinition>
+               <hudson.model.PasswordParameterDefinition>
+                    <name>OSE3_TOKEN_PROJECT_DEV</name>
+                    <description>A valid OSE3 token for OSE3 dev project</description>
+                    <defaultValue></defaultValue>
+               </hudson.model.PasswordParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>OSE3_TEMPLATE_PATH</name>
+                    <description>Openshift Template Path</description>
+                    <defaultValue></defaultValue>
+                </hudson.model.StringParameterDefinition>
+                <hudson.model.StringParameterDefinition>
+                    <name>TEST_COMMAND</name>
+                    <description>Test command</description>
+                    <defaultValue></defaultValue>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+        <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+            <autoRebuild>false</autoRebuild>
+        </com.sonyericsson.rebuild.RebuildSettings>
+    </properties>
+    <scm class="hudson.scm.NullSCM"/>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
+            <targets>dsl-scripts/*.groovy</targets>
+            <usingScriptText>false</usingScriptText>
+            <ignoreExisting>false</ignoreExisting>
+            <removedJobAction>IGNORE</removedJobAction>
+            <removedViewAction>IGNORE</removedViewAction>
+            <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+            <additionalClasspath></additionalClasspath>
+        </javaposse.jobdsl.plugin.ExecuteDslScripts>
+    </builders>
+    <publishers/>
+    <buildWrappers>
+        <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+            <template>#${BUILD_NUMBER}: ${OSE3_TEMPLATE_PATH}->${OSE3_PROJECT_NAME} (os3)</template>
+        </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+        <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+            <includes>
+                dsl-scripts/ose3_template_management.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy, dsl-scripts/util/Utilities.groovy
+            </includes>
+            <excludes></excludes>
+            <flatten>false</flatten>
+            <includeAntExcludes>false</includeAntExcludes>
+            <hudsonHomeRelative>false</hudsonHomeRelative>
+            <relativeTo>userContent</relativeTo>
+        </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+    </buildWrappers>
+</project>

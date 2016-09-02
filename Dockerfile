@@ -1,17 +1,21 @@
-FROM jenkins:1.642.4
+FROM jenkins:1.651.3
 MAINTAINER serenity-alm <noreply@serenity-alm.corp>
 
 LABEL description="Serenity ALM Jenkins image"
 LABEL com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="1.3"
+      com.serenity.image.version="1.3.1"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="1.3"
-	
+    com.serenity.image.version="1.3.1"
+
+ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css
+ENV SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js
+ENV SERENITYALM_PORTAL=http://portalserenity.eng.gsnetcloud.corp:8080/web/alm
+
 USER root
 
 #Installs td-agent (fluentd) for log collection
@@ -26,7 +30,7 @@ ENV no_proxy="*.gsnet.corp, *.gsnetcloud.corp"
 RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && echo "deb http://packages.treasuredata.com/2/debian/jessie/ jessie contrib" > /etc/apt/sources.list.d/treasure-data.list \
  && apt-get update \
- && apt-get install -y --force-yes td-agent \
+ && apt-get install -y --force-yes td-agent gettext-base \
  && sed -i 's/TD_AGENT_USER=td-agent/TD_AGENT_USER=jenkins/g' /etc/init.d/td-agent \
  && sed -i 's/TD_AGENT_GROUP=td-agent/TD_AGENT_GROUP=jenkins/g' /etc/init.d/td-agent \
  && chown -R jenkins:jenkins /etc/td-agent \
@@ -35,9 +39,6 @@ RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && chown -R jenkins:jenkins /var/run/td-agent  
 #Copies td-agent configuration file
 COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
-#Jenkins entry point has been modified to add td-agent service
-#To start td-agent service SERENITY_FLUENTD_SERVER variable must set
-COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
 #Unset proxy
 ENV http_proxy ""
 ENV https_proxy ""
@@ -59,5 +60,16 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
 #Copies static config files
 COPY config/ /usr/share/jenkins/ref/
 
+#Jenkins entry point has been modified to add td-agent service
+#To start td-agent service SERENITY_FLUENTD_SERVER variable must set
+COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
+
+
+USER root
+#Jenkins war will be modified by entrypoint to add serenity-alm.css
+RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
+COPY theme /opt/theme
+
+USER jenkins
 ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
 

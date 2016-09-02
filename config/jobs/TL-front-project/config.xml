@@ -6,11 +6,13 @@
   <properties>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
           <name>GITLAB_PROJECT</name>
-          <description>GitLab Project (p.ej groupname/reponame)</description>
+          <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>GIT_RELEASE_BRANCH</name>
           <description>Release branch</description>
@@ -21,10 +23,16 @@
           <description>Continuous Integration branch</description>
           <defaultValue>development</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GITLAB_CREDENTIAL</name>
+          <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
-          <description>Name of the OpenShift project.
-(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
+          <description>Name of the OpenShift project.(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
 		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
@@ -59,7 +67,12 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-		<hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_TOKEN_PROJECT_DEV</name>
+          <description>A valid OSE3 token for dev project</description>
+          <defaultValue></defaultValue>
+       </hudson.model.PasswordParameterDefinition>
+	<hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description>OpenShift template to be used in deployment</description>
           <defaultValue>nginx-alm-1.0</defaultValue>
@@ -94,7 +107,9 @@ def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
 def slurperFRONT_CUSTOMIZE = new JsonSlurper()
 def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
 
-return listFRONT_CUSTOMIZE
+
+return listFRONT_CUSTOMIZE 
+
 </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>
@@ -129,10 +144,10 @@ return listFRONT_CUSTOMIZE
   <publishers/>
   <buildWrappers>
     <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (nodejs)</template>
+      <template>#${BUILD_NUMBER}: ${OSE3_APP_NAME}->${OSE3_PROJECT_NAME} (nodejs)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/GitLabWebHooks.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy</includes>
+      <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

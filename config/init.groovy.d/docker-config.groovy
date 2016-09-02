@@ -60,6 +60,7 @@ def swarmMasterUrl = System.getenv("SWARM_MASTER_URL")
 assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 def mavenDataContainer = System.getenv("MAVEN_DATA")
 def nodeJSDataContainer = System.getenv("NODEJS_DATA")
+def defaultRootPathForVolumes = System.getenv("DOCKER_SLAVES_VOLUMES_ROOT")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
@@ -78,7 +79,7 @@ docker_settings =
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.3.1',
           labelString: 'wordpress-build',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -101,7 +102,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3.1',
           labelString: 'docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -124,7 +125,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3.1',
           labelString: 'front-build-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -147,7 +148,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3.1',
           labelString: 'wordpress-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -170,7 +171,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1',
           labelString: 'ose3-deploy',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -193,7 +194,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.3.1',
           labelString: 'maven',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -205,7 +206,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (mavenDataContainer?.trim())? '':'/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
+          volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
@@ -216,7 +217,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.3.1',
           labelString: 'hpalm_bridge',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -228,7 +229,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (mavenDataContainer?.trim())? '':'/srv/Jenkins/jslave-maven:/tmp/jslave-maven/m2',
+          volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
@@ -239,7 +240,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.3.1',
           labelString: 'nodejs',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -251,7 +252,7 @@ docker_settings =
           instanceCapStr: '2',
           dnsString: '',
           dockerCommand: 'start',
-          volumesString: (nodeJSDataContainer?.trim())? '':'/srv/Jenkins/nodejs-cache:/cache',
+          volumesString: (nodeJSDataContainer?.trim())? '':"$defaultRootPathForVolumes/nodejs-cache:/cache",
           volumesFromString: (nodeJSDataContainer?.trim())? nodeJSDataContainer:'',
           hostname: '',
           bindPorts: '',
@@ -262,7 +263,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.3.1',
           labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -285,7 +286,7 @@ docker_settings =
           mode: Node.Mode.NORMAL
         ],
 		[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.3',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.3.1',
           labelString: 'apic',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',

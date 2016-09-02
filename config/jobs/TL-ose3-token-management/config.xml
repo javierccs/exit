@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_USER</name>
+          <description>A valid OSE3 user</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_PASSWORD</name>
+          <description>Password for this OSE3 user</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_URL</name>
+          <description>OpenShift PAAS region URL</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+          <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_PROJECT</name>
+          <description>Project for which you want to create a OSE token.
+(Openshift project name including the suffix of the environment that you need: &quot;-dev&quot; or &quot;-pre&quot; or &quot;-pro&quot;.  For example: my-project-dev)</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EMAIL_ACCOUNT</name>
+          <description>Email account where you want to receive information about the OSE token</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>1</artifactDaysToKeep>
+        <artifactNumToKeep>1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+   <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>ose3-deploy</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>create_token.sh</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.40.5">
+      <recipientList>bcc:${EMAIL_ACCOUNT}</recipientList>
+      <configuredTriggers>
+        <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+          <email>
+            <recipientList></recipientList>
+            <subject>$PROJECT_DEFAULT_SUBJECT</subject>
+            <body>$PROJECT_DEFAULT_CONTENT</body>
+            <recipientProviders>
+              <hudson.plugins.emailext.plugins.recipients.ListRecipientProvider/>
+            </recipientProviders>
+            <attachmentsPattern></attachmentsPattern>
+            <attachBuildLog>true</attachBuildLog>
+            <compressBuildLog>false</compressBuildLog>
+            <replyTo>serenity-alm@isban.com</replyTo>
+            <contentType>project</contentType>
+          </email>
+        </hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
+      </configuredTriggers>
+      <contentType>text/html</contentType>
+      <defaultSubject>[Token Request] Information about your OSE3 TOKEN</defaultSubject>
+      <defaultContent>&lt;div class=&quot;WordSection1&quot;&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;o:p&gt;&amp;nbsp;&lt;/o:p&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;Please see the log attached in order to recover the OSE3 token value. Remember that the information will be visible in jenkins interface ONLY temporarily&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;o:p&gt;&amp;nbsp;&lt;/o:p&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;i&gt;&lt;span lang=&quot;ES&quot; style=&quot;font-size:9.0pt;mso-fareast-language:ES&quot;&gt;&lt;/span&gt;&lt;/i&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;img width=&quot;224&quot; height=&quot;53&quot; id=&quot;Imagen_x0020_2&quot; src=&quot;http://portalserenity.eng.gsnetcloud.corp:8080/image/layout_set_logo?img_id=30918&amp;t=1471379957842&quot; alt=&quot;Descripción: ALM&quot;&gt;&lt;span style=&quot;mso-fareast-language:ES&quot;&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;span style=&quot;font-size:8.0pt;font-family:&amp;quot;Arial&amp;quot;,sans-serif;color:#C4BC96;mso-fareast-language:ES&quot;&gt;Issues can be reported in our
+&lt;a href=&quot;https://jira.ci.gsnet.corp/browse/SAS&quot;&gt;&lt;span style=&quot;color:#0563C1&quot;&gt;Jira project&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;mso-fareast-language:ES&quot;&gt;
+&lt;/span&gt;&lt;span style=&quot;font-size:9.0pt;font-family:&amp;quot;Arial&amp;quot;,sans-serif;color:black;mso-fareast-language:ES&quot;&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;span style=&quot;font-size:8.0pt;font-family:&amp;quot;Arial&amp;quot;,sans-serif;color:gray;mso-fareast-language:ES&quot;&gt;&lt;a href=&quot;mailto:serenity-alm@isban.com&quot;&gt;&lt;span style=&quot;color:gray&quot;&gt;serenity-alm@isban.com&lt;/span&gt;&lt;/a&gt;&lt;br&gt;
+&lt;a href=&quot;http://portalserenity.eng.gsnetcloud.corp:8080/web/alm&quot;&gt;&lt;span style=&quot;color:gray&quot;&gt;Serenity&lt;/span&gt;&lt;/a&gt;&lt;/span&gt;&lt;span style=&quot;color:gray;mso-fareast-language:ES&quot;&gt;&lt;o:p&gt;&lt;/o:p&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p class=&quot;MsoNormal&quot;&gt;&lt;o:p&gt;&amp;nbsp;&lt;/o:p&gt;&lt;/p&gt;
+&lt;/div&gt;
+     </defaultContent>
+      <attachmentsPattern></attachmentsPattern>
+      <presendScript>$DEFAULT_PRESEND_SCRIPT</presendScript>
+      <attachBuildLog>true</attachBuildLog>
+      <compressBuildLog>false</compressBuildLog>
+      <replyTo>serenity-alm@isban.com</replyTo>
+      <saveOutput>false</saveOutput>
+      <disabled>false</disabled>
+    </hudson.plugins.emailext.ExtendedEmailPublisher>
+  </publishers>  
+  <buildWrappers/>
+
+</project>

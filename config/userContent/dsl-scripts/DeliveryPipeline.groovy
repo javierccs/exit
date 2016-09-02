@@ -2,9 +2,18 @@
   GITLAB_PROJECT: GitLab project name, (like groupname/repositoryname)
 */
 import jenkins.model.*
+import java.util.regex.*
 
 // Input parameters
-def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
+final String regex = "(?:(?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
+Pattern pattern = Pattern.compile(regex);
+Matcher matcher = pattern.matcher(GITLAB_PROJECT);
+assert matcher.matches() : "[ERROR] Syntax error: " + GITLAB_PROJECT + " doesn't match expected url pattern."
+def GROUP_NAME = matcher.group(1)
+def REPOSITORY_NAME = matcher.group(2)
+out.println("GitLab Group: " + GROUP_NAME);
+out.println("GitLab Project: " + REPOSITORY_NAME);
+def GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
 
 if (!Jenkins.instance.getItemByFullName(GROUP_NAME)) {
   folder(GROUP_NAME) {
