@@ -1,7 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
     <actions/>
-    <description>This job is designed to help you to deploy an own Openshift template in a ose3 project of development.</description>
+    <description>
+<![CDATA[
+<p>This job is designed to help you to deploy an own Openshift template in a ose3 project of development.</p>
+<p>Template documentation info is avaliable at <b><a href='http://serenity.gs.corp:8080/web/alm/reference-guides/detail?p_p_id=110_INSTANCE_OUXj4se4Z6Co&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_110_INSTANCE_OUXj4se4Z6Co_struts_action=%2Fdocument_library_display%2Fview_file_entry&_110_INSTANCE_OUXj4se4Z6Co_redirect=%2Fweb%2Falm%2Fdocumentation&_110_INSTANCE_OUXj4se4Z6Co_fileEntryId=63716'>OSE3 template management template guide</a></b>.</p>
+
+]]>
+</description>
     <keepDependencies>false</keepDependencies>
     <properties>
         <hudson.model.ParametersDefinitionProperty>
