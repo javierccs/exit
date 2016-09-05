@@ -2,7 +2,7 @@ import jenkins.model.*
 
 println "setting up mail"
 def jenkinsLocationConfiguration = JenkinsLocationConfiguration.get()
-jenkinsLocationConfiguration.setAdminAddress("jenkins <"+System.getenv("JENKINS_EMAIL")+">")
+jenkinsLocationConfiguration.setAdminAddress(System.getenv("JENKINS_EMAIL"))
 jenkinsLocationConfiguration.save()
 def inst = Jenkins.getInstance()
 
