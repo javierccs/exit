@@ -254,7 +254,7 @@ if ( gitlabCredsType == 'SSH' ){
         providedSettings('Serenity Maven Settings')
         properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL',
                    'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
+                   'sonar.jdbc.username': '$SONAR_JDBC_USERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
       }
     }
   }
