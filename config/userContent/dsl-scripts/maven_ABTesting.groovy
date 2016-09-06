@@ -13,7 +13,6 @@ def GIT_INTEGRATION_BRANCH_FEATURE_B = "${GIT_INTEGRATION_BRANCH_FEATURE_B}".tri
 def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 
@@ -207,8 +206,6 @@ mavenJob (buildJobName_a) {
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
      }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
@@ -428,8 +425,6 @@ mavenJob (buildJobName_b) {
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
      }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
