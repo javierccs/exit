@@ -54,7 +54,7 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
           <description>Name of the OpenShift project.
-(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
+(Openshift project name excluding the suffix &quot;-dev&quot;)</description>
           <defaultValue>serenity-alm</defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
