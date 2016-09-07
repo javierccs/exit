@@ -157,7 +157,7 @@ job (buildJobName) {
   parameters {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
+    stringParam('gitlabSourceRepoURL', GITLAB_URL+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
     stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
     stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH, 'GitLab target branch (only for MERGE events)')
@@ -210,12 +210,12 @@ job (buildJobName) {
     git {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       browser {
-        gitLab(GITLAB_URL+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVERL+GITLAB_PROJECT, '8.2')
       } //browser
       remote {
         credentials(GITLAB_CREDENTIAL)
         name('origin')
-        url(GITLAB_SERVER+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()
