@@ -24,7 +24,7 @@ deliveryPipelineView(GITLAB_PROJECT) {
     allowRebuild()
     columns(1)
     enableManualTriggers()
-    pipelineInstances(3)
+    pipelineInstances(1)
     showAggregatedPipeline()
     showAvatars()
     showChangeLog()
@@ -33,6 +33,7 @@ deliveryPipelineView(GITLAB_PROJECT) {
     showTotalBuildTime()
     updateInterval(5)
     pipelines {
-      regex(REPOSITORY_NAME+'-ci-build-(.*)')
+      component(REPOSITORY_NAME, REPOSITORY_NAME+'-ci-build-feature-A')
+      component(REPOSITORY_NAME, REPOSITORY_NAME+'-ci-build-feature-B')
     }
 } // deliveryPipelineView
