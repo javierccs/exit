@@ -809,7 +809,7 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                 predefinedProp('OSE3_APP_VERSION','${POM_VERSION}')
+                 predefinedProp('OSE3_APP_VERSION','${OSE3_APP_VERSION}')
                  predefinedProp('OSE3_URL',OSE3_URL)
                  predefinedProp('VALUE_URL','${VALUE_URL}')
                }
@@ -860,7 +860,7 @@ job (deployProJobName) {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
-    stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
+    stringParam('OSE3_APP_VERSION', '')
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
@@ -871,7 +871,7 @@ job (deployProJobName) {
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+            'echo \"OSE3_TEMPLATE_PARAMS=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
          )
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
