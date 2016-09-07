@@ -33,7 +33,7 @@ deliveryPipelineView(GITLAB_PROJECT) {
     showTotalBuildTime()
     updateInterval(5)
     pipelines {
-      component(REPOSITORY_NAME, REPOSITORY_NAME+'-ci-build-feature-A')
-      component(REPOSITORY_NAME, REPOSITORY_NAME+'-ci-build-feature-B')
+      component('feature-A', REPOSITORY_NAME+'-ci-build-feature-A')
+      component('feature-B', REPOSITORY_NAME+'-ci-build-feature-B')
     }
 } // deliveryPipelineView
