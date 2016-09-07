@@ -871,7 +871,7 @@ job (deployProJobName) {
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=APP_VERSION=$OSE3_APP_VERSION,$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
          )
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
