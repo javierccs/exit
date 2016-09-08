@@ -71,9 +71,15 @@ job(buildJobName) {
         stringParam('OSE3_URL', params.openShiftUrl, 'Openshift Url');
         stringParam('OSE3_PROJECT_NAME', params.openShiftProjectName.dev, 'Openshift project name');
         stringParam('OSE3_TEMPLATE_PATH', params.openShiftTemplatePath, 'Path to openshift template');
-        stringParam('OSE3_TOKEN_PROJECT_DEV', params.ose3TokenDev, 'ose3 token dev');
-
     }
+    configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT_DEV'
+               description 'OSE3 token project dev'
+               defaultValue params.ose3TokenDev
+      }
+    }
+
     scm {
         git {
             branch('${GIT_SOURCE_REPO}/${GIT_INTEGRATION_BRANCH}')
