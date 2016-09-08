@@ -1,7 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Template for front A/B testing projects</description>
+  <description>
+<![CDATA[
+<p>This template will create a pipeline for front A/B Testing projects compiled with <b><a href='http://gulpjs.com'>Gulp</a></b>, <b><a href='http://gruntjs.com'>Grunt</a></b>, <b><a href='https://www.npmjs.com'>NPM</a></b> or without compilation.</p>
+<p>Template documentation info is avaliable at <b><a href='http://portalserenity.eng.gsnetcloud.corp:8080/web/alm/reference-guides/detail?p_p_id=110_INSTANCE_OUXj4se4Z6Co&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_110_INSTANCE_OUXj4se4Z6Co_struts_action=%2Fdocument_library_display%2Fview_file_entry&_110_INSTANCE_OUXj4se4Z6Co_redirect=%2Fweb%2Falm%2Fdocumentation&_110_INSTANCE_OUXj4se4Z6Co_fileEntryId=64941'>Front A-B Testing template guide</a></b>.</p>
+]]>
+</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
