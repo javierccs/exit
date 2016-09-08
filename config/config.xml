@@ -101,7 +101,6 @@
       </role>
       <role name="tl_user" pattern="TL-.+">
         <permissions>
-          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.model.Item.Workspace</permission>
