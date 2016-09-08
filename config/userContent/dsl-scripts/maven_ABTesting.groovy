@@ -554,9 +554,16 @@ job (deployDevJobName) {
     //  description('OSE3 credentials')
     //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT', OSE3_TOKEN_PROJECT_DEV, '')
-    
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_DEV
+      }
+  }
+  
+ 
   wrappers {
    // credentialsBinding {
    //   usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
@@ -791,9 +798,15 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRE,'')
-
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_PRE
+      }
+  }
+
   properties {
     promotions {
      promotion {
@@ -864,9 +877,16 @@ job (deployProJobName) {
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
-
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_PRO
+      }
+  }
+
+
   //configure injectPasswords
   steps {
        shell(
