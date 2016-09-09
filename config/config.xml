@@ -101,6 +101,7 @@
       </role>
       <role name="tl_user" pattern="TL-.+">
         <permissions>
+          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.model.Item.Workspace</permission>
@@ -111,6 +112,7 @@
       </role>
        <role name="tl_token-management" pattern="TL-ose3-token-management">
         <permissions>
+          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.model.Item.Workspace</permission>
