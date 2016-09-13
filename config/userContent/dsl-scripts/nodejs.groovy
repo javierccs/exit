@@ -5,6 +5,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
@@ -60,11 +61,6 @@ def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 //Compose the template params, if blank we left the default pf PAAS
 if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 
-//SONARQUBE
-String NAME="Serenity SonarQube"
-//def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-//boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
@@ -77,7 +73,7 @@ def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
-job (buildJobName) {
+def buildJob = job (buildJobName) {
   println "JOB: "+buildJobName
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
@@ -227,6 +223,7 @@ if ( COMPILER.equals ( "None" )) {
     }	 
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}' '${CONFIG_DIRECTORY}'")
   }
+
   publishers {
     archiveArtifacts('*.zip')
 if (JUNIT_TESTS_PATTERN?.trim()) {
@@ -252,10 +249,14 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
       }
     } //extendedEmail
   } //publishers
-
-  configure {
-  }
 } //job
+
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "." , "sonar.exclusions" : "node_modules/**,bower_components/**",
+     "sonar.projectKey" : 'serenity:nodejs:$FRONT_IMAGE_NAME' , "sonar.projectName" : '$FRONT_IMAGE_NAME' , "sonar.projectVersion" : '$FRONT_IMAGE_VERSION'])
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {

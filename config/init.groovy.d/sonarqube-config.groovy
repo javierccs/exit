@@ -4,7 +4,6 @@ import hudson.plugins.sonar.*
 
 String NAME="Serenity SonarQube"
 def logger = Logger.getLogger("hudson.plugins.sonar")
-logger.info("Setting SonarQube installation: $NAME")
 String serverUrl=System.getenv("SONARQUBE_SERVER_URL")
 String sonarLogin=System.getenv("SONARQUBE_SERVER_LOGIN")
 String sonarPassword=System.getenv("SONARQUBE_SERVER_PASSWORD")
@@ -18,8 +17,10 @@ if(!(serverUrl?.trim() && sonarLogin?.trim() && sonarPassword?.trim() &&
   return
 }
 
+// SonarQube Server configuration
+logger.info("Setting SonarQube installation: $NAME")
 def sonarqube = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
-def sinst = new SonarInstallation(NAME, serverUrl, "4.6", "", databaseUrl, databaseLogin, databasePassword,
+def sinst = new SonarInstallation(NAME, serverUrl, hudson.plugins.sonar.utils.SQServerVersions.SQ_5_1_OR_LOWER, "", databaseUrl, databaseLogin, databasePassword,
   '', '', null,   sonarLogin, sonarPassword, '')
 
 int i = 0
@@ -33,3 +34,11 @@ sonarqube.setInstallations(sinst)
 sonarqube.setBuildWrapperEnabled(true)
 sonarqube.save()
 logger.info("SonarQube installation added: $NAME")
+
+// SonarQube Runner configuration
+logger.info("Setting SonarQube Runner installation: $NAME Runner")
+def sonarqubeRunner = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarRunnerInstallation")
+def srinst = new SonarRunnerInstallation("$NAME Runner", "/usr/share/sonar-runner", null)
+sonarqubeRunner.setInstallations(srinst)
+sonarqubeRunner.save()
+logger.info("SonarQube Runner installation added: $NAME Runner")
