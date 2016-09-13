@@ -10,7 +10,7 @@
           <name>GITLAB_PROJECT</name>
           <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.-_]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
           <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
         </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>         
         <hudson.model.StringParameterDefinition>

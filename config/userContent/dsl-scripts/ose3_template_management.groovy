@@ -35,13 +35,14 @@ def inputData() {
 
 def params = inputData();
 
-final String regex = "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
-Pattern pattern = Pattern.compile(regex);
-Matcher matcher = pattern.matcher(params.gitLabProject);
-assert matcher.matches() : "[ERROR] Syntax error: " + params.gitLabProject + " doesn't match expected url pattern."
-def GITLAB_URL = matcher.group(1) ?: params.gitLabHost;
-def GROUP_NAME = matcher.group(2);
-def REPOSITORY_NAME = matcher.group(3);
+
+//checks gitlab url
+def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
+def GROUP_NAME = gitLabMap.groupName
+def REPOSITORY_NAME = gitLabMap.repositoryName
+def GITLAB_URL = gitLabMap.url
+def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
+def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);

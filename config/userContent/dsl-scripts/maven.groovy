@@ -17,15 +17,13 @@ def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 def APP_NAME_OSE3="${APP_NAME_OSE3}".trim().toLowerCase()
 
 // Static values
-final String regex = "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
-Pattern pattern = Pattern.compile(regex);
-Matcher matcher = pattern.matcher(GITLAB_PROJECT);
-assert matcher.matches() : "[ERROR] Syntax error: " + GITLAB_PROJECT + " doesn't match expected url pattern."
+//checks gitlab url
+def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
+def GROUP_NAME = gitLabMap.groupName
+def REPOSITORY_NAME = gitLabMap.repositoryName
+def GITLAB_URL = gitLabMap.url
 def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
 def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
-def GITLAB_URL = matcher.group(1) ?: GITLAB_SERVER;
-def GROUP_NAME = matcher.group(2);
-def REPOSITORY_NAME = matcher.group(3);
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
