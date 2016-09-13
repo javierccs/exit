@@ -35,10 +35,10 @@ def buildJobName_b = GITLAB_PROJECT+'-ci-build-feature-B'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
-if (nexusRepositoryUrl==null) {
-  nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
-}
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES' ?: '/content/repositories/releases/'
+def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 
 //HPALM INFO
 def ADD_HPALM_AT_DEV = "${ADD_HPALM_AT_DEV}".trim()
@@ -229,7 +229,7 @@ if ( gitlabCredsType == 'SSH' ){
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
+          url(nexusRepositoryUrl+mavenReleaseRepository)
           uniqueVersion(true)
           evenIfUnstable(false)
         }
@@ -259,8 +259,8 @@ if ( gitlabCredsType == 'SSH' ){
    
   publishers {
     deployArtifacts {
-      repositoryId('serenity')
-      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      repositoryId('serenity') 
+      repositoryUrl(nexusRepositoryUrl+mavenSnapshotRepository')
       uniqueVersion(true)
     }
     flexiblePublish {
@@ -447,7 +447,7 @@ if ( gitlabCredsType == 'SSH' ){
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
+          url(nexusRepositoryUrl+mavenReleaseRepository)
           uniqueVersion(true)
           evenIfUnstable(false)
         }
@@ -478,7 +478,7 @@ if ( gitlabCredsType == 'SSH' ){
   publishers {
     deployArtifacts {
       repositoryId('serenity')
-      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      repositoryUrl(nexusRepositoryUrl+mavenSnapshotRepository')
       uniqueVersion(true)
     }
     flexiblePublish {
