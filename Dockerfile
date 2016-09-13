@@ -12,18 +12,19 @@ ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.components="git;zip" \
     com.serenity.image.version="1.4"
 
-ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css
-ENV SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js
-ENV SERENITYALM_PORTAL=http://portalserenity.eng.gsnetcloud.corp:8080/web/alm
+ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css \
+    SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js \
+    SERENITYALM_PORTAL=http://portalserenity.eng.gsnetcloud.corp:8080/web/alm
 
 USER root
 
 #Installs td-agent (fluentd) for log collection
 
 #Downloads td-agent (sets proxy for download)
-ENV http_proxy http://proxyapps.gsnet.corp:80
-ENV https_proxy http://proxyapps.gsnet.corp:80
-ENV no_proxy="*.gsnet.corp, *.gsnetcloud.corp"
+ENV http_proxy=http://proxyapps.gsnet.corp:80 \
+    https_proxy=http://proxyapps.gsnet.corp:80 \
+    no_proxy="*.gsnet.corp, *.gsnetcloud.corp"
+
 #Downloads and installs td-agent
 #changes td-agent default user to jenkins
 #and changes td-agent directories to jenkins user
