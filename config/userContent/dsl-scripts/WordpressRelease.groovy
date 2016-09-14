@@ -70,7 +70,7 @@ if (BTSYNC_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",BTSYNC_MEMORY="+B
 def OSE3_TEMPLATE_PARAMS_DEV="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_DEV}"
 
 //PRE
-def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
+def OSE3_TOKEN_PROJECT_PRE=""
 def WORDPRESS_DB_HOST_PRE="${WORDPRESS_DB_HOST_PRE}".trim()
 def WORDPRESS_DB_USER_PRE="${WORDPRESS_DB_USER_PRE}".trim()
 def WORDPRESS_DB_PASSWORD_PRE="${WORDPRESS_DB_PASSWORD_PRE}".trim()
@@ -105,7 +105,7 @@ if (BTSYNC_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",BTSYNC_MEMORY="+B
 def OSE3_TEMPLATE_PARAMS_PRE="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRE}"
 
 //PRO
-def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+def OSE3_TOKEN_PROJECT_PRO=""
 def WORDPRESS_DB_HOST_PRO="${WORDPRESS_DB_HOST_PRO}".trim()
 def WORDPRESS_DB_USER_PRO="${WORDPRESS_DB_USER_PRO}".trim()
 def WORDPRESS_DB_PASSWORD_PRO="${WORDPRESS_DB_PASSWORD_PRO}".trim()
@@ -157,7 +157,7 @@ job (buildJobName) {
   parameters {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH', 'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
+    stringParam('gitlabSourceRepoURL', GITLAB_URL+GITLAB_PROJECT+'.git', 'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin', 'GitLab source repo name (only for MERGE events from forked repositories)')
     stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH, 'Gitlab source branch (only for MERGE events from forked repositories)')
     stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH, 'GitLab target branch (only for MERGE events)')
@@ -210,12 +210,12 @@ job (buildJobName) {
     git {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       browser {
-        gitLab(GITLAB_URL+GITLAB_PROJECT, '8.2')
+        gitLab(GITLAB_SERVERL+GITLAB_PROJECT, '8.2')
       } //browser
       remote {
         credentials(GITLAB_CREDENTIAL)
         name('origin')
-        url(GITLAB_SERVER+GITLAB_PROJECT+'.git')
+        url(GITLAB_URL+GITLAB_PROJECT+'.git')
       } //remote
       extensions {
         wipeOutWorkspace()

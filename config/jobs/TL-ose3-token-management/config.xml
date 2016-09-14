@@ -1,7 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description></description>
+  <description>
+<![CDATA[
+<p>This job is designed to create deployment token to deploy on OpenShift.</p>
+<p>Template documentation info is avaliable at <b><a href='http://portalserenity.eng.gsnetcloud.corp:8080/web/alm/reference-guides/detail?p_p_id=110_INSTANCE_OUXj4se4Z6Co&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_110_INSTANCE_OUXj4se4Z6Co_struts_action=%2Fdocument_library_display%2Fview_file_entry&_110_INSTANCE_OUXj4se4Z6Co_redirect=%2Fweb%2Falm%2Fdocumentation&_110_INSTANCE_OUXj4se4Z6Co_fileEntryId=63618'>OSE Token Generation Guide</a></b></p>
+]]>
+
+  </description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
@@ -9,11 +15,11 @@
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_USER</name>
           <description>A valid OSE3 user</description>
           <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_PASSWORD</name>
           <description>Password for this OSE3 user</description>
@@ -30,16 +36,12 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT</name>
-          <description>Project for which you want to create a OSE token</description>
+          <description>Project for which you want to create a OSE token.
+(Openshift project name including the suffix of the environment that you need: &quot;-dev&quot; or &quot;-pre&quot; or &quot;-pro&quot;.  For example: my-project-dev)</description>
           <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>OSE3_SERVICE_ACCOUNT</name>
-          <description>Name as you want to call this service account</description>
-          <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
+        </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>EMAIL_ACCOUNT</name>
           <description>Email account where you want to receive information about the OSE token</description>
@@ -81,7 +83,7 @@
   </builders>
   <publishers>
     <hudson.plugins.emailext.ExtendedEmailPublisher plugin="email-ext@2.40.5">
-      <recipientList>bcc:serenity-alm@isban.com,bcc:${EMAIL_ACCOUNT}</recipientList>
+      <recipientList>bcc:${EMAIL_ACCOUNT}</recipientList>
       <configuredTriggers>
         <hudson.plugins.emailext.plugins.trigger.AlwaysTrigger>
           <email>

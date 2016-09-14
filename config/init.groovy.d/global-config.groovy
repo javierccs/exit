@@ -1,5 +1,6 @@
 import hudson.model.*;
 import jenkins.model.*;
+import hudson.markup.RawHtmlMarkupFormatter;
 
 def inst = Jenkins.getInstance()
 // No jobs on master
@@ -27,3 +28,6 @@ if (realm instanceof hudson.security.HudsonPrivateSecurityRealm) {
   }
   adminUser.save()
 }
+//configures markup config
+inst.setMarkupFormatter(new RawHtmlMarkupFormatter(false))
+inst.save()

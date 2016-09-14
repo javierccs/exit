@@ -110,6 +110,22 @@
         </permissions>
         <assignedSIDs/>
       </role>
+       <role name="tl_token-management" pattern="TL-ose3-token-management">
+        <permissions>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs>
+	  <sid>impes-product-owner</sid>
+          <sid>impes-technical-lead</sid>
+          <sid>impes-developer</sid>
+        </assignedSIDs>
+
+      </role>
     </roleMap>
     <roleMap type="globalRoles">
       <role name="admin" pattern=".*">

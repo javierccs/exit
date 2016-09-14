@@ -85,8 +85,8 @@ if ( gitlabCredsType == null ) {
 println ("GitLab credential type " + gitlabCredsType );
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
-def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
-def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+def OSE3_TOKEN_PROJECT_PRE=""
+def OSE3_TOKEN_PROJECT_PRO=""
 
 
 
@@ -254,7 +254,7 @@ if ( gitlabCredsType == 'SSH' ){
         providedSettings('Serenity Maven Settings')
         properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL',
                    'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-                   'sonar.jdbc.username': '$SONAR_JDBCUSERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
+                   'sonar.jdbc.username': '$SONAR_JDBC_USERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
       }
     }
   }

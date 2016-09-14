@@ -65,6 +65,7 @@ copyartifact:1.37
 groovy:1.29
 release:2.5.4
 dashboard-view:2.9.7
+htmlpublisher:1.11
 
 #common
 authentication-tokens:1.2
@@ -108,3 +109,10 @@ run-condition:0.7
 
 ssh-agent:1.13
 bouncycastle-api:1.648.3
+
+ansicolor:0.4.2
+#jenkins themes
+simple-theme-plugin:0.3
+#for jenkins-atlasian theme
+gravatar:2.1
+

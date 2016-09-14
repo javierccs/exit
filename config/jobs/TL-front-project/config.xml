@@ -1,7 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description></description>
+  <description>
+<![CDATA[
+<p>This template will create a pipeline for front projects compiled with <b><a href='http://gulpjs.com'>Gulp</a></b>, <b><a href='http://gruntjs.com'>Grunt</a></b>, <b><a href='https://www.npmjs.com'>NPM</a></b> or without compilation.</p>
+<p>Template documentation info is avaliable at <b><a href='http://portalserenity.eng.gsnetcloud.corp:8080/web/alm/reference-guides/detail?p_p_id=110_INSTANCE_OUXj4se4Z6Co&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_110_INSTANCE_OUXj4se4Z6Co_struts_action=%2Fdocument_library_display%2Fview_file_entry&_110_INSTANCE_OUXj4se4Z6Co_redirect=%2Fweb%2Falm%2Fdocumentation%3Fp_p_id%3D101_INSTANCE_11M8XyFhRiRJ%26p_p_lifecycle%3D0%26p_p_state%3Dnormal%26p_p_mode%3Dview%26p_p_col_id%3Dcolumn-2%26p_p_col_pos%3D1%26p_p_col_count%3D2%26_101_INSTANCE_11M8XyFhRiRJ_delta%3D10%26_101_INSTANCE_11M8XyFhRiRJ_keywords%3D%26_101_INSTANCE_11M8XyFhRiRJ_advancedSearch%3Dfalse%26_101_INSTANCE_11M8XyFhRiRJ_andOperator%3Dtrue%26p_r_p_564233524_resetCur%3Dfalse%26_101_INSTANCE_11M8XyFhRiRJ_cur%3D2&_110_INSTANCE_OUXj4se4Z6Co_fileEntryId=47240'>Front template guide</a></b>.</p>
+]]>
+
+</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
@@ -32,8 +38,7 @@
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_PROJECT_NAME</name>
-          <description>Name of the OpenShift project.
-(Openshift project name excluding the prefix &quot;-dev&quot;)</description>
+          <description>Name of the OpenShift project.(Openshift project name excluding the suffix &quot;-dev&quot;)</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
 		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
@@ -68,23 +73,16 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-		<hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_TOKEN_PROJECT_DEV</name>
+          <description>A valid OSE3 token for dev project</description>
+          <defaultValue></defaultValue>
+       </hudson.model.PasswordParameterDefinition>
+	<hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description>OpenShift template to be used in deployment</description>
           <defaultValue>nginx-alm-1.0</defaultValue>
         </hudson.model.StringParameterDefinition>
-	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
-          <name>OSE3_TOKEN_MANAGEMENT</name>
-          <description></description>
-          <quoteValue>false</quoteValue>
-          <saveJSONParameterToFile>false</saveJSONParameterToFile>
-          <visibleItemCount>5</visibleItemCount>
-          <type>PT_JSON</type>
-          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_token_ose3_json.groovy</groovyScriptFile>
-          <bindings></bindings>
-          <groovyClasspath></groovyClasspath>
-          <multiSelectDelimiter>,</multiSelectDelimiter>
-        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
 	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>FRONT_CUSTOMIZE</name>
           <description></description>
@@ -111,15 +109,12 @@
         <groovyScriptContent>
 import groovy.json.*
 def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
-def OSE3_TOKEN_MANAGEMENT= &quot;${OSE3_TOKEN_MANAGEMENT}&quot;.trim()
 
 def slurperFRONT_CUSTOMIZE = new JsonSlurper()
 def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
 
-def slurperOSE3_TOKEN_MANAGEMENT = new JsonSlurper()
-def listOSE3_TOKEN_MANAGEMENT = slurperOSE3_TOKEN_MANAGEMENT.parseText(OSE3_TOKEN_MANAGEMENT)
 
-return listFRONT_CUSTOMIZE + listOSE3_TOKEN_MANAGEMENT
+return listFRONT_CUSTOMIZE 
 
 </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>

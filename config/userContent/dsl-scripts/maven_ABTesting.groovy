@@ -13,7 +13,6 @@ def GIT_INTEGRATION_BRANCH_FEATURE_B = "${GIT_INTEGRATION_BRANCH_FEATURE_B}".tri
 def GIT_RELEASE_BRANCH_FEATURE_A = "${GIT_RELEASE_BRANCH_FEATURE_A}".trim()
 def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 
@@ -64,8 +63,8 @@ def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
 
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
-def OSE3_TOKEN_PROJECT_PRE="${OSE3_TOKEN_PROJECT_PRE}".trim()
-def OSE3_TOKEN_PROJECT_PRO="${OSE3_TOKEN_PROJECT_PRO}".trim()
+def OSE3_TOKEN_PROJECT_PRE=""
+def OSE3_TOKEN_PROJECT_PRO=""
 
 
 //JAVASE TEMPLATE VARS
@@ -207,8 +206,6 @@ mavenJob (buildJobName_a) {
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
      }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
@@ -428,8 +425,6 @@ mavenJob (buildJobName_b) {
 if ( gitlabCredsType == 'UserPassword' ){
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
      }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
@@ -559,9 +554,16 @@ job (deployDevJobName) {
     //  description('OSE3 credentials')
     //}
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT', OSE3_TOKEN_PROJECT_DEV, '')
-    
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_DEV
+      }
+  }
+  
+ 
   wrappers {
    // credentialsBinding {
    //   usernamePassword('OSE3_USERNAME', 'OSE3_PASSWORD', '${OSE3_CREDENTIAL}')
@@ -796,9 +798,15 @@ job (deployPreJobName) {
     stringParam('OSE3_URL' , '', 'OSE3_URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRE,'')
-
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_PRE
+      }
+  }
+
   properties {
     promotions {
      promotion {
@@ -814,7 +822,7 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
                  predefinedProp('OSE3_APP_NAME', '${OSE3_APP_NAME}')
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
-                 predefinedProp('OSE3_APP_VERSION','${POM_VERSION}')
+                 predefinedProp('OSE3_APP_VERSION','${OSE3_APP_VERSION}')
                  predefinedProp('OSE3_URL',OSE3_URL)
                  predefinedProp('VALUE_URL','${VALUE_URL}')
                }
@@ -865,18 +873,25 @@ job (deployProJobName) {
     stringParam('OSE3_APP_NAME', '', 'OSE3 application name')
     stringParam('OSE3_PROJECT_NAME', '', 'OSE3 project name')
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
-    stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
+    stringParam('OSE3_APP_VERSION', '')
     stringParam('OSE3_URL' , '', 'OSE3 URL')
     stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
-    stringParam('OSE3_TOKEN_PROJECT' , OSE3_TOKEN_PROJECT_PRO,'')
-
   }
+   configure {
+               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+               name 'OSE3_TOKEN_PROJECT'
+               description 'OSE3 token project'
+               defaultValue OSE3_TOKEN_PROJECT_PRO
+      }
+  }
+
+
   //configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
-            'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=APP_VERSION=$OSE3_APP_VERSION,$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
+            'echo \"OSE3_TEMPLATE_PARAMS=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
          )
           environmentVariables{
             propertiesFile('${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties')
