@@ -23,8 +23,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
-def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -154,7 +155,6 @@ job (buildJobName) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
