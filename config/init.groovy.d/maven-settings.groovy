@@ -46,7 +46,7 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
    
   def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
   def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
-  def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES' ?: '/content/repositories/releases/'
+  def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
   def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
  
   //replaces environment variables inside maven-settings.xml
@@ -75,17 +75,13 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
       }
   }
   // Test authentication
-def list = []
-list << mavenGroupRepository
-list << mavenReleaseRepository
-list << mavenSnapshotRepository
-println list
-list.each { repo -> 
-  def url = new URL("$nexusRepositoryUrl$repo")
-  def connection = url.openConnection()
-  connection.setRequestMethod("GET")
-  connection.setRequestProperty("Authorization", "Basic "+(mavenDeployerLogin+':'+mavenDeployerPasswd).bytes.encodeBase64().toString());
-  connection.connect()
+  [mavenGroupRepository, mavenReleaseRepository, mavenSnapshotRepository].each { repo -> 
+    def url = new URL("$nexusRepositoryUrl$repo")
+    def connection = url.openConnection()
+    connection.setRequestMethod("GET")
+    connection.setRequestProperty("Authorization", "Basic "+(mavenDeployerLogin+':'+mavenDeployerPasswd).bytes.encodeBase64().toString());
+    connection.connect()
 
-  (connection.responseCode == 200)? logger.info("Test Nexus Repository access $nexusRepositoryUrl$repo... Success"):logger.severe("Test Nexus Repository access $nexusRepositoryUrl$repo... ERROR "+connection.inputStream.withReader { Reader reader -> reader.text })
+    (connection.responseCode == 200)? logger.info("Test Nexus Repository access $nexusRepositoryUrl$repo... Success"):logger.severe("Test Nexus Repository access $nexusRepositoryUrl$repo... ERROR "+connection.inputStream.withReader { Reader reader -> reader.text })
+  }
 }
