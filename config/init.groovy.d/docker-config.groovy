@@ -264,7 +264,7 @@ docker_settings =
         ],
         [
           image: 'jslave-base:ics',
-          labelString: '',
+          labelString: 'base',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
