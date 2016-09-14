@@ -321,6 +321,7 @@ docker_settings =
         new DockerTemplateBase(
           template.image,
           template.dnsString,
+          null,
           template.dockerCommand,
           template.volumesString,
           template.volumesFromString,
