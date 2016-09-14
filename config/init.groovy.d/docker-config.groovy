@@ -79,7 +79,7 @@ docker_settings =
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.3.1',
           labelString: 'wordpress-build',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -102,7 +102,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3.1',
           labelString: 'docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -125,7 +125,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3.1',
           labelString: 'front-build-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -148,7 +148,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3.1',
           labelString: 'wordpress-docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -171,7 +171,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1-B2',
           labelString: 'ose3-deploy',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -194,7 +194,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.3.1',
           labelString: 'maven',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -217,7 +217,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.3.1',
           labelString: 'hpalm_bridge',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -240,7 +240,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.3.1',
           labelString: 'nodejs',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -263,7 +263,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.3.1',
           labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
@@ -286,7 +286,7 @@ docker_settings =
           mode: Node.Mode.NORMAL
         ],
 		[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.3.1',
           labelString: 'apic',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
