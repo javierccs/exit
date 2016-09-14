@@ -110,6 +110,17 @@
         </permissions>
         <assignedSIDs/>
       </role>
+      <role name="utl_user" pattern="UT-.+">
+        <permissions>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
        <role name="tl_token-management" pattern="TL-ose3-token-management">
         <permissions>
           <permission>hudson.model.Item.Configure</permission>
@@ -485,6 +496,28 @@
         <hudson.views.BuildButtonColumn/>
       </columns>
       <includeRegex>TL-.+</includeRegex>
+      <recurse>false</recurse>
+    </listView>
+    <listView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Utilities</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+      <jobNames>
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <hudson.views.StatusColumn/>
+        <hudson.views.WeatherColumn/>
+        <hudson.views.JobColumn/>
+        <hudson.views.LastSuccessColumn/>
+        <hudson.views.LastFailureColumn/>
+        <hudson.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <includeRegex>UT-.+</includeRegex>
       <recurse>false</recurse>
     </listView>
     <listView>
