@@ -29,7 +29,7 @@ def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_
         println "New hook: "+webhook
     }
   }catch (java.io.FileNotFoundException e){
-    throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Project " + GITLAB_PROJECT + " does not exist in " + GITLAB_SERVER + " or it is unracheable.")
+    throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Project " + GITLAB_PROJECT + " does not exist in " + GITLAB_SERVER + " or it is unreachable.")
   
   }
 }
