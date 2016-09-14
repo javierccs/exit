@@ -7,7 +7,7 @@
 import jenkins.model.*
 
 def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_NAME) {
-
+  try{
     def url = new URL(GITLAB_SERVER+"api/v3/projects/"+java.net.URLEncoder.encode(GITLAB_PROJECT)+"/hooks?private_token="+GITLAB_API_TOKEN)
     def connection = url.openConnection()
     connection.setRequestMethod("GET")
@@ -28,6 +28,10 @@ def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_
         assert connection.responseCode == 201
         println "New hook: "+webhook
     }
+  }catch (java.io.FileNotFoundException e){
+    throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Project " + GITLAB_PROJECT + " does not exist in " + GITLAB_SERVER + " or it is unreachable.")
+  
+  }
 }
 
 return this;
