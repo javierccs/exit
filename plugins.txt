@@ -8,6 +8,7 @@ workflow-step-api:1.13
 cloudbees-folder:5.2.1
 release:2.5.4
 dashboard-view:2.9.7
+htmlpublisher:1.11
 
 #common
 token-macro:1.12.1

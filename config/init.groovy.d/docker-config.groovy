@@ -171,7 +171,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1-B2',
           labelString: 'ose3-deploy',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
