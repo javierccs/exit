@@ -67,6 +67,7 @@
     <triggers/>
         <concurrentBuild>false</concurrentBuild>
         <canRoam>false</canRoam>
+        <assignedNode>base</assignedNode>
         <disabled>false</disabled>
         <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
         <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
