@@ -65,12 +65,12 @@
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
     <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
     <triggers/>
-    <concurrentBuild>false</concurrentBuild>
-    <assignedNode>base</assignedNode>
-    <canRoam>false</canRoam>
-    <disabled>false</disabled>
-    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
-    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+        <concurrentBuild>false</concurrentBuild>
+        <assignedNode> </assignedNode>
+        <canRoam>false</canRoam>
+        <disabled>false</disabled>
+        <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+        <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
     <triggers/>
     <concurrentBuild>false</concurrentBuild>
     <builders>
