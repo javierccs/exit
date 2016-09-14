@@ -17,8 +17,6 @@ String no_spaces_and_lowercase(value) {
 //Retrieve execution input parameters
 def inputData() {
     return [
-            gitLabHost             : Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl(),
-            gitLabApiToken         : Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken(),
             gitLabProject          : no_spaces("${GITLAB_PROJECT}"),
             gitLabReleaseBranch    : no_spaces("${GIT_RELEASE_BRANCH}"),
             gitLabIntegrationBranch: no_spaces("${GIT_INTEGRATION_BRANCH}"),
@@ -41,6 +39,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -83,7 +84,7 @@ job(buildJobName) {
         git {
             branch('${GIT_SOURCE_REPO}/${GIT_INTEGRATION_BRANCH}')
             browser {
-                gitLab(params.gitLabHost + GITLAB_PROJECT, '8.6')
+                gitLab(GITLAB_SERVER + GITLAB_PROJECT, '8.6')
             } //browser
             remote {
                 credentials(params.gitLabCredential)
@@ -101,7 +102,6 @@ job(buildJobName) {
             buildOnMergeRequestEvents(false)
             setBuildDescription(true)
             useCiFeatures(true)
-            allowAllBranches(false)
             includeBranches(params.gitLabIntegrationBranch)
         }
     } //triggers
@@ -161,4 +161,4 @@ job(buildJobName) {
     }
 }
 
-gitlabHooks.GitLabWebHooks(params.gitLabHost, params.gitLabApiToken, GITLAB_PROJECT, buildJobName)
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

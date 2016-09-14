@@ -1,6 +1,7 @@
 package util
 import jenkins.model.*
 import java.util.regex.*
+import com.dabsquared.gitlabjenkins.connection.*
 
 class Utilities {
   static final CREDENTIAL_SSH = "SSH";
@@ -45,5 +46,22 @@ class Utilities {
     def gitServerUrl = matcher.group(1) ?: Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
     return [url: gitServerUrl,  groupName:  matcher.group(2), repositoryName:  matcher.group(3)]
   }
+  // Return GitLab Connection by name
+  // GitLab Plugin >= 1.2.0 required
+  // returns Map with "name", "url", "credential"
+  static Map getGitLabConnection (String name) {
+    // Input parameters validation
+    if (name == null || name.isEmpty()) return null;
 
+    def gitLabConfig = Jenkins.getInstance().getDescriptorByType(com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig)
+    GitLabConnection gitLabConnection = gitLabConfig.getConnections().find { name.equals(it.getName()) }
+    if (gitLabConnection == null) return null;
+    def gitLabCredential = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+      com.dabsquared.gitlabjenkins.connection.GitLabApiTokenImpl.class,
+      Jenkins.instance,
+      null,
+      null
+      ).find { gitLabConnection.getApiTokenId().equals(it.id) };
+    return [name: name, url: gitLabConnection.getUrl(), credential: gitLabCredential];
+  }
 }
