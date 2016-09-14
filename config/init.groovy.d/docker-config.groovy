@@ -263,8 +263,8 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'jslave-base:ics',
-          labelString: 'base',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
+          labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -272,7 +272,7 @@ docker_settings =
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '1',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -321,7 +321,7 @@ docker_settings =
         new DockerTemplateBase(
           template.image,
           template.dnsString,
-          null,
+          null, //template.network
           template.dockerCommand,
           template.volumesString,
           template.volumesFromString,
