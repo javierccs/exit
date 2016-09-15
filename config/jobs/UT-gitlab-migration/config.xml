@@ -61,38 +61,17 @@
     </properties>
 
     <scm class="hudson.scm.NullSCM"/>
-    <assignedNode></assignedNode>
+    <assignedNode>base</assignedNode>
     <canRoam>false</canRoam>
     <concurrentBuild>false</concurrentBuild>
     <disabled>false</disabled>
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
     <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-    <triggers/>
-
+    <concurrentBuild>false</concurrentBuild>
     <builders>
-        <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
-            <targets>dsl-scripts/*.groovy</targets>
-            <usingScriptText>false</usingScriptText>
-            <ignoreExisting>false</ignoreExisting>
-            <removedJobAction>IGNORE</removedJobAction>
-            <removedViewAction>IGNORE</removedViewAction>
-            <lookupStrategy>JENKINS_ROOT</lookupStrategy>
-            <additionalClasspath></additionalClasspath>
-        </javaposse.jobdsl.plugin.ExecuteDslScripts>
+        <hudson.tasks.Shell>
+            <command>migrate_gitlab_from_v0_to_v1.sh ${GITLAB_PROJECT_SOURCE} ${GITLAB_PROJECT_TARGET} ${GITLAB_USER} ${GITLAB_PASSWORD}</command>
+        </hudson.tasks.Shell>
     </builders>
-    <publishers/>
-    <buildWrappers>
-        <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-            <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT_SOURCE}->${GITLAB_PROJECT_TARGET}</template>
-        </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
-        <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-            <includes>dsl-scripts/migrate_gitlab_from_v0_to_v1.groovy,dsl-scripts/util/Utilities.groovy</includes>
-            <excludes></excludes>
-            <flatten>false</flatten>
-            <includeAntExcludes>false</includeAntExcludes>
-            <hudsonHomeRelative>false</hudsonHomeRelative>
-            <relativeTo>userContent</relativeTo>
-        </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
-    </buildWrappers>
-
+    <triggers/>
 </project>
