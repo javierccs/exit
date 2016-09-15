@@ -61,17 +61,14 @@
     </properties>
 
     <canRoam>false</canRoam>
+    <concurrentBuild>false</concurrentBuild>
     <disabled>false</disabled>
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
     <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <assignedNode></assignedNode>
     <triggers/>
-        <concurrentBuild>false</concurrentBuild>
-        <canRoam>false</canRoam>
-        <assignedNode>base</assignedNode>
-        <disabled>false</disabled>
-        <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
-        <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-    <triggers/>
+
+
     <concurrentBuild>false</concurrentBuild>
     <builders>
         <hudson.tasks.Shell>
