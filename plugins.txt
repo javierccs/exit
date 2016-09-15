@@ -39,7 +39,7 @@ delivery-pipeline-plugin:0.9.8
 #job dsl
 config-file-provider:2.11
 managed-scripts:1.2.1
-job-dsl:1.51
+job-dsl:1.48
 structs:1.1
 
 #email-ext
