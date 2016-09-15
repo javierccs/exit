@@ -263,8 +263,8 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'jslave-base:ics',
-          labelString: 'base',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
+          labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
