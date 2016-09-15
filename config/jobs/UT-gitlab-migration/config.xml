@@ -60,16 +60,14 @@
         </EnvInjectJobProperty>
     </properties>
 
+    <scm class="hudson.scm.NullSCM"/>
+    <assignedNode>base</assignedNode>
     <canRoam>false</canRoam>
     <concurrentBuild>false</concurrentBuild>
     <disabled>false</disabled>
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
     <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-    <assignedNode>""</assignedNode>
     <triggers/>
-
-
-    <concurrentBuild>false</concurrentBuild>
     <builders>
         <hudson.tasks.Shell>
             <command>migrate_gitlab_from_v0_to_v1.sh ${GITLAB_PROJECT_SOURCE} ${GITLAB_PROJECT_TARGET} ${GITLAB_USER} ${GITLAB_PASSWORD}</command>
