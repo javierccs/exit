@@ -61,7 +61,7 @@
     </properties>
 
     <scm class="hudson.scm.NullSCM"/>
-    <canRoam>true</canRoam>
+    <canRoam>false</canRoam>
     <concurrentBuild>false</concurrentBuild>
     <disabled>false</disabled>
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
