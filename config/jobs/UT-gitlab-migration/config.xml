@@ -61,7 +61,7 @@
     </properties>
 
     <scm class="hudson.scm.NullSCM"/>
-    <assignedNode>base</assignedNode>
+
     <canRoam>false</canRoam>
     <concurrentBuild>false</concurrentBuild>
     <disabled>false</disabled>
