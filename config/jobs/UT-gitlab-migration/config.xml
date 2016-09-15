@@ -65,7 +65,7 @@
     <disabled>false</disabled>
     <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
     <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-    <assignedNode></assignedNode>
+    <assignedNode>base</assignedNode>
     <triggers/>
 
 
