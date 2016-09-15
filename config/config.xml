@@ -561,7 +561,7 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>(?!(TL|TJ)-.*).*</includeRegex>
+      <includeRegex>(?!(TL|TJ|UT)-.*).*</includeRegex>
       <recurse>false</recurse>
     </listView>
   </views>
