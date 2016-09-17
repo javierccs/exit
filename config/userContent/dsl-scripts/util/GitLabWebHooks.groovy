@@ -20,7 +20,7 @@ def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_
     webhook = Jenkins.getInstance().getRootUrl()+"project/"+INITIAL_JOB_NAME
     if (!text.contains("url\":\""+webhook+"\"")) {
         url = new URL(GITLAB_SERVER+"api/v3/projects/"+java.net.URLEncoder.encode(GITLAB_PROJECT)+"/hooks?private_token="+GITLAB_API_TOKEN+"&url="+webhook+
-      "&merge_requests_events=false&push_events=true")
+      "&merge_requests_events=false&push_events=true&enable_ssl_verification=false")
         connection = url.openConnection()
         connection.setRequestMethod("POST")
         connection.doOutput = true
