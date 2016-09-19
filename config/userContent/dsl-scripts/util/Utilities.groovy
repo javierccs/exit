@@ -5,7 +5,7 @@ import java.util.regex.*
 class Utilities {
   static final CREDENTIAL_SSH = "SSH";
   static final CREDENTIAL_USERPASSWORD = "UserPassword";
-  static final GIT_URL_REGEX_PATTERN =  "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.-]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)"
+  static final GIT_URL_REGEX_PATTERN =  "((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.-]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?"
   /**
    * Return 'SSH' if given credential id is a SSH credential or CREDENTIAL_USERPASSWORD
    * if it is a User password credential otherwise it throws IllegalArgumentException

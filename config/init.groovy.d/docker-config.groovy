@@ -61,6 +61,8 @@ assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 def mavenDataContainer = System.getenv("MAVEN_DATA")
 def nodeJSDataContainer = System.getenv("NODEJS_DATA")
 def defaultRootPathForVolumes = System.getenv("DOCKER_SLAVES_VOLUMES_ROOT")
+def gitlabUrl = System.getenv("GITLAB_URL")
+def nexusUrl = System.getenv("NEXUS_BASE_URL")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
@@ -79,9 +81,9 @@ docker_settings =
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.3.1-B3',
           labelString: 'wordpress-build',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -102,9 +104,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3.1-B3',
           labelString: 'docker',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -125,9 +127,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3.1-B3',
           labelString: 'front-build-docker',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -148,9 +150,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE 
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3.1-B3',
           labelString: 'wordpress-docker',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -171,9 +173,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1-B2',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.3.1-B3',
           labelString: 'ose3-deploy',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -194,9 +196,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.3.1-B3',
           labelString: 'maven',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl\nNEXUS_BASE_URL=$nexusUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -217,9 +219,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.3.1-B3',
           labelString: 'hpalm_bridge',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -240,9 +242,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.3.1-B3',
           labelString: 'nodejs',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -263,9 +265,9 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:1.3.1-B3',
           labelString: '',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',
@@ -286,9 +288,9 @@ docker_settings =
           mode: Node.Mode.NORMAL
         ],
 		[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.3.1',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.3.1-B3',
           labelString: 'apic',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           idleTerminationMinutes: '2',

@@ -5,12 +5,12 @@ LABEL description="Serenity ALM Jenkins image"
 LABEL com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="1.3.1-B2"
+      com.serenity.image.version="1.3.1-B3"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="1.3.1-B2"
+    com.serenity.image.version="1.3.1-B3"
 
 ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css
 ENV SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js
@@ -44,8 +44,6 @@ ENV http_proxy ""
 ENV https_proxy ""
 ENV no_proxy ""
 
-ADD certs/nexus.ci.gsnet.corp.cer /usr/local/share/ca-certificates/
-RUN update-ca-certificates && keytool -import -trustcacerts -keystore /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts   -noprompt -alias nexus.ci.gsnet.corp -file /usr/local/share/ca-certificates/nexus.ci.gsnet.corp.cer -storepass changeit
 
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
@@ -62,14 +60,13 @@ COPY config/ /usr/share/jenkins/ref/
 
 #Jenkins entry point has been modified to add td-agent service
 #To start td-agent service SERENITY_FLUENTD_SERVER variable must set
-COPY td-agent/jenkins-td-agent-entry-point.sh /usr/local/bin/jenkins-td-agent-entry-point.sh
-
-
 USER root
+ADD scripts /opt/serenity-alm/scripts
+RUN chown jenkins:jenkins  /opt/serenity-alm/scripts/*.sh && cp /opt/serenity-alm/scripts/*.sh /usr/local/bin
+
 #Jenkins war will be modified by entrypoint to add serenity-alm.css
 RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 COPY theme /opt/theme
 
-USER jenkins
-ENTRYPOINT [ "/usr/local/bin/jenkins-td-agent-entry-point.sh" ]
+ENTRYPOINT [ "/usr/local/bin/jenkins-entry-point.sh" ]
 

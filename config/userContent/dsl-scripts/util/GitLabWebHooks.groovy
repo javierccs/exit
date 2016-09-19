@@ -20,7 +20,7 @@ def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_
     webhook = Jenkins.getInstance().getRootUrl()+"project/"+INITIAL_JOB_NAME
     if (!text.contains("url\":\""+webhook+"\"")) {
         url = new URL(GITLAB_SERVER+"api/v3/projects/"+java.net.URLEncoder.encode(GITLAB_PROJECT)+"/hooks?private_token="+GITLAB_API_TOKEN+"&url="+webhook+
-      "&merge_requests_events=false&push_events=true")
+      "&merge_requests_events=false&push_events=true&enable_ssl_verification=false")
         connection = url.openConnection()
         connection.setRequestMethod("POST")
         connection.doOutput = true
@@ -31,6 +31,11 @@ def GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, INITIAL_JOB_
   }catch (java.io.FileNotFoundException e){
     throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Project " + GITLAB_PROJECT + " does not exist in " + GITLAB_SERVER + " or it is unreachable.")
   
+  }catch (java.net.MalformedURLException e){
+    throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Project " + GITLAB_PROJECT + " is not a valid project name, or " + GITLAB_SERVER + " is not properly configured.")
+
+  }catch (java.io.IOException e){
+     throw new javaposse.jobdsl.dsl.DslException ("[ERROR] Error creating webhook for " + GITLAB_PROJECT + " project in  " + GITLAB_SERVER + ". Verify if server is reachable and if its credentials are valid." )
   }
 }
 
