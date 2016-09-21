@@ -1,4 +1,4 @@
-FROM jenkins:1.651.3
+FROM jenkins:2.7.4
 MAINTAINER serenity-alm <noreply@serenity-alm.corp>
 
 LABEL description="Serenity ALM Jenkins image"
