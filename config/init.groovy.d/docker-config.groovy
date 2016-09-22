@@ -78,11 +78,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -101,7 +100,6 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -124,7 +122,6 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -147,7 +144,6 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
@@ -170,11 +166,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl\nNEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -193,11 +188,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl\nNEXUS_BASE_URL=$nexusUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
@@ -216,11 +210,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
@@ -239,11 +232,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: (nodeJSDataContainer?.trim())? '':"$defaultRootPathForVolumes/nodejs-cache:/cache",
@@ -262,11 +254,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '1',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -285,11 +276,10 @@ docker_settings =
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          idleTerminationMinutes: '2',
           sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
@@ -344,11 +334,13 @@ docker_settings =
           new hudson.plugins.sshslaves.SSHConnector(22, template.credentialsId, null, null, null, null, null )
       )
 
+
+      final int idleTerminationMinutes = 180
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
       dockerTemplate.setMode(template.mode)
-      dockerTemplate.setNumExecutors(1)
+      dockerTemplate.setNumExecutors(2)
       dockerTemplate.setRemoveVolumes(true)
-      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(2))
+      dockerTemplate.setRetentionStrategy(new DockerCloudRetentionStrategy(idleTerminationMinutes))
       dockerTemplate.setPullStrategy(DockerImagePullStrategy.PULL_LATEST)
       templates.add(dockerTemplate)
     }
