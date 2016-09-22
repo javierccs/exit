@@ -15,9 +15,10 @@ import java.util.Random
 
 def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
 logger.info("Setting docker cloud...")
-//def dockerCertificatesDirectory = System.getenv('DOCKER_CERTIFICATES_DIRECTORY')
-//def dockerCertificatesDirectoryCredentialsId = 'docker-certificates-credentials'
 def jenkinsSlaveCredentialsId = 'jenkins-ssh-slave-credentials'
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+
 
 ///////////////////////////////////////////////////:
 // Configure credz
@@ -42,15 +43,6 @@ domainCredentialsMap[Domain.global()].add(
 )
 logger.info('Added jenkins slave docker container credentials.')
 system_creds.save()
-// domainCredentialsMap[Domain.global()].add(
-//
-//    new com.nirima.jenkins.plugins.docker.utils.DockerDirectoryCredentials(
-//      CredentialsScope.SYSTEM,
-//      dockerCertificatesDirectoryCredentialsId,
-//      'Contains the certificates required to authenticate against a Docker TLS secured port',
-//      dockerCertificatesDirectory
-//    )
-//)
 
 /////////////////////////////////////////////////////:
 // Docker Cloud config per-se
@@ -171,7 +163,7 @@ docker_settings =
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
           labelString: 'ose3-deploy',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl\nNEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           sshLaunchTimeoutMinutes: '1',

@@ -27,6 +27,9 @@ docker run -d \
         -e MAVEN_DEPLOYER_LOGIN=<(Required) Nexus deployer user login> \
         -e MAVEN_DEPLOYER_PASSWD=<(Required> Nexus deployer user password> \
 	-e NEXUS_BASE_URL=<(Required) Nexus URL> \
+	-e NEXUS_MAVEN_GROUP=<(Required) Nexus maven group repository path> \
+	-e NEXUS_MAVEN_RELEASE=<(Required) Nexus maven release repository path> \
+	-e NEXUS_MAVEN_SNAPSHOT=<(Required) Nexus maven snapshot repository path> \
         -e SONARQUBE_SERVER_URL=<(Optional) SonarQube server http URL> \
         -e SONARQUBE_SERVER_LOGIN=<(Optional) SonarQube user> \
         -e SONARQUBE_SERVER_PASSWORD=<(Optional) SonarQube password> \
