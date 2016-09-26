@@ -18,11 +18,9 @@ if(!(serverUrl?.trim() && sonarLogin?.trim() && sonarPassword?.trim() &&
   return
 }
 
-def sonarqube = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-def sinst = new SonarInstallation(NAME, false, serverUrl, databaseUrl, databaseLogin, databasePassword,
+def sonarqube = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+def sinst = new SonarInstallation(NAME, serverUrl, "4.6", "", databaseUrl, databaseLogin, databasePassword,
   '', '', null,   sonarLogin, sonarPassword, '')
-
-//TODO Test SonarQube installation
 
 int i = 0
 def oldsinst = sonarqube.getInstallations().find {NAME.equals(it.getName())}
