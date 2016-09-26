@@ -166,7 +166,7 @@ under the License.
       <id>Serenity</id>
       <mirrorOf>*</mirrorOf>
       <name>Serenity Central</name>
-      <url>${NEXUS_BASE_URL}/content/groups/public/</url>
+      <url>${NEXUS_BASE_URL}${NEXUS_MAVEN_GROUP}</url>
     </mirror>
   </mirrors>
   

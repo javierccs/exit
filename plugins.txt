@@ -1,30 +1,76 @@
 #plugin_id:version
 
+# Suggested Jenkins2 Plugins
+ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
+ant:1.3 (Ant Plugin)
+antisamy-markup-formatter:1.5 (OWASP Markup Formatter Plugin)
+branch-api:1.10 (Branch API Plugin)
+build-timeout:1.17.1 (build timeout plugin)
+cloudbees-folder:5.12 (Folders Plugin)
+credentials:2.1.4 (Credentials Plugin)
+credentials-binding:1.9 (Credentials Binding Plugin)
+durable-task:1.12 (Durable Task Plugin)
+email-ext:2.47 (Email Extension Plugin)
+external-monitor-job:1.6 (External Monitor Job Type Plugin)
+git:2.5.3 (Git plugin)
+git-client:1.21.0 (Git client plugin)
+git-server:1.7 (GIT server Plugin)
+github:1.21.1 (GitHub plugin)
+github-api:1.77 (GitHub API Plugin)
+github-branch-source:1.9 (GitHub Branch Source Plugin)
+github-organization-folder:1.4 (GitHub Organization Folder Plugin)
+gradle:1.25 (Gradle Plugin)
+handlebars:1.1.1 (JavaScript GUI Lib: Handlebars bundle plugin)
+icon-shim:2.0.3 (Icon Shim Plugin)
+jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
+junit:1.18 (JUnit Plugin)
+ldap:1.12 (LDAP Plugin)
+mailer:1.17 (Mailer Plugin)
+mapdb-api:1.0.9.0 (MapDB API Plugin)
+matrix-auth:1.4 (Matrix Authorization Strategy Plugin)
+matrix-project:1.7.1 (Matrix Project Plugin)
+momentjs:1.1.1 (JavaScript GUI Lib: Moment.js bundle plugin)
+pam-auth:1.3 (PAM Authentication plugin)
+pipeline-build-step:2.2 (Pipeline: Build Step)
+pipeline-input-step:2.1 (Pipeline: Input Step)
+pipeline-rest-api:1.7 (Pipeline: REST API Plugin)
+pipeline-stage-step:2.1 (Pipeline: Stage Step)
+pipeline-stage-view:1.7 (Pipeline: Stage View Plugin)
+plain-credentials:1.2 (Plain Credentials Plugin)
+scm-api:1.2 (SCM API Plugin)
+script-security:1.22 (Script Security Plugin)
+ssh-credentials:1.12 (SSH Credentials Plugin)
+ssh-slaves:1.11 (SSH Slaves plugin)
+structs:1.3 (Structs Plugin)
+subversion:2.6 (Subversion Plug-in)
+timestamper:1.8.4 (Timestamper)
+token-macro:1.12.1 (Token Macro Plugin)
+windows-slaves:1.2 (Windows Slaves Plugin)
+workflow-aggregator:2.2 (Pipeline)
+workflow-api:2.1 (Pipeline: API)
+workflow-basic-steps:2.1 (Pipeline: Basic Steps)
+workflow-cps:2.12 (Pipeline: Groovy)
+workflow-cps-global-lib:2.2 (Pipeline: Shared Groovy Libraries)
+workflow-durable-task-step:2.4 (Pipeline: Nodes and Processes)
+workflow-job:2.5 (Pipeline: Job)
+workflow-multibranch:2.8 (Pipeline: Multibranch)
+workflow-scm-step:2.2 (Pipeline: SCM Step)
+workflow-step-api:2.3 (Pipeline: Step API)
+workflow-support:2.2 (Pipeline: Supporting APIs)
+ws-cleanup:0.30 (Workspace Cleanup Plugin)
+
 sidebar-link:1.7
 copy-to-slave:1.4.4
 copyartifact:1.37
 groovy:1.29
-workflow-step-api:1.13
-cloudbees-folder:5.2.1
 release:2.5.4
 dashboard-view:2.9.7
 htmlpublisher:1.11
 
 #common
-token-macro:1.12.1
-ssh-slaves:1.10
-durable-task:1.7
-ssh-credentials:1.11
-plain-credentials:1.1
-credentials:2.1.4
-credentials-binding:1.6
 authentication-tokens:1.2
-mailer:1.16
 javadoc:1.3
-junit:1.6
 maven-plugin:2.12.1
-matrix-auth:1.2
-matrix-project:1.6
 monitoring:1.58.0
 
 # delivery pipeline
@@ -40,29 +86,18 @@ delivery-pipeline-plugin:0.9.8
 config-file-provider:2.11
 managed-scripts:1.2.1
 job-dsl:1.48
-structs:1.1
 
-#email-ext
-email-ext:2.40.5
+#Integrations
+docker-plugin:0.16.0 (Docker Plugin)
+gitlab-plugin:1.1.28 (Gitlab Plugin)
+sonar:2.4.4 (SonarQube plugin)
 
-#gitlab integration
-scm-api:1.0
-git-client:1.19.0
-git:2.4.1
-gitlab-plugin:1.1.28
-
-#sonarqube integration
-sonar:2.3
-
-#greenballs
-greenballs:1.15
+greenballs:1.15 (Green Balls)
 
 #disk-usage:0.28
 
-build-timeout:1.15
 envinject:1.92.1
 role-strategy:2.2.0
-docker-plugin:0.16.0
 
 #Extended Choice Parameter plugin
 extended-choice-parameter:0.56
@@ -71,7 +106,6 @@ validating-string-parameter:2.3
 #Flexible Publish Plugin
 flexible-publish:0.15.2
 run-condition:0.7
-ws-cleanup:0.29
 
 ssh-agent:1.13
 bouncycastle-api:1.648.3
