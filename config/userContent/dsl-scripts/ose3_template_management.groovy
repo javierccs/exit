@@ -1,6 +1,7 @@
-import jenkins.model.*;
-import java.util.regex.*;
-import util.Utilities;
+import jenkins.model.*
+import util.Utilities
+
+import java.util.regex.*
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -27,14 +28,13 @@ def inputData() {
             openShiftProjectName   : [
                     dev: no_spaces_and_lowercase("${OSE3_PROJECT_NAME}")
             ],
-            ose3TokenDev	   : no_spaces("${OSE3_TOKEN_PROJECT_DEV}"),
+            ose3TokenDev           : no_spaces("${OSE3_TOKEN_PROJECT_DEV}"),
             openShiftTemplatePath  : no_spaces("${OSE3_TEMPLATE_PATH}"),
             testCommand            : "${TEST_COMMAND}"
     ];
 }
 
 def params = inputData();
-
 
 //checks gitlab url
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
@@ -51,14 +51,13 @@ def GIT_INTEGRATION_BRANCH = params.gitLabIntegrationBranch;
 def GIT_RELEASE_BRANCH = params.gitLabReleaseBranch;
 def buildJobName = GITLAB_PROJECT + '-ci-build';
 
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+if (gitlabCredsType == null) {
+    throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+println("GitLab credential type " + gitlabCredsType);
 
- //creck gitlab credentials
- def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
- if ( gitlabCredsType == null ) {
-   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
- }
- println ("GitLab credential type " + gitlabCredsType );
- 
 
 job(buildJobName) {
     label('ose3-deploy')
@@ -72,11 +71,11 @@ job(buildJobName) {
         stringParam('OSE3_TEMPLATE_PATH', params.openShiftTemplatePath, 'Path to openshift template');
     }
     configure {
-               it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
-               name 'OSE3_TOKEN_PROJECT_DEV'
-               description 'OSE3 token project dev'
-               defaultValue params.ose3TokenDev
-      }
+        it / 'properties' / 'hudson.model.ParametersDefinitionProperty' / parameterDefinitions << 'hudson.model.PasswordParameterDefinition' {
+            name 'OSE3_TOKEN_PROJECT_DEV'
+            description 'OSE3 token project dev'
+            defaultValue params.ose3TokenDev
+        }
     }
 
     scm {
@@ -108,15 +107,15 @@ job(buildJobName) {
 
     wrappers {
         credentialsBinding {
-		 //If user password credentials are provided bind is required
-		 if ( gitlabCredsType == 'UserPassword' ){
-		           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
-		 }
+            //If user password credentials are provided bind is required
+            if (gitlabCredsType == 'UserPassword') {
+                usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+            }
         }
- //if ssh credentials ssAgent is added
- if ( gitlabCredsType == 'SSH' ){
-       sshAgent(GITLAB_CREDENTIAL)
- }
+        //if ssh credentials ssAgent is added
+        if (gitlabCredsType == 'SSH') {
+            sshAgent(GITLAB_CREDENTIAL)
+        }
         release {
             postSuccessfulBuildSteps {
                 shell("git merge -m \"\${BUILD_DISPLAY_NAME}\" \${GIT_SOURCE_REPO}/\${GIT_INTEGRATION_BRANCH} \${GIT_SOURCE_REPO}/\${GIT_RELEASE_BRANCH}")

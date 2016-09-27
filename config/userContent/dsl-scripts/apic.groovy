@@ -1,7 +1,5 @@
 import jenkins.model.*
-import groovy.util.*
-import util.Utilities;
-
+import util.Utilities
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -15,45 +13,44 @@ def APIC_DEV_CATALOG = "${APIC_DEV_CATALOG}".trim().toLowerCase()
 def APIC_PRE_CATALOG = "${APIC_PRE_CATALOG}".trim().toLowerCase()
 def APIC_PRO_CATALOG = "${APIC_PRO_CATALOG}".trim().toLowerCase()
 
-
 // Static values
 def gitlab = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger")
 def GITLAB_SERVER = gitlab.getGitlabHostUrl()
 def (GROUP_NAME, REPOSITORY_NAME) = GITLAB_PROJECT.tokenize('/')
-def buildJobName = GITLAB_PROJECT+'-ci-build'
-def publishDevJobName = GITLAB_PROJECT+'-ose3-dev-publish'
-def publishPreJobName = GITLAB_PROJECT+'-ose3-pre-publish'
-def publishProJobName = GITLAB_PROJECT+'-ose3-pro-publish'
+def buildJobName = GITLAB_PROJECT + '-ci-build'
+def publishDevJobName = GITLAB_PROJECT + '-ose3-dev-publish'
+def publishPreJobName = GITLAB_PROJECT + '-ose3-pre-publish'
+def publishProJobName = GITLAB_PROJECT + '-ose3-pro-publish'
 
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
-if ( gitlabCredsType == null ) {
+if (gitlabCredsType == null) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+println("GitLab credential type " + gitlabCredsType);
 
 
-job (buildJobName) {
-  println "JOB: "+buildJobName
+job(buildJobName) {
+  println "JOB: " + buildJobName
   label('apic')
   deliveryPipelineConfiguration('CI', 'APIC Validation')
-  logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
+  logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
   parameters {
     // Defines a simple text parameter, where users can enter a string value.
     stringParam('gitlabActionType', 'PUSH',
-                'GitLab Event (PUSH or MERGE)')
-    stringParam('gitlabSourceRepoURL', GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git',
-                'GitLab Source Repository')
+            'GitLab Event (PUSH or MERGE)')
+    stringParam('gitlabSourceRepoURL', GITLAB_SERVER + '/' + GITLAB_PROJECT + '.git',
+            'GitLab Source Repository')
     stringParam('gitlabSourceRepoName', 'origin',
-                'GitLab source repo name (only for MERGE events from forked repositories)')
+            'GitLab source repo name (only for MERGE events from forked repositories)')
     stringParam('gitlabSourceBranch', GIT_INTEGRATION_BRANCH,
-                'Gitlab source branch (only for MERGE events from forked repositories)')
+            'Gitlab source branch (only for MERGE events from forked repositories)')
     stringParam('gitlabTargetBranch', GIT_INTEGRATION_BRANCH,
-                'GitLab target branch (only for MERGE events)')
+            'GitLab target branch (only for MERGE events)')
   }
 
-  properties{
-    promotions{
+  properties {
+    promotions {
       promotion {
         name('Promote-pre')
         icon('star-gold-w')
@@ -65,7 +62,7 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(publishPreJobName) {
               parameters {
-                predefinedProp('PIPELINE_VERSION','${APIC_IMAGE_VERSION}')
+                predefinedProp('PIPELINE_VERSION', '${APIC_IMAGE_VERSION}')
               }
             }
           }
@@ -99,12 +96,12 @@ job (buildJobName) {
     git {
       branch('${gitlabSourceRepoName}/${gitlabSourceBranch}')
       browser {
-        gitLab(GITLAB_SERVER+'/'+GITLAB_PROJECT, '8.6')
+        gitLab(GITLAB_SERVER + '/' + GITLAB_PROJECT, '8.6')
       } //browser
       remote {
         credentials(SERENITY_CREDENTIAL)
         name('origin')
-        url(GITLAB_SERVER+'/'+GITLAB_PROJECT+'.git')
+        url(GITLAB_SERVER + '/' + GITLAB_PROJECT + '.git')
       } //remote
       extensions {
         wipeOutWorkspace()
@@ -125,13 +122,13 @@ job (buildJobName) {
 
   wrappers {
 //If user password credentials are provided bind is required
-if ( gitlabCredsType == 'UserPassword' ){
-          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
-}
+    if (gitlabCredsType == 'UserPassword') {
+      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 //if ssh credentials ssAgent is added
-if ( gitlabCredsType == 'SSH' ){
+    if (gitlabCredsType == 'SSH') {
       sshAgent(GITLAB_CREDENTIAL)
-}
+    }
     buildName("$GROUP_NAME" + ':${ENV,var="FRONT_IMAGE_VERSION"}-${BUILD_NUMBER}')
     release {
       postBuildSteps {
@@ -144,7 +141,7 @@ if ( gitlabCredsType == 'SSH' ){
       }
       preBuildSteps {
         environmentVariables {
-          env('IS_RELEASE',true) 
+          env('IS_RELEASE', true)
         }
       }
     } //release
@@ -152,14 +149,14 @@ if ( gitlabCredsType == 'SSH' ){
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell(
-	     ' echo "INFO Validating project yamls"...\n'  +
-	     " for f in $APIC_SRC_DIRECTORY/*_Product_*.yaml; do\n" +
-         '   apic validate "$f"\n' +
-         ' done\n ' +
-		 ' currentDir=$(pwd)\n' +
-         " cd $APIC_SRC_DIRECTORY \n" +
-         ' tar -czf $currentDir/apic.tgz *.yaml \n' +
-         ' cd $currentDir \n')
+            ' echo "INFO Validating project yamls"...\n' +
+                    " for f in $APIC_SRC_DIRECTORY/*_Product_*.yaml; do\n" +
+                    '   apic validate "$f"\n' +
+                    ' done\n ' +
+                    ' currentDir=$(pwd)\n' +
+                    " cd $APIC_SRC_DIRECTORY \n" +
+                    ' tar -czf $currentDir/apic.tgz *.yaml \n' +
+                    ' cd $currentDir \n')
   }
   publishers {
     archiveArtifacts('*.tgz')
@@ -169,13 +166,14 @@ if ( gitlabCredsType == 'SSH' ){
       trigger(triggerName: 'Unstable', includeCulprits: true)
       trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
       configure {
-        it/contentType('text/html')
+        it / contentType('text/html')
       }
     } //extendedEmail
-	
+
     flexiblePublish {
       conditionalAction {
-        condition { not {
+        condition {
+          not {
             booleanCondition('${ENV,var="IS_RELEASE"}')
           }
         }
@@ -191,7 +189,7 @@ if ( gitlabCredsType == 'SSH' ){
         }
       }
     }
-	
+
   } //publishers
 
   configure {
@@ -206,20 +204,20 @@ def updateParam(node, String paramName, String defaultValue) {
 }
 
 
-job (publishDevJobName) {
-  println "JOB: "+publishDevJobName
+job(publishDevJobName) {
+  println "JOB: " + publishDevJobName
   label('apic')
   deliveryPipelineConfiguration('DEV', 'APIC Publish')
   parameters {
     stringParam('ARTIFACT_NAME', 'apic.tgz', 'APIC artifact name')
-	stringParam('APIC_SERVER', "$APIC_SERVER")
-	stringParam('APIC_ORGANIZATION', "$APIC_ORGANIZATION")
-	stringParam('APIC_CATALOG', "$APIC_DEV_CATALOG")
+    stringParam('APIC_SERVER', "$APIC_SERVER")
+    stringParam('APIC_ORGANIZATION', "$APIC_ORGANIZATION")
+    stringParam('APIC_CATALOG', "$APIC_DEV_CATALOG")
   }
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('APIC_USERNAME','APIC_PASSWORD', APIC_CREDENTIAL)
+      usernamePassword('APIC_USERNAME', 'APIC_PASSWORD', APIC_CREDENTIAL)
     }
   }
   steps {
@@ -234,13 +232,12 @@ job (publishDevJobName) {
     }
     shell('deploy_in_apimanager.sh')
 
-	
+
   }
 }
-                                
 
 //Publish in pre job
-job (publishPreJobName) {
+job(publishPreJobName) {
   println "JOB: " + publishPreJobName
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'APIC Publish')
@@ -256,7 +253,7 @@ job (publishPreJobName) {
           downstreamParameterized {
             trigger(publishProJobName) {
               parameters {
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+                predefinedProp('PIPELINE_VERSION', '${PIPELINE_VERSION}')
               }
             }
           }
@@ -267,7 +264,7 @@ job (publishPreJobName) {
 }
 
 //Deploy in pro job
-job (publishProJobName) {
+job(publishProJobName) {
   println "JOB: $publishProJobName"
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'APIC Publish')

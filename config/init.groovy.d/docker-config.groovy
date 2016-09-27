@@ -249,7 +249,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-base:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-builder:latest',
           labelString: '',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
           remoteFs: '/home/jenkins',
