@@ -15,7 +15,7 @@ jQuery(function(e){
 	//workaround to show up icons properly
 	jQuery('.task-icon-link[href="/"]').attr('href', '${JENKINS_URL}');
         jQuery('.task-link[href="/"]').attr('href', '${JENKINS_URL}');
-	jQuery('#breadcrumbs').find("a[href^='/view/Templates/job/TL-']").each(function( index ) {
+	jQuery('#breadcrumbs').find("a[href^='/view/Templates/job/TL-'],a[href^='/view/Templates/job/UT-']").each(function( index ) {
 		//checks if it is a execution page
 		if (window.location.href.indexOf('/build') != -1){
                         addTemplateDescription( jQuery(this).text() );
