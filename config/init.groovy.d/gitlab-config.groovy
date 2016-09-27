@@ -36,7 +36,7 @@ if (!(System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.
 
   domainCredentialsMap[Domain.global()].add(
     new GitLabApiTokenImpl(
-      CredentialsScope.GLOBAL,
+      CredentialsScope.SYSTEM,
       "serenity-gitlab-credential-id",
       'Serenity GitLab credential',
       Secret.fromString(GITLAB_API_TOKEN)
@@ -48,6 +48,8 @@ if (!(System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.
   def result = gitLabConfig.doTestConnection(GITLAB_URL, serenityGitlabCredentialId, true, 10, 10)
   if (result.toString().startsWith("OK")) {
     logger.info("Test $GITLAB_NAME API connection... " + result)
+    def old = gitLabConfig.getConnections().findAll { GITLAB_NAME.equals(it.getName()) }
+    gitLabConfig.getConnections().removeAll(old)
     def gitlab = new GitLabConnection(GITLAB_NAME, GITLAB_URL, serenityGitlabCredentialId, true, 10, 10)
     gitLabConfig.addConnection(gitlab)
     gitLabConfig.save()

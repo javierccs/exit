@@ -53,11 +53,11 @@ class Utilities {
     // Input parameters validation
     if (name == null || name.isEmpty()) return null;
 
-    def gitLabConfig = Jenkins.getInstance().getDescriptorByType(com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig)
-    GitLabConnection gitLabConnection = gitLabConfig.getConnections().find { name.equals(it.getName()) }
+    def gitLabConfig = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig")
+    def gitLabConnection = gitLabConfig.getConnections().find { name.equals(it.getName()) }
     if (gitLabConnection == null) return null;
     def gitLabCredential = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
-      com.dabsquared.gitlabjenkins.connection.GitLabApiTokenImpl.class,
+      com.cloudbees.plugins.credentials.impl.BaseStandardCredentials.class,
       Jenkins.instance,
       null,
       null

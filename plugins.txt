@@ -88,7 +88,7 @@ managed-scripts:1.2.1
 job-dsl:1.48
 
 #Integrations
-docker-plugin:0.16.0 (Docker Plugin)
+docker-plugin:0.16.2 (Docker Plugin)
 gitlab-plugin:1.2.5
 sonar:2.4.4 (SonarQube plugin)
 
