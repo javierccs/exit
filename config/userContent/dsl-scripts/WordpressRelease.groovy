@@ -21,9 +21,8 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
-def GITLAB_SERVER = gitLabConnectionMap.url;
-def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
+def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
+def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -229,6 +228,7 @@ job (buildJobName) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
+      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
@@ -269,6 +269,7 @@ if ( gitlabCredsType == 'SSH' ){
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell('parse_yaml.sh application.yml > env.properties')
+    shell('echo "IS_RELEASE="$IS_RELEASE >> env.properties')
     environmentVariables {
       propertiesFile('env.properties')
     }
@@ -340,6 +341,13 @@ job (dockerJobName) {
   }
 
   publishers {
+   flexiblePublish {
+      conditionalAction {
+        condition { not {
+            booleanCondition('${ENV,var="IS_RELEASE"}')
+          }
+        }
+    publishers {
     downstreamParameterized {
       trigger(deployDevJobName) {
         condition('SUCCESS')
@@ -347,10 +355,14 @@ job (dockerJobName) {
           predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
           predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
         }
+       }
       }
-    }
-  }
-}
+    } //publishers
+   } //conditionalAction
+  } //flexiblePublish
+ } //publishers
+
+} //job
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
