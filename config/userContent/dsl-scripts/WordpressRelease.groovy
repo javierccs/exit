@@ -269,6 +269,7 @@ if ( gitlabCredsType == 'SSH' ){
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell('parse_yaml.sh application.yml > env.properties')
+    shell('echo "IS_RELEASE="$IS_RELEASE >> env.properties')
     environmentVariables {
       propertiesFile('env.properties')
     }
@@ -339,18 +340,28 @@ job (dockerJobName) {
     shell('generate-and-push-wordpress-image.sh')
   }
 
-  publishers {
-    downstreamParameterized {
-      trigger(deployDevJobName) {
-        condition('SUCCESS')
-        parameters {
-          predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
-          predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
-        }
-      }
-    }
-  }
-}
+ publishers {
+    flexiblePublish {
+       conditionalAction {
+         condition { not {
+             booleanCondition('${ENV,var="IS_RELEASE"}')
+           }
+         }
+         publishers {
+          downstreamParameterized {
+          trigger(deployDevJobName) {
+             condition('SUCCESS')
+               parameters {
+                 predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
+                 predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+               } //parameters
+             }//trigger
+           } //downstream
+         } //publishers
+    } //conditionalAction
+  }//flexiblePublish
+ } //publishers
+} //job
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
