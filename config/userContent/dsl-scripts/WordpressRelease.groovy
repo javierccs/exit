@@ -13,7 +13,6 @@ def OSE3_URL = "${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
 // Static values
 //checks gitlab url
@@ -234,14 +233,12 @@ job (buildJobName) {
   } //triggers
 
   wrappers {
-    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
+    credentialsBinding {
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
-     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
       sshAgent(GITLAB_CREDENTIAL)
@@ -324,7 +321,7 @@ job (dockerJobName) {
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
     }
   }
   steps {
