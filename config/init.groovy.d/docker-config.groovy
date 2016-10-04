@@ -16,9 +16,12 @@ import java.util.Random
 def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
 logger.info("Setting docker cloud...")
 def jenkinsSlaveCredentialsId = 'jenkins-ssh-slave-credentials'
+def dockerRegistryCredentialId = 'docker-registry-credential-id'
+def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
+def dockerRegistryUsername = System.getenv('DOCKER_REGISTRY_USERNAME').trim()
+def dockerRegistryPassword = System.getenv('DOCKER_REGISTRY_PASSWORD').trim()
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
 def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
-
 
 ///////////////////////////////////////////////////:
 // Configure credz
@@ -42,6 +45,21 @@ domainCredentialsMap[Domain.global()].add(
     )
 )
 logger.info('Added jenkins slave docker container credentials.')
+obj = domainCredentialsMap[Domain.global()].find {dockerRegistryCredentialId.equals(it.getId())}
+if (obj != null) {
+  logger.info("Docker registry credential already exists. Updating...")
+  domainCredentialsMap[Domain.global()].remove(obj)
+}
+domainCredentialsMap[Domain.global()].add(
+  new UsernamePasswordCredentialsImpl(
+    CredentialsScope.GLOBAL,
+    dockerRegistryCredentialId,
+    'Docker registry credential',
+    dockerRegistryUsername,
+    dockerRegistryPassword
+    )
+)
+logger.info('Added docker registry credential.')
 system_creds.save()
 
 /////////////////////////////////////////////////////:
