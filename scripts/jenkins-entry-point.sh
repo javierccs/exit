@@ -3,7 +3,6 @@
 #Required environment variables validation
 : "${JENKINS_URL?ERROR: Required variable is not set. Try running the container with \'-e JENKINS_URL=url\'}"
 : "${JENKINS_EMAIL?ERROR: Required variable is not set. Try running the container with \'-e JENKINS_EMAIL=email_address\'}"
-: "${JENKINS_PASSWORD?ERROR: Required variable is not set. Try running the container with \'-e JENKINS_PASSWORD=password\'}"
 : "${GITLAB_URL?ERROR: Required variable is not set. Try running the container with \'-e GITLAB_URL=url\'}"
 : "${GITLAB_API_TOKEN?ERROR: Required variable is not set. Try running the container with \'-e GITLAB_API_TOKEN=token\'}"
 : "${SWARM_MASTER_URL?ERROR: Required variable is not set. Try running the container with \'-e SWARM_MASTER_URL=url\'}"
