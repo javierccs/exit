@@ -33,7 +33,8 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
-def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
+def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
 
 //DEV
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
@@ -167,7 +168,7 @@ job (buildJobName) {
     promotions{
       promotion {
         name('Promote-pre')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           releaseBuild()
           manual('impes-product-owner,impes-technical-lead,impes-developer')
@@ -184,18 +185,26 @@ job (buildJobName) {
       }
       promotion {
         name('DEV')
-        icon('star-gold-e')
+        icon('star-blue')
         conditions {
           downstream(false, deployDevJobName)
         }
       }
       promotion {
         name('PRE')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
         }
       }
+      promotion {
+        name('Shadow')
+        icon('star-gold-w')
+        conditions {
+          downstream(false, deployHideJobName)
+        }
+     }
+
       promotion {
         name('PRO')
         icon('star-gold')
@@ -395,14 +404,14 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-PRO')
+        name('Promote-Shadow')
         icon('star-gold-e')
         conditions {
           manual('impes-product-owner,impes-technical-lead,impes-developer')
         }
         actions {
           downstreamParameterized {
-            trigger(deployProJobName) {
+            trigger(deployHideJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
@@ -422,22 +431,60 @@ job (deployPreJobName) {
 
   }
 }
+//Deploy in hide job
+job (deployHideJobName) {
+  println "JOB: " + deployHideJobName
+  using('TJ-ose3-deploy')
+  disabled(false)
+  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
+   properties {
+    promotions {
+      promotion {
+        name('Promote-PRO')
+        icon('star-gold-e')
+        conditions {
+          manual('impes-product-owner,impes-technical-lead,impes-developer')
+        }
+        actions {
+          downstreamParameterized {
+            trigger(deployProJobName) {
+              parameters {
+                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+                 predefinedProp('OSE3_TOKEN_PROJECT','${OSE3_TOKEN_PROJECT}')
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
+  }
+}
+
+
 
 //Deploy in pro job
 job (deployProJobName) {
   println "JOB: " + deployProJobName
-  using('TJ-ose3-deploy')
+  using('TJ-ose3-switch')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
   configure {
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
   
-}
+  }
 }
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
