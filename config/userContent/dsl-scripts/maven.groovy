@@ -440,6 +440,9 @@ job (deployDevJobName) {
   }
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
@@ -495,6 +498,9 @@ job (deployPreJobName) {
   }
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')    
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)

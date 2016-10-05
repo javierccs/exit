@@ -148,6 +148,12 @@ if ( gitlabCredsType == null ) {
 }
 println ("GitLab credential type " + gitlabCredsType );
 
+def removeParam(node, String paramName) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name.text() == paramName
+  }
+  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
+}
 // Build job
 job (buildJobName) {
   println "JOB: "+buildJobName
@@ -386,6 +392,9 @@ job (deployDevJobName) {
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
   configure {
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')    
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
@@ -422,6 +431,9 @@ job (deployPreJobName) {
     }
   }
  configure {
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
@@ -431,6 +443,7 @@ job (deployPreJobName) {
 
   }
 }
+
 //Deploy in hide job
 job (deployHideJobName) {
   println "JOB: " + deployHideJobName

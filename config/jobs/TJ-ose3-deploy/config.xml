@@ -56,6 +56,21 @@
           <description>Blue Green deployment active (ON/OFF)</description>
           <defaultValue>OFF</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>CERTIFICATE</name>
+          <description>The PEM format certificate of the blue green route</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>PRIVATE_KEY_CERTIFICATE</name>
+          <description>The PEM format key</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>CA_CERTIFICATE</name>
+          <description>The PEM format CA certificate</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.2.5">
