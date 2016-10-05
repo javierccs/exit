@@ -18,7 +18,7 @@ docker run -d \
 	-e LDAP_DISPLAY_NAME=<(Optional) LDAP Display Name (default value: cn)>\
 	-e JENKINS_URL=<(Required) Jenkins url> \
 	-e JENKINS_EMAIL=<(Required) Jenkins email address> \
-	-e JENKINS_PASSWORD=<(Required) Admin password> \
+        -e JENKINS_PASSWORD=<(Optional) Admin password, default: "admin"> \
 	-e SMTP_HOST=<(Optional) SMTP Server hostname> \
 	-e SMTP_PORT=<(Optional) SMTP Server port> \
 	-e GITLAB_URL=<(Required) GitLab URL \
