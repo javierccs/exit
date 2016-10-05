@@ -12,7 +12,7 @@
 				</hudson.model.StringParameterDefinition>
 				<hudson.model.StringParameterDefinition>
 					<name>PORT</name>
-					<description>Port of hostname or IP to connect with telnet</description>
+					<description>Port number to connect with telnet</description>
 					<defaultValue/>
 				</hudson.model.StringParameterDefinition>
 			</parameterDefinitions>
