@@ -256,6 +256,27 @@ under the License.
       </properties>
     </profile>
     -->
+    <profile>
+      <id>serenity</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>serenity-public</id>
+          <name>Serenity Public Repository</name>
+          <url>${NEXUS_BASE_URL}${NEXUS_MAVEN_GROUP}</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
   </profiles>
 
   <!-- activeProfiles
