@@ -68,7 +68,5 @@ RUN chown jenkins:jenkins  /opt/serenity-alm/scripts/*.sh && cp /opt/serenity-al
 RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 COPY theme /opt/theme
 
-#SALM-258 Warning en Job por el https en GitLab
-ENV GIT_SSL_NO_VERIFY 1
 ENTRYPOINT [ "/usr/local/bin/jenkins-entry-point.sh" ]
 
