@@ -200,12 +200,12 @@ mavenJob (buildJobName_a) {
   } //triggers
 
   wrappers {
-    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
-          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    credentialsBinding {
+      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 }
-     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
       sshAgent(GITLAB_CREDENTIAL)
@@ -419,12 +419,12 @@ mavenJob (buildJobName_b) {
   } //triggers
 
   wrappers {
-    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
-          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    credentialsBinding {
+      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 }
-     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
       sshAgent(GITLAB_CREDENTIAL)
