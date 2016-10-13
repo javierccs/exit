@@ -94,26 +94,13 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"description": "Bittorent Sync Ignore List. (Use comma separator)",
                         "propertyOrder": 14
 		},
-		"SECRETBTSYNC_DEV": {
-			"type": "string",
-			"description": "Secret Key for Bittorent Sync communication", 
-                        "propertyOrder": 15
-		},
 		"CONTAINER_MEMORY_DEV": {
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
 			"default": "512M",
                         "propertyOrder": 16
-		},
-		"BTSYNC_MEMORY_DEV": {
-			"type": "string",
-			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)",
-			"default": "100M",                         
-                        "propertyOrder": 17
 		}
-    
       }
-    
     }
 }
 /);
