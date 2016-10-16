@@ -15,10 +15,6 @@ external-monitor-job:1.6 (External Monitor Job Type Plugin)
 git:2.5.3 (Git plugin)
 git-client:1.21.0 (Git client plugin)
 git-server:1.7 (GIT server Plugin)
-github:1.21.1 (GitHub plugin)
-github-api:1.77 (GitHub API Plugin)
-github-branch-source:1.9 (GitHub Branch Source Plugin)
-github-organization-folder:1.4 (GitHub Organization Folder Plugin)
 gradle:1.25 (Gradle Plugin)
 handlebars:1.1.1 (JavaScript GUI Lib: Handlebars bundle plugin)
 icon-shim:2.0.3 (Icon Shim Plugin)
@@ -115,4 +111,3 @@ ansicolor:0.4.2
 simple-theme-plugin:0.3
 #for jenkins-atlasian theme
 gravatar:2.1
-
