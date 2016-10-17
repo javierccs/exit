@@ -43,7 +43,7 @@ COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
 ENV http_proxy ""
 ENV https_proxy ""
 ENV no_proxy ""
-
+ENV GIT_SSL_NO_VERIFY=1
 
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
