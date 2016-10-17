@@ -2,115 +2,139 @@
 
 # Suggested Jenkins2 Plugins
 ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
-ant:1.3 (Ant Plugin)
+ant:1.4 (Ant Plugin)
+structs:1.5 (Structs plugin, required by ant)
 antisamy-markup-formatter:1.5 (OWASP Markup Formatter Plugin)
-branch-api:1.10 (Branch API Plugin)
-build-timeout:1.17.1 (build timeout plugin)
-cloudbees-folder:5.12 (Folders Plugin)
-credentials:2.1.4 (Credentials Plugin)
-credentials-binding:1.9 (Credentials Binding Plugin)
+branch-api:1.11.1 (Branch API Plugin)
+cloudbees-folder:5.13 (Folders Plugin)
+credentials:2.1.10 (Credentials Plugin)
+build-timeout:1.18 (build timeout plugin)
+naginator:1.17.2 (Permits reschedule build after failure)
+token-macro:2.0 (Token Macro Plugin)
+credentials-binding:1.10 (Credentials Binding Plugin)
+workflow-step-api:2.5 (Pipeline: Step API)
+plain-credentials:1.3 (Plain Credentials Plugin)
 durable-task:1.12 (Durable Task Plugin)
-email-ext:2.47 (Email Extension Plugin)
+email-ext:2.52 (Email Extension Plugin)
+config-file-provider:2.13 (configuration files)
+ssh-credentials:1.12 (SSH Credentials Plugin)
+matrix-project:1.7.1 (Matrix Project Plugin)
+junit:1.19 (JUnit Plugin)
+script-security:1.24 (Script Security Plugin)
+analysis-core:1.80 (This plug-in provides utilities for the static code analysis plug-ins)
+maven-plugin:2.14 (Maven plugin)
+javadoc:1.4 (Java doc)
+mailer:1.18 (Mailer Plugin)
+display-url-api:0.5 (Required by mailer)
+dashboard-view:2.9.10 (Dashboard)
+workflow-job:2.9 (Pipeline: Job)
+#end email-ext
+
+
+#revisar 
 external-monitor-job:1.6 (External Monitor Job Type Plugin)
-git:2.5.3 (Git plugin)
-git-client:1.21.0 (Git client plugin)
+git:3.0.1 (Git plugin)
+git-client:2.1.0 (Git client plugin)
+promoted-builds:2.28 (promote)
+rebuild:1.25
+job-dsl:1.53
+parameterized-trigger:2.32
+conditional-buildstep:1.3.5
+run-condition:1.0
+workflow-scm-step:2.3 (Pipeline: SCM Step)
+scm-api:1.3 (SCM API Plugin)
+#end git
 git-server:1.7 (GIT server Plugin)
+workflow-cps:2.23 (Pipeline: Groovy)
+workflow-support:2.11 (Pipeline: Supporting APIs)
+workflow-api:2.6 (Pipeline: API)
+jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
+#end workflow-cps
+workflow-multibranch:2.9.2 (Pipeline: Multibranch)
+workflow-cps-global-lib:2.5 (Pipeline: Shared Groovy Libraries)
+#end github-organization-folder
 gradle:1.25 (Gradle Plugin)
 handlebars:1.1.1 (JavaScript GUI Lib: Handlebars bundle plugin)
 icon-shim:2.0.3 (Icon Shim Plugin)
-jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
-junit:1.18 (JUnit Plugin)
-ldap:1.12 (LDAP Plugin)
-mailer:1.17 (Mailer Plugin)
+
+ldap:1.13 (LDAP Plugin)
 mapdb-api:1.0.9.0 (MapDB API Plugin)
 matrix-auth:1.4 (Matrix Authorization Strategy Plugin)
-matrix-project:1.7.1 (Matrix Project Plugin)
 momentjs:1.1.1 (JavaScript GUI Lib: Moment.js bundle plugin)
 pam-auth:1.3 (PAM Authentication plugin)
-pipeline-build-step:2.2 (Pipeline: Build Step)
-pipeline-input-step:2.1 (Pipeline: Input Step)
-pipeline-rest-api:1.7 (Pipeline: REST API Plugin)
-pipeline-stage-step:2.1 (Pipeline: Stage Step)
-pipeline-stage-view:1.7 (Pipeline: Stage View Plugin)
-plain-credentials:1.2 (Plain Credentials Plugin)
-scm-api:1.2 (SCM API Plugin)
-script-security:1.22 (Script Security Plugin)
-ssh-credentials:1.12 (SSH Credentials Plugin)
+pipeline-build-step:2.4 (Pipeline: Build Step)
+pipeline-input-step:2.5 (Pipeline: Input Step)
+pipeline-rest-api:2.4 (Pipeline: REST API Plugin)
+pipeline-graph-analysis:1.2 (Required by rest-api)
+pipeline-stage-step:2.2 (Pipeline: Stage Step)
+pipeline-stage-view:2.3 (Pipeline: Stage View Plugin)
+
 ssh-slaves:1.11 (SSH Slaves plugin)
-structs:1.3 (Structs Plugin)
-subversion:2.6 (Subversion Plug-in)
-timestamper:1.8.4 (Timestamper)
-token-macro:1.12.1 (Token Macro Plugin)
+subversion:2.7.1 (Subversion Plug-in)
+timestamper:1.8.7 (Timestamper)
 windows-slaves:1.2 (Windows Slaves Plugin)
-workflow-aggregator:2.2 (Pipeline)
-workflow-api:2.1 (Pipeline: API)
-workflow-basic-steps:2.1 (Pipeline: Basic Steps)
-workflow-cps:2.12 (Pipeline: Groovy)
-workflow-cps-global-lib:2.2 (Pipeline: Shared Groovy Libraries)
-workflow-durable-task-step:2.4 (Pipeline: Nodes and Processes)
-workflow-job:2.5 (Pipeline: Job)
-workflow-multibranch:2.8 (Pipeline: Multibranch)
-workflow-scm-step:2.2 (Pipeline: SCM Step)
-workflow-step-api:2.3 (Pipeline: Step API)
-workflow-support:2.2 (Pipeline: Supporting APIs)
-ws-cleanup:0.30 (Workspace Cleanup Plugin)
+workflow-aggregator:2.4 (Pipeline)
+workflow-basic-steps:2.3 (Pipeline: Basic Steps)
+pipeline-milestone-step:1.2 
+workflow-durable-task-step:2.5 (Pipeline: Nodes and Processes)
+
+ws-cleanup:0.32 (Workspace Cleanup Plugin)
+resource-disposer:0.3 (required by ws-cleanup)
 
 sidebar-link:1.7
 copy-to-slave:1.4.4
-copyartifact:1.37
-groovy:1.29
-release:2.5.4
-dashboard-view:2.9.7
+copyartifact:1.38.1
+
+groovy:1.30
+release:2.6.1
 htmlpublisher:1.11
 
 #common
-authentication-tokens:1.2
-javadoc:1.3
-maven-plugin:2.12.1
-monitoring:1.58.0
+authentication-tokens:1.3
+monitoring:1.62.0
 
 # delivery pipeline
-rebuild:1.22
-promoted-builds:2.27
 jquery:1.11.2-0
-parameterized-trigger:2.30
-build-name-setter:1.5.1
-build-pipeline-plugin:1.5.1
-delivery-pipeline-plugin:0.9.8
+build-name-setter:1.6.5
+build-pipeline-plugin:1.5.4
+delivery-pipeline-plugin:0.10.0
 
 #job dsl
-config-file-provider:2.11
-managed-scripts:1.2.1
-job-dsl:1.48
+managed-scripts:1.2.4
 
 #Integrations
 docker-plugin:0.16.2 (Docker Plugin)
-gitlab-plugin:1.2.5 (GitLab Plugin)
-sonar:2.4.4 (SonarQube plugin)
-nexus-artifact-uploader:2.7
-Parameterized-Remote-Trigger:2.2.2
-skip-certificate-check:1.0 (Skip Certificate Check Plugin)
+gitlab-plugin:1.4.3
+sonar:2.5 (SonarQube plugin)
 
 greenballs:1.15 (Green Balls)
 
 #disk-usage:0.28
 
-envinject:1.92.1
-role-strategy:2.2.0
+envinject:1.93.1
+role-strategy:2.3.2
 
 #Extended Choice Parameter plugin
+#To update this plugin to recent version
+#A groovy authorization is required
 extended-choice-parameter:0.56
 validating-string-parameter:2.3
 
 #Flexible Publish Plugin
 flexible-publish:0.15.2
-run-condition:0.7
 
 ssh-agent:1.13
-bouncycastle-api:1.648.3
+bouncycastle-api:2.16.0
 
-ansicolor:0.4.2
+ansicolor:0.4.3
 #jenkins themes
 simple-theme-plugin:0.3
 #for jenkins-atlasian theme
 gravatar:2.1
+
+pipeline-utility-steps:1.2.0
+mask-passwords:2.8
+lockable-resources:1.10
+skip-certificate-check:1.0
+#execute parametrized jobs
+Parameterized-Remote-Trigger:2.2.2
