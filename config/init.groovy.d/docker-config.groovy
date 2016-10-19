@@ -25,6 +25,9 @@ def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/group
 def npmGroupRepository = System.getenv('NPM_REGISTRY')
 def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
 
+def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
+def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
+
 ///////////////////////////////////////////////////:
 // Configure credz
 ///////////////////////////////////////////////////:
@@ -284,6 +287,28 @@ docker_settings =
           dnsString: '',
           dockerCommand: 'start',
           volumesString: "$defaultRootPathForVolumes/sonar:/tmp/.sonar",
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.NORMAL
+        ],
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-cordova:latest',
+          labelString: 'cordova',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nMAVEN_DEPLOYER_LOGIN=$nexus_user\nMAVEN_DEPLOYER_PASSWD=$nexus_password",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          instanceCapStr: '',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
