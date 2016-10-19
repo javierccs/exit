@@ -29,13 +29,14 @@ out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
 
 GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
+def webRepository = System.getenv('WEB_REPOSITORY')
+assert webRepository != null: "[SEVERE] WEB_REPOSITORY env variable not found."
 
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
-
 
 def COMPILER = "${COMPILER}".trim()
 def CONFIG_DIRECTORY = "${CONFIG_DIRECTORY}".trim()
@@ -63,7 +64,7 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
@@ -176,6 +177,7 @@ def buildJob = job (buildJobName) {
 if ( gitlabCredsType == 'UserPassword' ){
         credentialsBinding {
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+          usernamePassword('NEXUS_DEPLOYMENT_USERNAME','NEXUS_DEPLOYMENT_PASSWORD', 'maven-deployer-credentials-id')
         }
 }
 //if ssh credentials ssAgent is added
@@ -197,7 +199,8 @@ if ( COMPILER.equals ( "None" )) {
 } else {
 	    shell ( "git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
 }
-			  
+        shell ("set +x\ncurl -u \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip "+
+               "${webRepository}$GITLAB_PROJECT/\$front_image_name-\$FRONT_IMAGE_VERSION.zip")
       }
       preBuildSteps {
         environmentVariables {
@@ -252,7 +255,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
 String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "." , "sonar.exclusions" : "node_modules/**,bower_components/**",
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "." , "sonar.exclusions" : "node_modules/**,bower_components/**,${DIST_DIR}/**",
      "sonar.projectKey" : 'serenity:nodejs:$FRONT_IMAGE_NAME' , "sonar.projectName" : '$FRONT_IMAGE_NAME' , "sonar.projectVersion" : '$FRONT_IMAGE_VERSION'])
 
 def updateParam(node, String paramName, String defaultValue) {
