@@ -52,15 +52,15 @@ def removeParam(node, String paramName) {
 }
 
 //JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
-// JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
+def OSE3_TEMPLATE_PARAMS_DEV ="APP_NAME=${OSE3_APP_NAME},ARTIFACT_URL=\${BUILD_URL}artifact/${REPOSITORY_NAME}.tgz"
+def OSE3_TEMPLATE_PARAMS_PRE ="APP_NAME=${OSE3_APP_NAME},ARTIFACT_URL=${webRepository}$GITLAB_PROJECT/\$front_image_name-\$FRONT_IMAGE_VERSION.tgz"
 def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
 def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 //Compose the template params, if blank we left the default pf PAAS
-if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
+if(TZ != "") OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
@@ -107,7 +107,7 @@ def buildJob = job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
             }
@@ -192,7 +192,7 @@ if ( gitlabCredsType == 'SSH' ){
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["IS_RELEASE","FRONT_IMAGE_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","FRONT_IMAGE_VERSION","front_image_name"]')
         }
       }
       postSuccessfulBuildSteps {
@@ -228,20 +228,29 @@ if ( COMPILER.equals ( "None" )) {
   }
 
   publishers {
-    archiveArtifacts('*.zip')
+    archiveArtifacts("${REPOSITORY_NAME}.tgz")
 if (JUNIT_TESTS_PATTERN?.trim()) {
     archiveJunit(JUNIT_TESTS_PATTERN)
 }
-    downstreamParameterized {
-      trigger(dockerJobName) {
-        condition('SUCCESS')
-        parameters {
-          propertiesFile('env.properties', true)
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}')
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+    flexiblePublish {
+      conditionalAction {
+        condition { not {
+            booleanCondition('${ENV,var="IS_RELEASE"}')
+          }
         }
-      } //conditionalAction
-    } // flexiblePublish
+        publishers {
+          downstreamParameterized {
+            trigger(deployDevJobName) {
+              condition('SUCCESS')
+              parameters {
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_DEV}")
+                predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+              }
+            }
+          }
+        }
+      }
+    }
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
       trigger(triggerName: 'Failure', includeCulprits: true)
@@ -268,57 +277,6 @@ def updateParam(node, String paramName, String defaultValue) {
   aux.defaultValue[0].value = defaultValue
 }
 
-// Docker job
-job (dockerJobName) {
-  println "JOB: "+dockerJobName
-  label('front-build-docker')
-  deliveryPipelineConfiguration('CI', 'Front Docker Build')
-  parameters {
-    stringParam('ARTIFACT_NAME', "${REPOSITORY_NAME}", 'Front artifact name')
-
-  }
-  wrappers {
-    //buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
-	buildName('${ENV,var="PIPELINE_VERSION_TEST"}')
-    credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
-    }
-  }
-  steps {
-    copyArtifacts(buildJobName) {
-      includePatterns("*.zip")
-      flatten()
-      optional(false)
-      fingerprintArtifacts(false)
-      buildSelector {
-        latestSuccessful(true)
-      }
-    }
-    shell('generate-and-push-front-image.sh')
-  }
-  publishers {
-    flexiblePublish {
-      conditionalAction {
-        condition { 
-          //if it is a SNAPSHOT deployment is triggered
-          expression('(.*)-(\\d+)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
-        }
-        publishers {
-          downstreamParameterized {
-            trigger(deployDevJobName) {
-              condition('SUCCESS')
-              parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-                predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-                                
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
@@ -333,7 +291,6 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
@@ -373,7 +330,6 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
   }
 }
@@ -413,7 +369,6 @@ job (deployHideJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
     updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
   }

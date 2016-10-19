@@ -24,7 +24,6 @@ def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gs
 def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
 def npmGroupRepository = System.getenv('NPM_REGISTRY')
 def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
-
 def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
 def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
 
