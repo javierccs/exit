@@ -323,6 +323,13 @@ if ( gitlabCredsType == 'SSH' ){
   } //publishers
 } //job
 
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "wp-content" , "sonar.projectKey" : "serenity:wp:$GROUP_NAME-$REPOSITORY_NAME" ,
+  "sonar.projectName" : '$WORDPRESS_DESCRIPTION' , "sonar.projectVersion" : '$WORDPRESS_IMAGE_VERSION'])
+
 // Docker job
 job (dockerJobName) {
   out.println "JOB: "+dockerJobName
