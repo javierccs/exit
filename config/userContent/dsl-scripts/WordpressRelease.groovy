@@ -4,6 +4,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
@@ -153,7 +154,7 @@ def removeParam(node, String paramName) {
   node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 // Build job
-job (buildJobName) {
+def buildJob = job (buildJobName) {
   println "JOB: "+buildJobName
   label('wordpress-build')
   deliveryPipelineConfiguration('CI', 'Build&Package')
@@ -322,6 +323,13 @@ if ( gitlabCredsType == 'SSH' ){
     } //extendedEmail
   } //publishers
 } //job
+
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "wp-content" , "sonar.projectKey" : "serenity:wp:$GROUP_NAME-$REPOSITORY_NAME" ,
+  "sonar.projectName" : '$WORDPRESS_DESCRIPTION' , "sonar.projectVersion" : '$WORDPRESS_IMAGE_VERSION'])
 
 // Docker job
 job (dockerJobName) {

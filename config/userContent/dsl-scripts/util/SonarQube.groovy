@@ -17,7 +17,7 @@ def addSonarQubeAnalysis(job, Map<String,String> props = [:]) {
       }
     } else if (job instanceof FreeStyleJob) {
       it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
-        properties (props.collect { /$it.key=$it.value/ }.join("\n"))
+        properties ('sonar.sourceEncoding=UTF-8\n'+props.collect { /$it.key=$it.value/ }.join("\n"))
         jdk('JDK8')
       }
     } else {
