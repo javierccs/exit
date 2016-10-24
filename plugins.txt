@@ -1,4 +1,4 @@
-#plugin_id:version
+n_id:version
 
 # Suggested Jenkins2 Plugins
 ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
@@ -138,3 +138,4 @@ lockable-resources:1.10
 skip-certificate-check:1.0
 #execute parametrized jobs
 Parameterized-Remote-Trigger:2.2.2
+
