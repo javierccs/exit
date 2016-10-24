@@ -7,7 +7,7 @@ structs:1.5 (Structs plugin, required by ant)
 antisamy-markup-formatter:1.5 (OWASP Markup Formatter Plugin)
 branch-api:1.11 (Branch API Plugin)
 cloudbees-folder:5.13 (Folders Plugin)
-credentials:2.1.6 (Credentials Plugin)
+credentials:2.1.7 (Credentials Plugin)
 build-timeout:1.17.1 (build timeout plugin)
 naginator:1.17.2 (Permits reschedule build after failure)
 token-macro:2.0 (Token Macro Plugin)
@@ -19,10 +19,10 @@ email-ext:2.51 (Email Extension Plugin)
 config-file-provider:2.13 (configuration files)
 ssh-credentials:1.12 (SSH Credentials Plugin)
 matrix-project:1.7.1 (Matrix Project Plugin)
-junit:1.18 (JUnit Plugin)
-script-security:1.23 (Script Security Plugin)
+junit:1.19 (JUnit Plugin)
+script-security:1.24 (Script Security Plugin)
 analysis-core:1.79 (This plug-in provides utilities for the static code analysis plug-ins)
-maven-plugin:2.13 (Maven plugin)
+maven-plugin:2.14 (Maven plugin)
 javadoc:1.4 (Java doc)
 mailer:1.18 (Mailer Plugin)
 display-url-api:0.5 (Required by mailer)
@@ -37,7 +37,7 @@ git:3.0.0 (Git plugin)
 git-client:2.0.0 (Git client plugin)
 promoted-builds:2.27 (promote)
 rebuild:1.25
-job-dsl:1.51
+job-dsl:1.52
 parameterized-trigger:2.32
 conditional-buildstep:1.3.5
 run-condition:1.0
@@ -49,9 +49,9 @@ github:1.22.1 (GitHub plugin)
 github-api:1.77 (GitHub API Plugin)
 github-branch-source:1.10 (GitHub Branch Source Plugin)
 github-organization-folder:1.5 (GitHub Organization Folder Plugin)
-workflow-cps:2.19 (Pipeline: Groovy)
-workflow-support:2.8 (Pipeline: Supporting APIs)
-workflow-api:2.4 (Pipeline: API)
+workflow-cps:2.20 (Pipeline: Groovy)
+workflow-support:2.10 (Pipeline: Supporting APIs)
+workflow-api:2.5 (Pipeline: API)
 jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
 #end workflow-cps
 workflow-multibranch:2.9 (Pipeline: Multibranch)
@@ -68,14 +68,14 @@ matrix-auth:1.4 (Matrix Authorization Strategy Plugin)
 momentjs:1.1.1 (JavaScript GUI Lib: Moment.js bundle plugin)
 pam-auth:1.3 (PAM Authentication plugin)
 pipeline-build-step:2.3 (Pipeline: Build Step)
-pipeline-input-step:2.1 (Pipeline: Input Step)
+pipeline-input-step:2.2 (Pipeline: Input Step)
 pipeline-rest-api:2.1 (Pipeline: REST API Plugin)
 pipeline-graph-analysis:1.2 (Required by rest-api)
 pipeline-stage-step:2.2 (Pipeline: Stage Step)
 pipeline-stage-view:2.1 (Pipeline: Stage View Plugin)
 
 ssh-slaves:1.11 (SSH Slaves plugin)
-subversion:2.6 (Subversion Plug-in)
+subversion:2.7.1 (Subversion Plug-in)
 timestamper:1.8.7 (Timestamper)
 windows-slaves:1.2 (Windows Slaves Plugin)
 workflow-aggregator:2.4 (Pipeline)
@@ -90,7 +90,7 @@ copy-to-slave:1.4.4
 copyartifact:1.38.1
 
 groovy:1.29
-release:2.6
+release:2.6.1
 htmlpublisher:1.11
 
 #common
@@ -135,4 +135,3 @@ simple-theme-plugin:0.3
 gravatar:2.1
 
 pipeline-utility-steps:1.1.6
-
