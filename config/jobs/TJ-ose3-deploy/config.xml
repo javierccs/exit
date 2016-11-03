@@ -78,6 +78,11 @@
     <hudson.tasks.Shell>
       <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE} --login_with_token=ON</command>
     </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@1.92.1">
+      <info>
+        <propertiesFilePath>deploy_jenkins.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
     <hudson.plugins.groovy.SystemGroovy plugin="groovy@1.29">
       <scriptSource class="hudson.plugins.groovy.StringScriptSource">
         <command>/*** BEGIN META {
