@@ -98,8 +98,14 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
 			"default": "512M",
+                        "propertyOrder": 15
+		},
+                "VOLUME_CAPACITY_DEV": {
+                        "type": "string",
+                        "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
+                        "default": "512Mi",
                         "propertyOrder": 16
-		}
+                }
       }
     }
 }
