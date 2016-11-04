@@ -1,4 +1,4 @@
-n_id:version
+#plugin_id:version
 
 # Suggested Jenkins2 Plugins
 ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
