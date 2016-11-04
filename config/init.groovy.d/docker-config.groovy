@@ -63,6 +63,7 @@ def nodeJSDataContainer = System.getenv("NODEJS_DATA")
 def defaultRootPathForVolumes = System.getenv("DOCKER_SLAVES_VOLUMES_ROOT")
 def gitlabUrl = System.getenv("GITLAB_URL")
 def nexusUrl = System.getenv("NEXUS_BASE_URL")
+def tenantName = System.getenv("SERENITY_TENANT")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
@@ -100,7 +101,7 @@ docker_settings =
           privileged: false,
           tty: false,
           macAddress: '',
-          mode: Node.Mode.EXCLUSIVE 
+          mode: Node.Mode.EXCLUSIVE
         ],
 	[
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.3.1-B3',
@@ -122,7 +123,7 @@ docker_settings =
           privileged: false,
           tty: false,
           macAddress: '',
-          mode: Node.Mode.EXCLUSIVE 
+          mode: Node.Mode.EXCLUSIVE
         ],
 	[
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.3.1-B3',
@@ -144,7 +145,7 @@ docker_settings =
           privileged: false,
           tty: false,
           macAddress: '',
-          mode: Node.Mode.EXCLUSIVE 
+          mode: Node.Mode.EXCLUSIVE
         ],
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.3.1-B3',
@@ -316,7 +317,7 @@ docker_settings =
           template.dockerCommand,
           template.volumesString,
           template.volumesFromString,
-          template.environmentsString,
+          template.environmentsString+"\nTENANT_NAME=$tenantName",
           template.lxcConfString,
           template.hostname,
           null, //template.memoryLimit,
