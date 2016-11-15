@@ -27,9 +27,6 @@ def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
 def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
 def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
 
-def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
-def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
-
 ///////////////////////////////////////////////////:
 // Configure credz
 ///////////////////////////////////////////////////:
