@@ -5,6 +5,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
@@ -30,6 +31,8 @@ out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
 
 GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
+def webRepository = System.getenv('WEB_REPOSITORY')
+assert webRepository != null: "[SEVERE] WEB_REPOSITORY env variable not found."
 
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def dockerJobName = GITLAB_PROJECT+'-ci-docker'
@@ -37,7 +40,6 @@ def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
-
 
 def COMPILER = "${COMPILER}".trim()
 def CONFIG_DIRECTORY = "${CONFIG_DIRECTORY}".trim()
@@ -50,34 +52,29 @@ def removeParam(node, String paramName) {
 }
 
 //JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
-// JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
+def OSE3_TEMPLATE_PARAMS_DEV ="APP_NAME=${OSE3_APP_NAME},ARTIFACT_URL=\${BUILD_URL}artifact/${REPOSITORY_NAME}.tgz"
+def OSE3_TEMPLATE_PARAMS_PRE ="APP_NAME=${OSE3_APP_NAME},ARTIFACT_URL=${webRepository}$GITLAB_PROJECT/\$front_image_name-\$FRONT_IMAGE_VERSION.tgz"
 def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
 def DIST_INCLUDE="${DIST_INCLUDE}".trim()
 def DIST_EXCLUDE="${DIST_EXCLUDE}".trim()
 def JUNIT_TESTS_PATTERN="${JUNIT_TESTS_PATTERN}".trim()
 //Compose the template params, if blank we left the default pf PAAS
-if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
-
-//SONARQUBE
-String NAME="Serenity SonarQube"
-//def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-//boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if(TZ != "") OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
-job (buildJobName) {
+def buildJob = job (buildJobName) {
   println "JOB: "+buildJobName
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
@@ -110,7 +107,7 @@ job (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_PRE}")
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
               }
             }
@@ -183,6 +180,7 @@ job (buildJobName) {
 if ( gitlabCredsType == 'UserPassword' ){
         credentialsBinding {
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+          usernamePassword('NEXUS_DEPLOYMENT_USERNAME','NEXUS_DEPLOYMENT_PASSWORD', 'maven-deployer-credentials-id')
         }
 }
 //if ssh credentials ssAgent is added
@@ -194,7 +192,7 @@ if ( gitlabCredsType == 'SSH' ){
     release {
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["IS_RELEASE","FRONT_IMAGE_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","FRONT_IMAGE_VERSION","front_image_name"]')
         }
       }
       postSuccessfulBuildSteps {
@@ -204,7 +202,8 @@ if ( COMPILER.equals ( "None" )) {
 } else {
 	    shell ( "git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
 }
-			  
+        shell ("set +x\ncurl -u \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip "+
+               "${webRepository}$GITLAB_PROJECT/\$front_image_name-\$FRONT_IMAGE_VERSION.zip")
       }
       preBuildSteps {
         environmentVariables {
@@ -227,21 +226,31 @@ if ( COMPILER.equals ( "None" )) {
     }	 
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}' '${CONFIG_DIRECTORY}'")
   }
+
   publishers {
-    archiveArtifacts('*.zip')
+    archiveArtifacts("${REPOSITORY_NAME}.tgz")
 if (JUNIT_TESTS_PATTERN?.trim()) {
     archiveJunit(JUNIT_TESTS_PATTERN)
 }
-    downstreamParameterized {
-      trigger(dockerJobName) {
-        condition('SUCCESS')
-        parameters {
-          propertiesFile('env.properties', true)
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}')
-          predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
+    flexiblePublish {
+      conditionalAction {
+        condition { not {
+            booleanCondition('${ENV,var="IS_RELEASE"}')
+          }
         }
-      } //conditionalAction
-    } // flexiblePublish
+        publishers {
+          downstreamParameterized {
+            trigger(deployDevJobName) {
+              condition('SUCCESS')
+              parameters {
+                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS_DEV}")
+                predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
+              }
+            }
+          }
+        }
+      }
+    }
     extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
       trigger(triggerName: 'Always')
       trigger(triggerName: 'Failure', includeCulprits: true)
@@ -252,10 +261,14 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
       }
     } //extendedEmail
   } //publishers
-
-  configure {
-  }
 } //job
+
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "." , "sonar.exclusions" : "node_modules/**,bower_components/**,${DIST_DIR}/**",
+     "sonar.projectKey" : 'serenity:nodejs:$FRONT_IMAGE_NAME' , "sonar.projectName" : '$FRONT_IMAGE_NAME' , "sonar.projectVersion" : '$FRONT_IMAGE_VERSION'])
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -264,57 +277,6 @@ def updateParam(node, String paramName, String defaultValue) {
   aux.defaultValue[0].value = defaultValue
 }
 
-// Docker job
-job (dockerJobName) {
-  println "JOB: "+dockerJobName
-  label('front-build-docker')
-  deliveryPipelineConfiguration('CI', 'Front Docker Build')
-  parameters {
-    stringParam('ARTIFACT_NAME', "${REPOSITORY_NAME}", 'Front artifact name')
-
-  }
-  wrappers {
-    //buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
-	buildName('${ENV,var="PIPELINE_VERSION_TEST"}')
-    credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
-    }
-  }
-  steps {
-    copyArtifacts(buildJobName) {
-      includePatterns("*.zip")
-      flatten()
-      optional(false)
-      fingerprintArtifacts(false)
-      buildSelector {
-        latestSuccessful(true)
-      }
-    }
-    shell('generate-and-push-front-image.sh')
-  }
-  publishers {
-    flexiblePublish {
-      conditionalAction {
-        condition { 
-          //if it is a SNAPSHOT deployment is triggered
-          expression('(.*)-(\\d+)$', '${ENV,var="FRONT_IMAGE_VERSION"}')
-        }
-        publishers {
-          downstreamParameterized {
-            trigger(deployDevJobName) {
-              condition('SUCCESS')
-              parameters {
-                predefinedProp('OSE3_TEMPLATE_PARAMS',"${OSE3_TEMPLATE_PARAMS}")
-                predefinedProp('PIPELINE_VERSION', '${FRONT_IMAGE_VERSION}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-                                
 //Deploy in dev job
 job (deployDevJobName) {
   println "JOB: " + deployDevJobName
@@ -329,7 +291,6 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
@@ -369,7 +330,6 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
   }
 }
@@ -409,7 +369,6 @@ job (deployHideJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', OSE3_APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it, 'OSE3_CREATE_TEMPLATE', 'ON')
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
     updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
   }

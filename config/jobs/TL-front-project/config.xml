@@ -81,7 +81,7 @@
 	<hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description>OpenShift template to be used in deployment</description>
-          <defaultValue>nginx-alm-1.0</defaultValue>
+          <defaultValue>nginx</defaultValue>
         </hudson.model.StringParameterDefinition>
 	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>FRONT_CUSTOMIZE</name>
@@ -102,13 +102,9 @@
         <groovyScriptContent>
 import groovy.json.*
 def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
-
 def slurperFRONT_CUSTOMIZE = new JsonSlurper()
 def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
-
-
 return listFRONT_CUSTOMIZE 
-
 </groovyScriptContent>
         <loadFilesFromMaster>false</loadFilesFromMaster>
       </info>

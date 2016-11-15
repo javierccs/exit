@@ -87,6 +87,8 @@ job-dsl:1.48
 docker-plugin:0.16.2 (Docker Plugin)
 gitlab-plugin:1.2.5 (GitLab Plugin)
 sonar:2.4.4 (SonarQube plugin)
+nexus-artifact-uploader:2.7
+Parameterized-Remote-Trigger:2.2.2
 skip-certificate-check:1.0 (Skip Certificate Check Plugin)
 
 greenballs:1.15 (Green Balls)
@@ -112,7 +114,3 @@ ansicolor:0.4.2
 simple-theme-plugin:0.3
 #for jenkins-atlasian theme
 gravatar:2.1
-
-#execute parametrized jobs
-Parameterized-Remote-Trigger:2.2.2
-
