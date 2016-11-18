@@ -4,7 +4,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -144,7 +144,7 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 def removeParam(node, String paramName) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -153,8 +153,8 @@ def removeParam(node, String paramName) {
   node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 // Build job
-job (buildJobName) {
-  println "JOB: "+buildJobName
+def buildJob = job (buildJobName) {
+  out.println "JOB: "+buildJobName
   label('wordpress-build')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -325,7 +325,7 @@ if ( gitlabCredsType == 'SSH' ){
 
 // Docker job
 job (dockerJobName) {
-  println "JOB: "+dockerJobName
+  out.println "JOB: "+dockerJobName
   label('wordpress-docker')
   deliveryPipelineConfiguration('CI', 'Docker Build')
   parameters {
@@ -383,7 +383,7 @@ def updateParam(node, String paramName, String defaultValue) {
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -402,7 +402,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -442,7 +442,7 @@ job (deployPreJobName) {
 
 //Deploy in hide job
 job (deployHideJobName) {
-  println "JOB: " + deployHideJobName
+  out.println "JOB: " + deployHideJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
@@ -483,7 +483,7 @@ job (deployHideJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: " + deployProJobName
+  out.println "JOB: " + deployProJobName
   using('TJ-ose3-switch')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')

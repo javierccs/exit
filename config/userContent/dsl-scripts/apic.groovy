@@ -27,11 +27,11 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if (gitlabCredsType == null) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println("GitLab credential type " + gitlabCredsType);
+out.println("GitLab credential type " + gitlabCredsType);
 
 
 job(buildJobName) {
-  println "JOB: " + buildJobName
+  out.println "JOB: " + buildJobName
   label('apic')
   deliveryPipelineConfiguration('CI', 'APIC Validation')
   logRotator(daysToKeep = 30, numToKeep = 10, artifactDaysToKeep = -1, artifactNumToKeep = -1)
@@ -204,7 +204,7 @@ def updateParam(node, String paramName, String defaultValue) {
 
 
 job(publishDevJobName) {
-  println "JOB: " + publishDevJobName
+  out.println "JOB: " + publishDevJobName
   label('apic')
   deliveryPipelineConfiguration('DEV', 'APIC Publish')
   parameters {
@@ -237,7 +237,7 @@ job(publishDevJobName) {
 
 //Publish in pre job
 job(publishPreJobName) {
-  println "JOB: " + publishPreJobName
+  out.println "JOB: " + publishPreJobName
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'APIC Publish')
   properties {
@@ -264,7 +264,7 @@ job(publishPreJobName) {
 
 //Deploy in pro job
 job(publishProJobName) {
-  println "JOB: $publishProJobName"
+  out.println "JOB: $publishProJobName"
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'APIC Publish')
 }

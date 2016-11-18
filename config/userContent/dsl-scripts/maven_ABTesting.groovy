@@ -4,7 +4,6 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -36,7 +35,6 @@ def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
 def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
 def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 
@@ -95,10 +93,10 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 mavenJob (buildJobName_a) {
-  println "JOB: "+buildJobName_a
+  out.println "JOB: "+buildJobName_a
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -314,7 +312,7 @@ if ( gitlabCredsType == 'SSH' ){
 
 
 mavenJob (buildJobName_b) {
-  println "JOB: "+buildJobName_b
+  out.println "JOB: "+buildJobName_b
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -530,7 +528,7 @@ if ( gitlabCredsType == 'SSH' ){
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('DEV', 'Deploy')
   parameters {
@@ -596,7 +594,7 @@ if(ADD_HPALM_AT_DEV == "true")
 {
 job (BridgeHPALMJobNameDEV)
 {
-  println "JOB: ${BridgeHPALMJobNameDEV}"
+  out.println "JOB: ${BridgeHPALMJobNameDEV}"
     label("hpalm_bridge")
     parameters {
        stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
@@ -679,7 +677,7 @@ if(ADD_HPALM_AT_PRE == "true")
 {
 job (BridgeHPALMJobName)
 {
-  println "JOB: ${BridgeHPALMJobName}"
+  out.println "JOB: ${BridgeHPALMJobName}"
     label("hpalm_bridge")
     parameters {
        stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
@@ -757,26 +755,9 @@ else
 }
 }//HPALM BRIDGE PRE
 
-def injectPasswords = {
-  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
-    injectGlobalPasswords(false)
-    maskPasswordParameters(true)
-    passwordEntries {
-      EnvInjectPasswordEntry {
-        name('OSE3_USERNAME')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-      EnvInjectPasswordEntry {
-        name('OSE3_PASSWORD')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-    }
-  }
-}
-
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('PRE', 'Deploy')
   parameters {
@@ -823,7 +804,6 @@ job (deployPreJobName) {
        }
      }
    }
-  //configure injectPasswords
   steps {
     
 	shell(
@@ -857,7 +837,7 @@ if( ADD_HPALM_AT_PRE == "true")
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: " + deployProJobName
+  out.println "JOB: " + deployProJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('PRO', 'Deploy')
   parameters {
@@ -879,8 +859,6 @@ job (deployProJobName) {
       }
   }
 
-
-  //configure injectPasswords
   steps {
        shell(
             'export ARTIFACT_URL=$(mvn_resolve.sh ${POM_GROUPID} ${POM_ARTIFACTID} ${PIPELINE_VERSION} ${POM_PACKAGING})\n'+
