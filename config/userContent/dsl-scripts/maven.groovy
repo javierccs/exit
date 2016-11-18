@@ -5,7 +5,6 @@ import util.Utilities;
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
 def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -39,7 +38,6 @@ def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
 def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
 def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 if(APP_NAME_OSE3 == "")
@@ -77,14 +75,14 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
 def buildJob = mavenJob (buildJobName) {
-  println "JOB: "+buildJobName
+  out.println "JOB: "+buildJobName
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -324,7 +322,7 @@ def removeParam(node, String paramName) {
 /// HPALM JOBS ///
 if (ADD_HPALM_AT_DEV == "true") {
 mavenJob(BridgeHPALMJobNameDEV) {
-  println "JOB: ${BridgeHPALMJobNameDEV}"
+  out.println "JOB: ${BridgeHPALMJobNameDEV}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Functional Test (DEV)')
@@ -358,7 +356,7 @@ mavenJob(BridgeHPALMJobNameDEV) {
 //HPALM Bridge PRE
 if(ADD_HPALM_AT_PRE == "true") {
 mavenJob(BridgeHPALMJobName) {
-  println "JOB: ${BridgeHPALMJobName}"
+  out.println "JOB: ${BridgeHPALMJobName}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Functional Test')
@@ -404,7 +402,7 @@ def envnode =
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -442,7 +440,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -500,7 +498,7 @@ job (deployPreJobName) {
 
 //Deploy in hide environment job
 job (deployHideJobName) {
-  println "JOB: $deployHideJobName"
+  out.println "JOB: $deployHideJobName"
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
@@ -545,7 +543,7 @@ job (deployHideJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-switch')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')

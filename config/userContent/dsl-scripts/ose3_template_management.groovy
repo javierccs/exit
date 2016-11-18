@@ -5,7 +5,6 @@ import java.util.regex.*
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 String no_spaces(value) {
     return value.trim();
@@ -48,8 +47,6 @@ out.println("GitLab Project: " + REPOSITORY_NAME);
 
 def GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
 def GIT_SOURCE_REPO = "origin";
-def GIT_INTEGRATION_BRANCH = params.gitLabIntegrationBranch;
-def GIT_RELEASE_BRANCH = params.gitLabReleaseBranch;
 def buildJobName = GITLAB_PROJECT + '-ci-build';
 
 //creck gitlab credentials

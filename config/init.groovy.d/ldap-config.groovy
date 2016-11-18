@@ -57,7 +57,7 @@ PROJECT_ROLES.each { PROJECT_ROLE ->
   if (role == null)  {
     logger.severe("Role $ROLE_NAME not found.")
     return false
-  } else println role
+  }
   list.split(',').each {
     realm.assignRole(realm.PROJECT, role, it.trim())
   }

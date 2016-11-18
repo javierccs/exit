@@ -1,12 +1,10 @@
 import jenkins.model.*
-import groovy.util.*
 import java.util.regex.*;
 import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
 def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -35,7 +33,6 @@ def webRepository = System.getenv('WEB_REPOSITORY')
 assert webRepository != null: "[SEVERE] WEB_REPOSITORY env variable not found."
 
 def buildJobName = GITLAB_PROJECT+'-ci-build'
-def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
@@ -75,7 +72,7 @@ def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
 def buildJob = job (buildJobName) {
-  println "JOB: "+buildJobName
+  out.println "JOB: "+buildJobName
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -279,7 +276,7 @@ def updateParam(node, String paramName, String defaultValue) {
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -297,7 +294,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -336,7 +333,7 @@ job (deployPreJobName) {
 
 //Deploy in hide environment jo
 job (deployHideJobName) {
-  println "JOB: $deployHideJobName"
+  out.println "JOB: $deployHideJobName"
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
@@ -377,7 +374,7 @@ job (deployHideJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-switch')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')
