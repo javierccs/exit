@@ -113,6 +113,5 @@ simple-theme-plugin:0.3
 #for jenkins-atlasian theme
 gravatar:2.1
 
-#execute parametrized jobs
 Parameterized-Remote-Trigger:2.2.2
-
+skip-certificate-check:1.0

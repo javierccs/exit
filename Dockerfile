@@ -5,12 +5,12 @@ LABEL description="Serenity ALM Jenkins image"
 LABEL com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="latest"
+      com.serenity.image.version="1.4"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="latest"
+    com.serenity.image.version="1.4"
 
 ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css
 ENV SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js
@@ -69,4 +69,3 @@ RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 COPY theme /opt/theme
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-entry-point.sh" ]
-

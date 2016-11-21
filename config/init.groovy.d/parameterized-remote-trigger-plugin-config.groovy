@@ -17,15 +17,15 @@ if(remoteTenantUrl!=null){
 	authenticationMode.put("value", "none");
 	JSONObject auth = new JSONObject();
 	auth.put("authenticationMode", authenticationMode);
-  
-  	logger.info("Configuring parameterized remote trigger plugin whit OCC Tenant")
+			  
+	logger.info("Configuring parameterized remote trigger plugin whit OCC Tenant")
 	RemoteJenkinsServer remoteJenkinsServer = new RemoteJenkinsServer(remoteTenantUrl, "Jenkins OCC-OLC", false, auth)
-    RemoteBuildConfiguration.DescriptorImpl descriptor =
-                Jenkins.instance.getDescriptorByType(RemoteBuildConfiguration.DescriptorImpl.class)
+	RemoteBuildConfiguration.DescriptorImpl descriptor =
+		Jenkins.instance.getDescriptorByType(RemoteBuildConfiguration.DescriptorImpl.class)
 
-    descriptor.setRemoteSites(remoteJenkinsServer)
-    descriptor.save()
-    logger.info("Configured")
+	descriptor.setRemoteSites(remoteJenkinsServer)
+	descriptor.save()
+	logger.info("Configured")
 }else{
 	logger.warning("No optional env var REMOTE_TENANT_URL defined, movin on")
 }
