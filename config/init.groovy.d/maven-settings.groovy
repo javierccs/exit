@@ -13,9 +13,7 @@ def logger = Logger.getLogger("org.apache.maven.artifact.deployer.DefaultArtifac
 logger.info("Setting maven...")
 def mavenDeployerLogin = System.getenv("MAVEN_DEPLOYER_LOGIN")
 def mavenDeployerPasswd = System.getenv("MAVEN_DEPLOYER_PASSWD")
-if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
-  logger.severe("Maven deployer environment variables (MAVEN_DEPLOYER_LOGIN, MAVEN_DEPLOYER_PASSWD) are not set. Artifact deployment won't work")
-} else {
+if (mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim()){
   //Create creds
   def mavenDeployerCredentialsId = "maven-deployer-credentials-id";
   def systemCreds = SystemCredentialsProvider.getInstance();
@@ -84,4 +82,6 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
 
     (connection.responseCode == 200)? logger.info("Test Nexus Repository access $nexusRepositoryUrl$repo... Success"):logger.severe("Test Nexus Repository access $nexusRepositoryUrl$repo... ERROR "+connection.inputStream.withReader { Reader reader -> reader.text })
   }
+} else {
+  logger.severe("Maven deployer environment variables (MAVEN_DEPLOYER_LOGIN, MAVEN_DEPLOYER_PASSWD) are not set. Artifact deployment won't work")
 }

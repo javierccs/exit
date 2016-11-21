@@ -1,11 +1,9 @@
 import jenkins.model.*
-import groovy.util.*
 import java.util.regex.*;
 import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -80,7 +78,7 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 //Start AB Testing
 for ( data in abTestingData ) {
@@ -89,7 +87,7 @@ def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.g
 def TZ="${TZ}".trim()
 if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 job (data[0]) {
-  println "JOB: "+data[0]
+  out.println "JOB: "+data[0]
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -261,7 +259,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
 
 // Docker job
 job (data[4]) {
-  println "JOB: "+data[4]
+  out.println "JOB: "+data[4]
   label('front-build-docker')
   deliveryPipelineConfiguration('CI', 'Front Docker Build')
   parameters {
@@ -312,7 +310,7 @@ job (data[4]) {
 } // end for AB Testing                               
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -331,7 +329,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -373,7 +371,7 @@ job (deployPreJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')

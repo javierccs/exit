@@ -15,9 +15,7 @@ git.setGlobalConfigEmail(email)
 git.save()
 
 logger = Logger.getLogger("com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig")
-if (!(System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.trim())) {
-  logger.severe('GitLab environment variables not set. Gitlab access won\'t work')
-} else {
+if (System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.trim()) {
   def gitLabConfig = Jenkins.getInstance().getDescriptorByType(com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig);
   def GITLAB_NAME = "Serenity GitLab"
   def GITLAB_URL = (System.getenv("GITLAB_URL").endsWith('/'))? System.getenv("GITLAB_URL") : System.getenv("GITLAB_URL") + '/';
@@ -58,4 +56,6 @@ if (!(System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.
     logger.severe("Test $GITLAB_NAME API connection... " + result)
     System.exit(-1)
   }
+} else {
+  logger.severe('GitLab environment variables not set. Gitlab access won\'t work')
 }

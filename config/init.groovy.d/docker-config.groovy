@@ -11,13 +11,12 @@ import com.nirima.jenkins.plugins.docker.*
 import com.nirima.jenkins.plugins.docker.launcher.*
 import com.nirima.jenkins.plugins.docker.strategy.*
 import java.util.logging.Logger
-import java.util.Random
 
 def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
 logger.info("Setting docker cloud...")
 def jenkinsSlaveCredentialsId = 'jenkins-ssh-slave-credentials'
 def dockerRegistryCredentialId = 'docker-registry-credential-id'
-def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
+//def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
 def dockerRegistryUsername = System.getenv('DOCKER_REGISTRY_USERNAME').trim()
 def dockerRegistryPassword = System.getenv('DOCKER_REGISTRY_PASSWORD').trim()
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
@@ -75,8 +74,6 @@ assert swarmMasterUrl != null : "SWARM_MASTER_URL env var not set!"
 def mavenDataContainer = System.getenv("MAVEN_DATA")
 def nodeJSDataContainer = System.getenv("NODEJS_DATA")
 def defaultRootPathForVolumes = System.getenv("DOCKER_SLAVES_VOLUMES_ROOT")
-def gitlabUrl = System.getenv("GITLAB_URL")
-def nexusUrl = System.getenv("NEXUS_BASE_URL")
 def tenantName = System.getenv("SERENITY_TENANT")
 def inst = Jenkins.instance.clouds.getByName(CLOUD_NAME)
 if (inst != null) {
@@ -407,4 +404,4 @@ docker_settings =
   }
 
   Jenkins.instance.clouds.addAll(dockerClouds)
-  println 'Configured docker cloud.'
+  logger.info('Configured docker cloud.')

@@ -4,7 +4,6 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -29,13 +28,10 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 
 //nexus information
 def nexusRepositoryUrl = System.getenv('NEXUS_URL') ?: 'srnalmdes202.eng.gsnetcloud.corp:8080'
-def apkGroupRepository = System.getenv('NEXUS_APK_GROUP') ?: 'com.serenity'
 def apkReleaseRepository = System.getenv('NEXUS_APK_RELEASES') ?: 'android-releases'
 def nexus_protocol = 'http'
 def nexus_version = 'nexus3'
 def apk_type = 'apk'
-def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN') ?: '' 
-def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD') ?: '' 
 def nexus_credentialId='maven-deployer-credentials-id'
 
 //source artifact properties
