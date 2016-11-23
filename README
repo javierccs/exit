@@ -16,6 +16,9 @@ docker run -d \
 	-e LDAP_GROUPS=<(Optional) LDAP authorized groups>\
 	-e LDAP_USER_SEARCH=<(Optional) LDAP User search filter>\
 	-e LDAP_DISPLAY_NAME=<(Optional) LDAP Display Name (default value: cn)>\
+        -e LDAP_ADMIN_GROUPS=<(Optional) LDAP admin groups>\
+        -e LDAP_PROMOTER_GROUPS=<(Optional) LDAP promoter groups>\
+        -e LDAP_USER_GROUPS=<(Optional) LDAP user groups>\
 	-e JENKINS_URL=<(Required) Jenkins url> \
 	-e JENKINS_EMAIL=<(Required) Jenkins email address> \
         -e JENKINS_PASSWORD=<(Optional) Admin password, default: "admin"> \

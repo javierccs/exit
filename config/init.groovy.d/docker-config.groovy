@@ -114,6 +114,28 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-ansible:latest',
+          labelString: 'ansible',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          sshLaunchTimeoutMinutes: '1',
+          jvmOptions: '',
+          javaPath: '',
+          instanceCapStr: '2',
+          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          bindAllPorts: false,
+          privileged: false,
+          tty: false,
+          macAddress: '',
+          mode: Node.Mode.EXCLUSIVE
+        ],
+	[
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:latest',
           labelString: 'docker',
           environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
