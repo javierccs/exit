@@ -115,7 +115,7 @@ docker_settings =
 	[
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-ansible:latest',
           labelString: 'ansible',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nGITLAB_URL=$gitlabUrl",
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           sshLaunchTimeoutMinutes: '1',
