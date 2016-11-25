@@ -30,9 +30,11 @@ docker run -d \
 	-e LDAP_BASE=<(Optional) Ldap search user base DN>\
 	-e LDAP_GROUP_BASE=<(Optional) Ldap search group base DN>\
 	-e LDAP_GROUP_FILTER=<(Optional) Ldap search group filter>\
-	-e LDAP_GROUPS=<(Optional) LDAP authorized groups>\
 	-e LDAP_USER_SEARCH=<(Optional) LDAP User search filter>\
 	-e LDAP_DISPLAY_NAME=<(Optional) LDAP Display Name (default value: cn)>\
+        -e LDAP_ADMIN_GROUPS=<(Optional) LDAP admin groups>\
+        -e LDAP_PROMOTER_GROUPS=<(Optional) LDAP promoter groups>\
+        -e LDAP_USER_GROUPS=<(Optional) LDAP user groups>\
 		### SMTP ###
 	-e SMTP_HOST=<(Optional) SMTP Server hostname> \
 	-e SMTP_PORT=<(Optional) SMTP Server port> \
