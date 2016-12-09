@@ -35,8 +35,7 @@ def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
 def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
-def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
-def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
 def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
 def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
@@ -133,13 +132,6 @@ def buildJob = mavenJob (buildJobName) {
         icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
-        }
-      }
-       promotion {
-        name('Shadow')
-        icon('star-gold-w')
-        conditions {
-          downstream(false, deployHideJobName)
         }
       }
       promotion {
@@ -449,26 +441,7 @@ job (deployPreJobName) {
     stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
     stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
   }
-  properties {
-    promotions {
-      promotion {
-        name('Promote-Shadow')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployHideJobName) {
-              parameters {
-                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}'])
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  
   publishers {
     if (ADD_HPALM_AT_PRE == "true") {
       downstreamParameterized {
@@ -496,57 +469,13 @@ job (deployPreJobName) {
   }
 }
 
-//Deploy in hide environment job
-job (deployHideJobName) {
-  out.println "JOB: $deployHideJobName"
-  using('TJ-ose3-deploy')
-  disabled(false)
-  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
-  parameters {
-    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
-    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
-    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
-  }
-    properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}', 'OSE3_TOKEN_PROJECT':'${OSE3_TOKEN_PROJECT}'])
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  configure {
-    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
-    updateParam(it, 'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
-    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-  }
-}
-
 
 //Deploy in pro job
 job (deployProJobName) {
   out.println "JOB: $deployProJobName"
-  using('TJ-ose3-switch')
+  using('TJ-ose3-deploy')
   disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')
+  deliveryPipelineConfiguration('PRO', 'deploy to PRO')
   parameters {
     stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
     stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
