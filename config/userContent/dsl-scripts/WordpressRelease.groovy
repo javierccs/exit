@@ -405,6 +405,27 @@ job (deployPreJobName) {
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
+  properties {
+	    promotions {
+	      promotion {
+	        name('Promote-PRO')
+	        icon('star-gold-e')
+	        conditions {
+	          manual('impes-product-owner,impes-technical-lead,impes-developer')
+	        }
+	        actions {
+	          downstreamParameterized {
+	            trigger(deployProJobName) {
+	              parameters {
+	                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+	              }
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
+  
  configure {
     removeParam(it, 'CERTIFICATE')
     removeParam(it, 'PRIVATE_KEY_CERTIFICATE')

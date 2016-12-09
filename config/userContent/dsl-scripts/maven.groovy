@@ -454,6 +454,29 @@ job (deployPreJobName) {
       }
     } //HPALM
   }
+  
+  properties {
+	    promotions {
+	      promotion {
+	        name('Promote-PRO')
+
+	        icon('star-gold-e')
+	        conditions {
+	          manual('impes-product-owner,impes-technical-lead,impes-developer')
+	        }
+	        actions {
+	          downstreamParameterized {
+	            trigger(deployProJobName) {
+
+	              parameters {
+	                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}'])
+	              }
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
     removeParam(it, 'CERTIFICATE')
