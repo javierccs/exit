@@ -308,7 +308,7 @@ def removeParam(node, String paramName) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
     it.name.text() == paramName
   }
-  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
+  if (aux != null)  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 
 /// HPALM JOBS ///
@@ -506,17 +506,12 @@ job (deployProJobName) {
   }
 
   configure {
-	    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
-	    removeParam(it, 'CERTIFICATE')
-	    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-	    removeParam(it, 'CA_CERTIFICATE')    
-	    updateParam(it, 'OSE3_URL', OSE3_URL)
-	    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-	    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-	    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-	    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-	    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-	    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
+    updateParam(it, 'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+    (it / builders).children().add(0, new XmlParser().parseText(envnode))
+    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
 }
 
