@@ -19,7 +19,7 @@
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT</name>
           <description></description>
-          <defaultValue>u04KszfpuVHEZL9Zj8vtZpkxUFD8E3st5rafT2xK1TDXh6PrAuarYGt6aCJqIFVr</defaultValue>
+          <defaultValue>ofVvLjWt5RNSH+PoPiiLjw==</defaultValue>
         </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_APP_NAME</name>
@@ -41,7 +41,7 @@
           <description></description>
           <defaultValue>OFF</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
+		<hudson.model.StringParameterDefinition>
           <name>OSE3_CREATE_TEMPLATE</name>
           <description></description>
           <defaultValue>OFF</defaultValue>
@@ -51,31 +51,8 @@
           <description>Pipeline version</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_BLUE_GREEN</name>
-          <description>Blue Green deployment active (ON/OFF)</description>
-          <defaultValue>OFF</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>CERTIFICATE</name>
-          <description>The PEM format certificate of the blue green route</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>PRIVATE_KEY_CERTIFICATE</name>
-          <description>The PEM format key</description>
-          <defaultValue></defaultValue>
-        </hudson.model.PasswordParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>CA_CERTIFICATE</name>
-          <description>The PEM format CA certificate</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
-    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.2.5">
-      <gitLabConnection>gitlab</gitLabConnection>
-    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
       <autoRebuild>false</autoRebuild>
     </com.sonyericsson.rebuild.RebuildSettings>
@@ -92,19 +69,18 @@
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode>ose3-deploy</assignedNode>
   <canRoam>false</canRoam>
-  <disabled>false</disabled>
+  <disabled>true</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <jdk>(System)</jdk>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE} --login_with_token=ON --blue_green_flag=${OSE3_BLUE_GREEN}</command>
+      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE} --login_with_token=ON</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>
-        <propertiesFilePath>${WORKSPACE}/deploy_jenkins.properties</propertiesFilePath>
+        <propertiesFilePath>deploy_jenkins.properties</propertiesFilePath>
       </info>
     </EnvInjectBuilder>
     <hudson.plugins.groovy.SystemGroovy plugin="groovy@1.29">
@@ -134,3 +110,4 @@ if (inst != null) {
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
   </buildWrappers>
 </project>
+
