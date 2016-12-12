@@ -91,7 +91,7 @@ docker_settings =
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.4.0',
           labelString: 'wordpress-build',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -112,7 +112,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-ansible:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-ansible:1.4.0',
           labelString: 'ansible',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -133,7 +133,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.4.0',
           labelString: 'docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -154,7 +154,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.4.0',
           labelString: 'front-build-docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -175,7 +175,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.4.0',
           labelString: 'wordpress-docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -196,7 +196,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.4.0',
           labelString: 'ose3-deploy',
           environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
@@ -218,7 +218,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.4.0',
           labelString: 'maven',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -239,7 +239,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.4.0',
           labelString: 'hpalm_bridge',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -260,7 +260,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.4.0',
           labelString: 'nodejs',
           environmentsString: 
               ((npmGroupRepository == null)? '':"\nNPM_REGISTRY=$npmGroupRepository")+
@@ -284,7 +284,7 @@ docker_settings =
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-builder:1.4.0',
           labelString: '',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
@@ -305,7 +305,7 @@ docker_settings =
           mode: Node.Mode.NORMAL
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.4.0',
           labelString: 'apic',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
