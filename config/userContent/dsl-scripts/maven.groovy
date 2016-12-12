@@ -510,6 +510,7 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+	updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }
