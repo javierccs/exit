@@ -506,6 +506,7 @@ job (deployProJobName) {
   }
 
   configure {
+    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
