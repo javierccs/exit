@@ -6,37 +6,51 @@ docker build -t registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version] .
 
 Run:
 docker run -d \
+		### JENKINS ###
+	-e JENKINS_URL=<(Required) Jenkins url> \
+	-e JENKINS_EMAIL=<(Required) Jenkins email address> \
+	-e JENKINS_PASSWORD=<(Optional) Admin password, default: "admin"> \
+		### GITLAB###
+	-e GITLAB_URL=<(Required) GitLab URL \
+	-e GITLAB_API_TOKEN=<(Required) GitLab admin user API token> \
+		### DOCKER ###
+	-e SWARM_MASTER_URL=<(Required) docker cloud daemon url> \
+	-e DOCKER_SLAVES_VOLUMES_ROOT="<(Required) docker volumes root path"> \
+		### MAVEN ###
+	-e NEXUS_BASE_URL=<(Required) Nexus URL> \
+	-e NEXUS_MAVEN_GROUP=<(Required) Nexus maven group repository path> \
+	-e NEXUS_MAVEN_RELEASES=<(Required) Nexus maven release repository path> \
+	-e NEXUS_MAVEN_SNAPSHOTS=<(Required) Nexus maven snapshot repository path> \
+	-e MAVEN_DEPLOYER_LOGIN=<(Required) Nexus deployer user login> \
+	-e MAVEN_DEPLOYER_PASSWD=<(Required> Nexus deployer user password> \
+		### LDAP ###
 	-e LDAP_SERVER=<(Optional) LDAP server host name (like ldap.sun.com)>\
 	-e LDAP_BIND_DN=<(Optional) Ldap bind user DN>\
 	-e LDAP_PASSWORD=<(Optional) Ldap bind password>\
 	-e LDAP_BASE=<(Optional) Ldap search user base DN>\
 	-e LDAP_GROUP_BASE=<(Optional) Ldap search group base DN>\
-        -e DOCKER_SLAVES_VOLUMES_ROOT="/srv/Jenkins"
 	-e LDAP_GROUP_FILTER=<(Optional) Ldap search group filter>\
-	-e LDAP_GROUPS=<(Optional) LDAP authorized groups>\
 	-e LDAP_USER_SEARCH=<(Optional) LDAP User search filter>\
 	-e LDAP_DISPLAY_NAME=<(Optional) LDAP Display Name (default value: cn)>\
-	-e JENKINS_URL=<(Required) Jenkins url> \
-	-e JENKINS_EMAIL=<(Required) Jenkins email address> \
-        -e JENKINS_PASSWORD=<(Optional) Admin password, default: "admin"> \
+        -e LDAP_ADMIN_GROUPS=<(Optional) LDAP admin groups>\
+        -e LDAP_PROMOTER_GROUPS=<(Optional) LDAP promoter groups>\
+        -e LDAP_USER_GROUPS=<(Optional) LDAP user groups>\
+		### SMTP ###
 	-e SMTP_HOST=<(Optional) SMTP Server hostname> \
 	-e SMTP_PORT=<(Optional) SMTP Server port> \
-	-e GITLAB_URL=<(Required) GitLab URL \
-	-e GITLAB_API_TOKEN=<(Required) GitLab admin user API token> \
-	-e SWARM_MASTER_URL=<(Required) docker cloud daemon url> \
-        -e MAVEN_DEPLOYER_LOGIN=<(Required) Nexus deployer user login> \
-        -e MAVEN_DEPLOYER_PASSWD=<(Required> Nexus deployer user password> \
-	-e NEXUS_BASE_URL=<(Required) Nexus URL> \
-	-e NEXUS_MAVEN_GROUP=<(Required) Nexus maven group repository path> \
-	-e NEXUS_MAVEN_RELEASE=<(Required) Nexus maven release repository path> \
-	-e NEXUS_MAVEN_SNAPSHOT=<(Required) Nexus maven snapshot repository path> \
-        -e SONARQUBE_SERVER_URL=<(Optional) SonarQube server http URL> \
-        -e SONARQUBE_SERVER_LOGIN=<(Optional) SonarQube user> \
-        -e SONARQUBE_SERVER_PASSWORD=<(Optional) SonarQube password> \
-        -e SONARQUBE_DATABASE_URL=<(Optional) SonarQube database jdbc url> \
-        -e SONARQUBE_DATABASE_LOGIN=<(Optional) SonarQube database user> \
-        -e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password> \
-        -e JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true"\
+		### NPM ###
+	-e WEB_REPOSITORY=<(Required) Static HTML app repository> \
+	-e NPM_REGISTRY=<(Optional) NPM proxy registry> \
+	-e BOWER_REGISTRY=<(Optional) Bower proxy registry> \
+		### SONARQUBE ###
+	-e SONARQUBE_SERVER_URL=<(Optional) SonarQube server http URL> \
+	-e SONARQUBE_SERVER_LOGIN=<(Optional) SonarQube user> \
+	-e SONARQUBE_SERVER_PASSWORD=<(Optional) SonarQube password> \
+	-e SONARQUBE_DATABASE_URL=<(Optional) SonarQube database jdbc url> \
+	-e SONARQUBE_DATABASE_LOGIN=<(Optional) SonarQube database user> \
+	-e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password> \
+	-e JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true"\
+	-e TZ="Europe/Madrid"\
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version]   #Jenkins volume
  

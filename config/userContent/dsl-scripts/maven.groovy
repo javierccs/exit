@@ -4,7 +4,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -38,10 +38,8 @@ def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
 def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
 def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
 def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
-
 if(APP_NAME_OSE3 == "")
   APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase()
 
@@ -72,27 +70,19 @@ if(TZ != "") OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 if(WILY_MOM_FQDN != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_FQDN="+WILY_MOM_FQDN
 if(WILY_MOM_PORT != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
 
-//SONARQUBE
-String NAME="Serenity SonarQube"
-def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-
-
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
-
-
-mavenJob (buildJobName) {
-  println "JOB: "+buildJobName
+def buildJob = mavenJob (buildJobName) {
+  out.println "JOB: "+buildJobName
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -249,18 +239,8 @@ if ( gitlabCredsType == 'SSH' ){
   goals('clean verify')
     // Use managed global Maven settings.
   providedSettings('Serenity Maven Settings')
-  mavenOpts('-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true')
 
-  postBuildSteps {
-    if (sq) {
-      maven {
-        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
-        providedSettings('Serenity Maven Settings')
-        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL',
-                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-                   'sonar.jdbc.username': '$SONAR_JDBC_USERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
-      }
-    }
+  postBuildSteps('UNSTABLE') {
   }
 
   publishers {
@@ -315,10 +295,15 @@ if ( gitlabCredsType == 'SSH' ){
   } //publishers
 
   configure {
-    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.4.4")}
     it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
   }
 } //job
+
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob)
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -337,7 +322,7 @@ def removeParam(node, String paramName) {
 /// HPALM JOBS ///
 if (ADD_HPALM_AT_DEV == "true") {
 mavenJob(BridgeHPALMJobNameDEV) {
-  println "JOB: ${BridgeHPALMJobNameDEV}"
+  out.println "JOB: ${BridgeHPALMJobNameDEV}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Functional Test (DEV)')
@@ -371,7 +356,7 @@ mavenJob(BridgeHPALMJobNameDEV) {
 //HPALM Bridge PRE
 if(ADD_HPALM_AT_PRE == "true") {
 mavenJob(BridgeHPALMJobName) {
-  println "JOB: ${BridgeHPALMJobName}"
+  out.println "JOB: ${BridgeHPALMJobName}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Functional Test')
@@ -417,7 +402,7 @@ def envnode =
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -455,7 +440,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -513,7 +498,7 @@ job (deployPreJobName) {
 
 //Deploy in hide environment job
 job (deployHideJobName) {
-  println "JOB: $deployHideJobName"
+  out.println "JOB: $deployHideJobName"
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
@@ -558,7 +543,7 @@ job (deployHideJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-switch')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')

@@ -1,5 +1,5 @@
 import jenkins.model.*
-import org.codefirst.SimpleThemeDecorator 
+
 def inst = Jenkins.getInstance()
 def themeDecorator = inst.getDescriptor("org.codefirst.SimpleThemeDecorator")
 def jurl = System.getenv("JENKINS_URL").trim();
