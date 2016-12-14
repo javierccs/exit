@@ -315,9 +315,6 @@ job (deployDevJobName) {
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
   configure {
-    removeParam(it, 'CERTIFICATE')
-    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
@@ -356,9 +353,6 @@ job (deployPreJobName) {
     }
   }
   configure {
-    removeParam(it, 'CERTIFICATE')
-    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
@@ -376,9 +370,6 @@ job (deployProJobName) {
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
   configure {
-    removeParam(it, 'CERTIFICATE')
-    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME', '${OSE3_APP_NAME}')
