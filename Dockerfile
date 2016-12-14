@@ -5,12 +5,12 @@ LABEL description="Serenity ALM Jenkins image" \
       com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="1.4"
+      com.serenity.image.version="1.4.0"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="1.4"
+    com.serenity.image.version="1.4.0"
 
 ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css \
     SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js \

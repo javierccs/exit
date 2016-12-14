@@ -85,8 +85,8 @@ docker_settings =
       name: CLOUD_NAME,
       serverUrl: swarmMasterUrl,
       containerCapStr: '50',
-      connectionTimeout: 5,
-      readTimeout: 15,
+      connectionTimeout: 10,
+      readTimeout: 60,
       credentialsId: '', // dockerCertificatesDirectoryCredentialsId,
       version: '',
       templates: [
