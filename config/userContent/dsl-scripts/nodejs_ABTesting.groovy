@@ -83,7 +83,7 @@ out.println ("GitLab credential type " + gitlabCredsType );
 //Start AB Testing
 for ( data in abTestingData ) {
 
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${PIPELINE_VERSION}'
 def TZ="${TZ}".trim()
 if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 job (data[0]) {

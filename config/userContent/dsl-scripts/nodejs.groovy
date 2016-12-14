@@ -52,7 +52,7 @@ def removeParam(node, String paramName) {
 }
 
 //JAVASE TEMPLATE VARS
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${PIPELINE_VERSION}'
 // JAVA_OPTS_EXT="${JAVA_OPTS_EXT}".trim()
 def TZ="${TZ}".trim()
 def DIST_DIR="${DIST_DIR}".trim()
@@ -203,8 +203,6 @@ if ( COMPILER.equals ( "None" )) {
 } else {
 	    shell ( "git-flow-release-finish.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}")
 }
-        shell ("set +x\ncurl -u \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip "+
-               "${webRepository}$GITLAB_PROJECT/\$front_image_name-\$FRONT_IMAGE_VERSION.zip")
 
       }
       preBuildSteps {
