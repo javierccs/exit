@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>
+<![CDATA[
+<p>This template will create a pipeline for <b><a href='https://www.liferay.com/'>Liferay projects</a></b>.</p>
+<p>Template documentation info is avaliable at <b><a href='http://serenity.gs.corp:8080/web/portals/'>Liferay template guide</a></b>.</p>
+]]>
+  </description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition plugin="validating-string-parameter@2.3">
+          <name>GITLAB_PROJECT</name>
+          <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
+          <defaultValue></defaultValue>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.-_]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
+        </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_RELEASE_BRANCH</name>
+          <description>Release branch</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_INTEGRATION_BRANCH</name>
+          <description>Continuous Integration branch</description>
+          <defaultValue>development</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@1.24">
+          <name>GITLAB_CREDENTIAL</name>
+          <description>GitLab Credential (http(s): username/password, ssh: private key)</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_APP_NAME</name>
+          <description>OSE3 Application name</description>
+          <defaultValue>liferay</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_PROJECT_NAME</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_URL</name>
+          <description>OpenShift PAAS region URL</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
+          <propertyKey>regions</propertyKey>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>OSE3_TOKEN_PROJECT_DEV</name>
+          <description>A valid OSE3 token for dev project</description>
+          <defaultValue></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>OSE3_TEMPLATE_NAME</name>
+          <description></description>
+          <defaultValue>liferay-experimental</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_DEV</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_liferay_template_json_dev.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_PRE</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_liferay_template_json_pre.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OSE3_TEMPLATE_PARAMS_PRO</name>
+          <description></description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>5</visibleItemCount>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params_liferay_template_json_pro.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <EnvInjectJobProperty plugin="envinject@1.92.1">
+      <info>
+        <groovyScriptContent>import groovy.json.*
+def OSE3_TEMPLATE_PARAMS_DEV= &quot;${OSE3_TEMPLATE_PARAMS_DEV}&quot;.trim()
+def OSE3_TEMPLATE_PARAMS_PRE= &quot;${OSE3_TEMPLATE_PARAMS_PRE}&quot;.trim()
+def OSE3_TEMPLATE_PARAMS_PRO= &quot;${OSE3_TEMPLATE_PARAMS_PRO}&quot;.trim()
+
+def slurperOSE3_PARAMS_DEV = new JsonSlurper()
+def listOSE3_PARAMS_DEV = 
+slurperOSE3_PARAMS_DEV.parseText(OSE3_TEMPLATE_PARAMS_DEV)
+
+def slurperOSE3_PARAMS_PRE = new JsonSlurper()
+def listOSE3_PARAMS_PRE = slurperOSE3_PARAMS_PRE.parseText(OSE3_TEMPLATE_PARAMS_PRE)
+
+def slurperOSE3_PARAMS_PRO = new JsonSlurper()
+def listOSE3_PARAMS_PRO = slurperOSE3_PARAMS_PRO.parseText(OSE3_TEMPLATE_PARAMS_PRO)
+
+return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+      <on>true</on>
+      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
+      <keepBuildVariables>true</keepBuildVariables>
+      <overrideBuildParameters>false</overrideBuildParameters>
+      <contributors/>
+    </EnvInjectJobProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.42">
+      <targets>dsl-scripts/*.groovy</targets>
+      <usingScriptText>false</usingScriptText>
+      <ignoreExisting>false</ignoreExisting>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+      <additionalClasspath></additionalClasspath>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+      <includes>dsl-scripts/LiferayRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/Utilities.groovy</includes>
+      <excludes></excludes>
+      <flatten>false</flatten>
+      <includeAntExcludes>false</includeAntExcludes>
+      <hudsonHomeRelative>false</hudsonHomeRelative>
+      <relativeTo>userContent</relativeTo>
+    </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
+      <template>#${BUILD_NUMBER}: ${OSE3_APP_NAME}-&gt;${OSE3_PROJECT_NAME} (liferay)</template>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
+  </buildWrappers>
+</project>
