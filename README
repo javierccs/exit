@@ -51,6 +51,7 @@ docker run -d \
 	-e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password> \
 	-e JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true"\
 	-e TZ="Europe/Madrid"\
+        -e REMOTE_TENANT_URL=<(Optional)"https://<REMOTE_TENANT_URL>/">\
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version]   #Jenkins volume
  
