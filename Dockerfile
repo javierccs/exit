@@ -1,29 +1,30 @@
-FROM jenkins:1.651.3
-MAINTAINER serenity-alm <noreply@serenity-alm.corp>
+FROM jenkins:2.7.4
+MAINTAINER serenity-alm <serenity-alm@isban.com>
 
-LABEL description="Serenity ALM Jenkins image"
-LABEL com.serenity.imageowner="Serenity-ALM" \
+LABEL description="Serenity ALM Jenkins image" \
+      com.serenity.imageowner="Serenity-ALM" \
       com.serenity.description="Jenkins" \
       com.serenity.components="git;zip" \
-      com.serenity.image.version="1.3.2"
+      com.serenity.image.version="1.4.0"
 
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
-    com.serenity.image.version="1.3.2"
+    com.serenity.image.version="1.4.0"
 
-ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css
-ENV SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js
-ENV SERENITYALM_PORTAL=http://portalserenity.eng.gsnetcloud.corp:8080/web/alm
+ENV SERENITYALM_CSS=css/serenity-alm/serenity-alm.css \
+    SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js \
+    SERENITYALM_PORTAL=http://portalserenity.eng.gsnetcloud.corp:8080/web/alm \
+    GIT_SSL_NO_VERIFY=1 \
+    JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true -Djenkins.install.runSetupWizard=false"
 
 USER root
 
-#Installs td-agent (fluentd) for log collection
-
 #Downloads td-agent (sets proxy for download)
-ENV http_proxy http://proxyapps.gsnet.corp:80
-ENV https_proxy http://proxyapps.gsnet.corp:80
-ENV no_proxy="*.gsnet.corp, *.gsnetcloud.corp"
+ENV http_proxy=http://proxyapps.gsnet.corp:80 \
+    https_proxy=http://proxyapps.gsnet.corp:80 \
+    no_proxy="*.gsnet.corp, *.gsnetcloud.corp"
+
 #Downloads and installs td-agent
 #changes td-agent default user to jenkins
 #and changes td-agent directories to jenkins user
@@ -40,10 +41,9 @@ RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
 #Copies td-agent configuration file
 COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
 #Unset proxy
-ENV http_proxy ""
-ENV https_proxy ""
-ENV no_proxy ""
-
+ENV http_proxy="" \
+    https_proxy="" \
+    no_proxy=""
 
 #Installs jenkins plugins and
 COPY plugins.txt /usr/share/jenkins/ref/
@@ -69,4 +69,3 @@ RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 COPY theme /opt/theme
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-entry-point.sh" ]
-

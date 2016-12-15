@@ -3,3 +3,4 @@ docker-compose.yml
 *.iml
 run.sh
 run-local.sh
+do.sh

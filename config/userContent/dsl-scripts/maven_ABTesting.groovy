@@ -4,7 +4,6 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -22,9 +21,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-
-def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
-def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -35,10 +34,9 @@ def buildJobName_b = GITLAB_PROJECT+'-ci-build-feature-B'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
-if (nexusRepositoryUrl==null) {
-  nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
-}
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
+def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 
 //HPALM INFO
 def ADD_HPALM_AT_DEV = "${ADD_HPALM_AT_DEV}".trim()
@@ -95,10 +93,10 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 mavenJob (buildJobName_a) {
-  println "JOB: "+buildJobName_a
+  out.println "JOB: "+buildJobName_a
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -135,7 +133,7 @@ mavenJob (buildJobName_a) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
-                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
               }
             }
           }
@@ -194,7 +192,6 @@ mavenJob (buildJobName_a) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH_FEATURE_A)
     }
   } //triggers
@@ -220,7 +217,7 @@ if ( gitlabCredsType == 'SSH' ){
       }
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_PACKAGING","POM_VERSION"]')
         }
       }
       postSuccessfulBuildSteps {
@@ -229,7 +226,7 @@ if ( gitlabCredsType == 'SSH' ){
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
+          url(nexusRepositoryUrl+mavenReleaseRepository)
           uniqueVersion(true)
           evenIfUnstable(false)
         }
@@ -253,14 +250,12 @@ if ( gitlabCredsType == 'SSH' ){
   goals('clean verify')
     // Use managed global Maven settings.
   providedSettings('Serenity Maven Settings')
-   mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
-   mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
-   mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
+  mavenOpts('-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true')
    
   publishers {
     deployArtifacts {
-      repositoryId('serenity')
-      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      repositoryId('serenity') 
+      repositoryUrl(nexusRepositoryUrl+mavenSnapshotRepository)
       uniqueVersion(true)
     }
     flexiblePublish {
@@ -279,7 +274,7 @@ if ( gitlabCredsType == 'SSH' ){
                                 predefinedProp('OSE3_URL', OSE3_URL)
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
                                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
-                                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
                                }
                               }
                            }
@@ -317,7 +312,7 @@ if ( gitlabCredsType == 'SSH' ){
 
 
 mavenJob (buildJobName_b) {
-  println "JOB: "+buildJobName_b
+  out.println "JOB: "+buildJobName_b
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -354,7 +349,7 @@ mavenJob (buildJobName_b) {
                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
                 predefinedProp('OSE3_URL', OSE3_URL)
-                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
+                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
               }
             }
           }
@@ -413,7 +408,6 @@ mavenJob (buildJobName_b) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH_FEATURE_B)
     }
   } //triggers
@@ -438,7 +432,7 @@ if ( gitlabCredsType == 'SSH' ){
       }
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_PACKAGING","POM_VERSION"]')
         }
       }
       postSuccessfulBuildSteps {
@@ -447,7 +441,7 @@ if ( gitlabCredsType == 'SSH' ){
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
+          url(nexusRepositoryUrl+mavenReleaseRepository)
           uniqueVersion(true)
           evenIfUnstable(false)
         }
@@ -471,14 +465,12 @@ if ( gitlabCredsType == 'SSH' ){
   goals('clean verify')
     // Use managed global Maven settings.
   providedSettings('Serenity Maven Settings')
-   mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
-   mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
-   mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
+  mavenOpts('-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true')
    
   publishers {
     deployArtifacts {
       repositoryId('serenity')
-      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      repositoryUrl(nexusRepositoryUrl+mavenSnapshotRepository)
       uniqueVersion(true)
     }
     flexiblePublish {
@@ -497,7 +489,7 @@ if ( gitlabCredsType == 'SSH' ){
                                 predefinedProp('OSE3_URL', OSE3_URL) 
                                 predefinedProp('OSE3_APP_VERSION', '${POM_VERSION}')
                                 predefinedProp('OSE3_TEMPLATE_NAME','javase-ab')
-                                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
+                                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
                                }
                               }
                            }
@@ -536,7 +528,7 @@ if ( gitlabCredsType == 'SSH' ){
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('DEV', 'Deploy')
   parameters {
@@ -545,13 +537,9 @@ job (deployDevJobName) {
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('OSE3_URL', '', 'OSE3 URL')
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
-    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
-    //credentialsParam('OSE3_CREDENTIAL') {
-    //  type('com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl')
-    //  required(false)
-    //  defaultValue(SERENITY_CREDENTIAL)
-    //  description('OSE3 credentials')
-    //}
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
    configure {
@@ -569,7 +557,7 @@ job (deployDevJobName) {
    // }
     steps {
   	  shell(
-  	    'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+            'export ARTIFACT_URL=$(mvn_resolve.sh ${POM_GROUPID} ${POM_ARTIFACTID} ${PIPELINE_VERSION} ${POM_PACKAGING})\n'+
   	    'echo \"OSE3_TEMPLATE_PARAMS=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
   	 ) 
   	  environmentVariables{
@@ -606,7 +594,7 @@ if(ADD_HPALM_AT_DEV == "true")
 {
 job (BridgeHPALMJobNameDEV)
 {
-  println "JOB: ${BridgeHPALMJobNameDEV}"
+  out.println "JOB: ${BridgeHPALMJobNameDEV}"
     label("hpalm_bridge")
     parameters {
        stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
@@ -689,7 +677,7 @@ if(ADD_HPALM_AT_PRE == "true")
 {
 job (BridgeHPALMJobName)
 {
-  println "JOB: ${BridgeHPALMJobName}"
+  out.println "JOB: ${BridgeHPALMJobName}"
     label("hpalm_bridge")
     parameters {
        stringParam('OSE3_END_POINT_URL', '', 'OS3 URL to be tested')
@@ -767,26 +755,9 @@ else
 }
 }//HPALM BRIDGE PRE
 
-def injectPasswords = {
-  it / buildWrappers / EnvInjectPasswordWrapper(plugin:"envinject@1.92.1") {
-    injectGlobalPasswords(false)
-    maskPasswordParameters(true)
-    passwordEntries {
-      EnvInjectPasswordEntry {
-        name('OSE3_USERNAME')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-      EnvInjectPasswordEntry {
-        name('OSE3_PASSWORD')
-        value('CzYyIJFnWUx1/xdbbBfd4g==')
-      }
-    }
-  }
-}
-
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('PRE', 'Deploy')
   parameters {
@@ -795,7 +766,9 @@ job (deployPreJobName) {
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('OSE3_APP_VERSION', '${POM_VERSION}')
     stringParam('OSE3_URL' , '', 'OSE3_URL')
-    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
    configure {
@@ -823,7 +796,7 @@ job (deployPreJobName) {
                  predefinedProp('OSE3_TEMPLATE_NAME','${OSE3_TEMPLATE_NAME}')
                  predefinedProp('OSE3_APP_VERSION','${OSE3_APP_VERSION}')
                  predefinedProp('OSE3_URL',OSE3_URL)
-                 predefinedProp('VALUE_URL','${VALUE_URL}')
+                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}'])
                }
              }
            }
@@ -831,11 +804,10 @@ job (deployPreJobName) {
        }
      }
    }
-  //configure injectPasswords
   steps {
     
 	shell(
-            'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+            'export ARTIFACT_URL=$(mvn_resolve.sh ${POM_GROUPID} ${POM_ARTIFACTID} ${PIPELINE_VERSION} ${POM_PACKAGING})\n'+
             'echo \"OSE3_TEMPLATE_PARAMS=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
          )
           environmentVariables{
@@ -865,7 +837,7 @@ if( ADD_HPALM_AT_PRE == "true")
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: " + deployProJobName
+  out.println "JOB: " + deployProJobName
   label('ose3-deploy')
   deliveryPipelineConfiguration('PRO', 'Deploy')
   parameters {
@@ -874,7 +846,9 @@ job (deployProJobName) {
     stringParam('OSE3_TEMPLATE_NAME', '', 'OSE3 template name')
     stringParam('OSE3_APP_VERSION', '')
     stringParam('OSE3_URL' , '', 'OSE3 URL')
-    stringParam('VALUE_URL' , '', 'NEXUS URL ARTIFACT')
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
     stringParam('PIPELINE_VERSION' , '', 'Pipeline version')
   }
    configure {
@@ -885,11 +859,9 @@ job (deployProJobName) {
       }
   }
 
-
-  //configure injectPasswords
   steps {
        shell(
-            'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n' +
+            'export ARTIFACT_URL=$(mvn_resolve.sh ${POM_GROUPID} ${POM_ARTIFACTID} ${PIPELINE_VERSION} ${POM_PACKAGING})\n'+
             'echo \"OSE3_TEMPLATE_PARAMS=APP_VERSION=$OSE3_APP_VERSION,APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties\n'
          )
           environmentVariables{

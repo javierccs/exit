@@ -4,7 +4,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -22,8 +22,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
-def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -35,10 +36,9 @@ def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
-if (nexusRepositoryUrl==null) {
-  nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
-}
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
+def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 if(APP_NAME_OSE3 == "")
   APP_NAME_OSE3=REPOSITORY_NAME.toLowerCase()
 
@@ -69,27 +69,19 @@ if(TZ != "") OTHER_OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 if(WILY_MOM_FQDN != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_FQDN="+WILY_MOM_FQDN
 if(WILY_MOM_PORT != "") OTHER_OSE3_TEMPLATE_PARAMS+=",WILY_MOM_PORT="+WILY_MOM_PORT
 
-//SONARQUBE
-String NAME="Serenity SonarQube"
-def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarPublisher")
-boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-
-
 //creck gitlab credentials
 def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 //TOKEN_OSE3
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
-
-
-mavenJob (buildJobName) {
-  println "JOB: "+buildJobName
+def buildJob = mavenJob (buildJobName) {
+  out.println "JOB: "+buildJobName
   label('maven')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -113,7 +105,7 @@ mavenJob (buildJobName) {
     promotions{
       promotion {
         name('Promote-pre')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           releaseBuild()
           manual('impes-product-owner,impes-technical-lead,impes-developer')
@@ -122,8 +114,7 @@ mavenJob (buildJobName) {
           downstreamParameterized {
             trigger(deployPreJobName) {
               parameters {
-                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=releases')
-                predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
+                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
               }
             }
           }
@@ -131,14 +122,14 @@ mavenJob (buildJobName) {
       }
       promotion {
         name('DEV')
-        icon('star-gold')
+        icon('star-blue')
         conditions {
           downstream(false, deployDevJobName)
         }
       }
       promotion {
         name('PRE')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
         }
@@ -182,7 +173,6 @@ mavenJob (buildJobName) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
@@ -208,7 +198,7 @@ if ( gitlabCredsType == 'SSH' ){
       } 
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
-          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_VERSION"]')
+          binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_PACKAGING","POM_VERSION"]')
         }
       }
       postSuccessfulBuildSteps {
@@ -217,7 +207,7 @@ if ( gitlabCredsType == 'SSH' ){
       configure {
         it / 'postSuccessfulBuildSteps' << 'hudson.maven.RedeployPublisher' {
           id('serenity')
-          url(nexusRepositoryUrl+'/content/repositories/releases')
+          url(nexusRepositoryUrl+mavenReleaseRepository)
           uniqueVersion(true)
           evenIfUnstable(false)
         }
@@ -241,26 +231,14 @@ if ( gitlabCredsType == 'SSH' ){
   goals('clean verify')
     // Use managed global Maven settings.
   providedSettings('Serenity Maven Settings')
-  mavenOpts('-Dmaven.wagon.http.ssl.insecure=true')
-  mavenOpts('-Dmaven.wagon.http.ssl.allowall=true')
-  mavenOpts('-Dmaven.wagon.http.ssl.ignore.validity.dates=true')
 
-  postBuildSteps {
-    if (sq) {
-      maven {
-        goals('$SONAR_MAVEN_GOAL $SONAR_EXTRA_PROPS')
-        providedSettings('Serenity Maven Settings')
-        properties('sonar.host.url': '$SONAR_HOST_URL','sonar.jdbc.url': '$SONAR_JDBC_URL',
-                   'sonar.login': '$SONAR_LOGIN', 'sonar.password': '$SONAR_PASSWORD',
-                   'sonar.jdbc.username': '$SONAR_JDBC_USERNAME', 'sonar.jdbc.password': '$SONAR_JDBC_PASSWORD')
-      }
-    }
+  postBuildSteps('UNSTABLE') {
   }
 
   publishers {
     deployArtifacts {
       repositoryId('serenity')
-      repositoryUrl(nexusRepositoryUrl+'/content/repositories/snapshots')
+      repositoryUrl(nexusRepositoryUrl+mavenSnapshotRepository)
       uniqueVersion(true)
     }
     flexiblePublish {
@@ -277,8 +255,7 @@ if ( gitlabCredsType == 'SSH' ){
                 predefinedProp('OSE3_URL', OSE3_URL)
                 predefinedProp('OSE3_APP_NAME', APP_NAME_OSE3)
                 predefinedProp('OSE3_TEMPLATE_NAME','javase')
-                predefinedProp('VALUE_URL',nexusRepositoryUrl + '/service/local/artifact/maven/redirect?g=${POM_GROUPID}&a=${POM_ARTIFACTID}&v=${POM_VERSION}&r=snapshots')
-                predefinedProp('PIPELINE_VERSION','${POM_VERSION}')
+                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
               }
             }
           }
@@ -310,10 +287,15 @@ if ( gitlabCredsType == 'SSH' ){
   } //publishers
 
   configure {
-    if (sq) {it/buildWrappers/'hudson.plugins.sonar.SonarBuildWrapper' (plugin: "sonar@2.4.4")}
     it/publishers/'hudson.maven.RedeployPublisher'/releaseEnvVar('IS_RELEASE')
   }
 } //job
+
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob)
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -326,13 +308,13 @@ def removeParam(node, String paramName) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
     it.name.text() == paramName
   }
-  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
+  if (aux != null)  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 
 /// HPALM JOBS ///
 if (ADD_HPALM_AT_DEV == "true") {
 mavenJob(BridgeHPALMJobNameDEV) {
-  println "JOB: ${BridgeHPALMJobNameDEV}"
+  out.println "JOB: ${BridgeHPALMJobNameDEV}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Functional Test (DEV)')
@@ -366,7 +348,7 @@ mavenJob(BridgeHPALMJobNameDEV) {
 //HPALM Bridge PRE
 if(ADD_HPALM_AT_PRE == "true") {
 mavenJob(BridgeHPALMJobName) {
-  println "JOB: ${BridgeHPALMJobName}"
+  out.println "JOB: ${BridgeHPALMJobName}"
   using('TJ-hpalm-test')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Functional Test')
@@ -401,7 +383,7 @@ mavenJob(BridgeHPALMJobName) {
 def shellnode =
   "<hudson.tasks.Shell>" +
   "  <command>" +
-  'export ARTIFACT_URL=$(curl -k -s -I $VALUE_URL -I | awk \'/Location: (.*)/ {print $2}\' | tail -n 1 | tr -d \'\\r\')\n'+
+  'export ARTIFACT_URL=$(mvn_resolve.sh ${POM_GROUPID} ${POM_ARTIFACTID} ${PIPELINE_VERSION} ${POM_PACKAGING})\n'+
   'echo \"OSE3_TEMPLATE_PARAMS=APP_NAME=$OSE3_APP_NAME,ARTIFACT_URL=$ARTIFACT_URL'+ OTHER_OSE3_TEMPLATE_PARAMS + '\" > ${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties'+
   "  </command>"+
   "</hudson.tasks.Shell>"
@@ -412,12 +394,14 @@ def envnode =
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
   parameters {
-    stringParam('VALUE_URL', '', '')
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
   }
   publishers {
     if (ADD_HPALM_AT_DEV == "true") {
@@ -433,6 +417,9 @@ job (deployDevJobName) {
   }
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
@@ -445,34 +432,16 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
   parameters {
-    stringParam('VALUE_URL', '', '')
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
   }
-  properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProp('VALUE_URL','${VALUE_URL}')
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  
   publishers {
     if (ADD_HPALM_AT_PRE == "true") {
       downstreamParameterized {
@@ -485,8 +454,34 @@ job (deployPreJobName) {
       }
     } //HPALM
   }
+  
+  properties {
+	    promotions {
+	      promotion {
+	        name('Promote-PRO')
+
+	        icon('star-gold-e')
+	        conditions {
+	          manual('impes-product-owner,impes-technical-lead,impes-developer')
+	        }
+	        actions {
+	          downstreamParameterized {
+	            trigger(deployProJobName) {
+
+	              parameters {
+	                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}'])
+	              }
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')    
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
@@ -497,22 +492,26 @@ job (deployPreJobName) {
   }
 }
 
+
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-deploy')
   disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Deploy')
+  deliveryPipelineConfiguration('PRO', 'deploy to PRO')
   parameters {
-    stringParam('VALUE_URL', '', '')
+    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
+    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
+    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
   }
+
   configure {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+	updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
   }

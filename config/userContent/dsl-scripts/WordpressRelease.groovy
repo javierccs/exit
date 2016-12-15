@@ -4,7 +4,7 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
+def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -13,7 +13,6 @@ def OSE3_URL = "${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 
 // Static values
 //checks gitlab url
@@ -21,8 +20,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
-def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -32,7 +32,7 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
-def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-deploy'
 
 //DEV
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
@@ -46,7 +46,7 @@ def S3_BACKUP_ACCESS_KEY_DEV="${S3_BACKUP_ACCESS_KEY_DEV}".trim()
 def S3_BACKUP_SECRET_KEY_DEV="${S3_BACKUP_SECRET_KEY_DEV}".trim()
 def CONFIGURATION_GIT_DEV ="${CONFIGURATION_GIT_DEV}".trim()
 def CONTAINER_MEMORY_DEV = "${CONTAINER_MEMORY_DEV}".trim()
-def BTSYNC_MEMORY_DEV = "${BTSYNC_MEMORY_DEV}".trim()
+def VOLUME_CAPACITY_DEV = "${VOLUME_CAPACITY_DEV}".trim()
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_DEV=""
@@ -65,7 +65,8 @@ if (TZ_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",TZ="+TZ_DEV
 if (IGNORELIST_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",IGNORELIST="+IGNORELIST_DEV
 if (CONFIGURATION_GIT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_DEV
 if (CONTAINER_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_DEV
-if (BTSYNC_MEMORY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_DEV
+if (VOLUME_CAPACITY_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",VOLUME_CAPACITY="+VOLUME_CAPACITY_DEV
+
 def OSE3_TEMPLATE_PARAMS_DEV="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_DEV}"
 
 //PRE
@@ -80,7 +81,7 @@ def S3_BACKUP_ACCESS_KEY_PRE="${S3_BACKUP_ACCESS_KEY_PRE}".trim()
 def S3_BACKUP_SECRET_KEY_PRE="${S3_BACKUP_SECRET_KEY_PRE}".trim()
 def CONFIGURATION_GIT_PRE ="${CONFIGURATION_GIT_PRE}".trim()
 def CONTAINER_MEMORY_PRE = "${CONTAINER_MEMORY_PRE}".trim()
-def BTSYNC_MEMORY_PRE = "${BTSYNC_MEMORY_PRE}".trim()
+def VOLUME_CAPACITY_PRE = "${VOLUME_CAPACITY_PRE}".trim()
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_PRE=""
@@ -97,10 +98,9 @@ if (HTTPS_PROXY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",https_proxy="+HTTPS
 if (NO_PROXY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",no_proxy="+NO_PROXY_PRE
 if (TZ_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",TZ="+TZ_PRE
 if (IGNORELIST_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",IGNORELIST="+IGNORELIST_PRE
-if (SECRETBTSYNC_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",SECRETBTSYNC="+SECRETBTSYNC_PRE
 if (CONFIGURATION_GIT_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_PRE
 if (CONTAINER_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRE
-if (BTSYNC_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_PRE
+if (VOLUME_CAPACITY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",VOLUME_CAPACITY="+VOLUME_CAPACITY_PRE
 def OSE3_TEMPLATE_PARAMS_PRE="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRE}"
 
 //PRO
@@ -115,7 +115,7 @@ def S3_BACKUP_ACCESS_KEY_PRO="${S3_BACKUP_ACCESS_KEY_PRO}".trim()
 def S3_BACKUP_SECRET_KEY_PRO="${S3_BACKUP_SECRET_KEY_PRO}".trim()
 def CONFIGURATION_GIT_PRO ="${CONFIGURATION_GIT_PRO}".trim()
 def CONTAINER_MEMORY_PRO = "${CONTAINER_MEMORY_PRO}".trim()
-def BTSYNC_MEMORY_PRO = "${BTSYNC_MEMORY_PRO}".trim()
+def VOLUME_CAPACITY_PRO = "${VOLUME_CAPACITY_PRO}".trim()
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_PRO=""
@@ -132,10 +132,9 @@ if (HTTPS_PROXY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",https_proxy="+HTTPS
 if (NO_PROXY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",no_proxy="+NO_PROXY_PRO
 if (TZ_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",TZ="+TZ_PRO
 if (IGNORELIST_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",IGNORELIST="+IGNORELIST_PRO
-if (SECRETBTSYNC_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",SECRETBTSYNC="+SECRETBTSYNC_PRO
 if (CONFIGURATION_GIT_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_PRO
 if (CONTAINER_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRO
-if (BTSYNC_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",BTSYNC_MEMORY="+BTSYNC_MEMORY_PRO
+if (VOLUME_CAPACITY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",VOLUME_CAPACITY="+VOLUME_CAPACITY_PRO
 
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
@@ -144,11 +143,17 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
+def removeParam(node, String paramName) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name.text() == paramName
+  }
+  if (aux != null) node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
+}
 // Build job
-job (buildJobName) {
-  println "JOB: "+buildJobName
+def buildJob = job (buildJobName) {
+  out.println "JOB: "+buildJobName
   label('wordpress-build')
   deliveryPipelineConfiguration('CI', 'Build&Package')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -166,7 +171,7 @@ job (buildJobName) {
     promotions{
       promotion {
         name('Promote-pre')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           releaseBuild()
           manual('impes-product-owner,impes-technical-lead,impes-developer')
@@ -183,18 +188,19 @@ job (buildJobName) {
       }
       promotion {
         name('DEV')
-        icon('star-gold-e')
+        icon('star-blue')
         conditions {
           downstream(false, deployDevJobName)
         }
       }
       promotion {
         name('PRE')
-        icon('star-gold-w')
+        icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
         }
       }
+
       promotion {
         name('PRO')
         icon('star-gold')
@@ -228,20 +234,17 @@ job (buildJobName) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(GIT_INTEGRATION_BRANCH)
     }
   } //triggers
 
   wrappers {
-    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
+    credentialsBinding {
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
-     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
       sshAgent(GITLAB_CREDENTIAL)
@@ -269,6 +272,7 @@ if ( gitlabCredsType == 'SSH' ){
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell('parse_yaml.sh application.yml > env.properties')
+    shell('echo "IS_RELEASE="$IS_RELEASE >> env.properties')
     environmentVariables {
       propertiesFile('env.properties')
     }
@@ -311,9 +315,16 @@ if ( gitlabCredsType == 'SSH' ){
   } //publishers
 } //job
 
+//SONARQUBE
+String NAME="Serenity SonarQube"
+def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
+if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "wp-content" , "sonar.projectKey" : "serenity:wp:$GROUP_NAME-$REPOSITORY_NAME" ,
+  "sonar.projectName" : '$WORDPRESS_DESCRIPTION' , "sonar.projectVersion" : '$WORDPRESS_IMAGE_VERSION'])
+
 // Docker job
 job (dockerJobName) {
-  println "JOB: "+dockerJobName
+  out.println "JOB: "+dockerJobName
   label('wordpress-docker')
   deliveryPipelineConfiguration('CI', 'Docker Build')
   parameters {
@@ -323,7 +334,7 @@ job (dockerJobName) {
   wrappers {
     buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
     credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
     }
   }
   steps {
@@ -339,18 +350,28 @@ job (dockerJobName) {
     shell('generate-and-push-wordpress-image.sh')
   }
 
-  publishers {
-    downstreamParameterized {
-      trigger(deployDevJobName) {
-        condition('SUCCESS')
-        parameters {
-          predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
-          predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
-        }
-      }
-    }
-  }
-}
+ publishers {
+    flexiblePublish {
+       conditionalAction {
+         condition { not {
+             booleanCondition('${ENV,var="IS_RELEASE"}')
+           }
+         }
+         publishers {
+          downstreamParameterized {
+          trigger(deployDevJobName) {
+             condition('SUCCESS')
+               parameters {
+                 predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
+                 predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
+               } //parameters
+             }//trigger
+           } //downstream
+         } //publishers
+    } //conditionalAction
+  }//flexiblePublish
+ } //publishers
+} //job
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -361,11 +382,14 @@ def updateParam(node, String paramName, String defaultValue) {
 
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
   configure {
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')    
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
@@ -377,31 +401,35 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
   properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+	    promotions {
+	      promotion {
+	        name('Promote-PRO')
+	        icon('star-gold-e')
+	        conditions {
+	          manual('impes-product-owner,impes-technical-lead,impes-developer')
+	        }
+	        actions {
+	          downstreamParameterized {
+	            trigger(deployProJobName) {
+	              parameters {
+	                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+	              }
+	            }
+	          }
+	        }
+	      }
+	    }
+	  }
+  
  configure {
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
@@ -412,9 +440,10 @@ job (deployPreJobName) {
   }
 }
 
+
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: " + deployProJobName
+  out.println "JOB: " + deployProJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
@@ -422,11 +451,10 @@ job (deployProJobName) {
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO) 
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-  
-}
+  }
 }
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

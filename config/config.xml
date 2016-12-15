@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <hudson>
   <disabledAdministrativeMonitors/>
-  <version>1.642.4</version>
-  <numExecutors>1</numExecutors>
+  <version>2.7.4</version>
+  <numExecutors>0</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="com.michelin.cio.hudson.plugins.rolestrategy.RoleBasedAuthorizationStrategy">
@@ -68,11 +68,7 @@
           <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Run.Update</permission>
         </permissions>
-        <assignedSIDs>
-          <sid>impes-product-owner</sid>
-          <sid>impes-technical-lead</sid>
-          <sid>impes-developer</sid>
-        </assignedSIDs>
+        <assignedSIDs/>
       </role>
       <role name="pro_user" pattern=".+-pro-.+">
         <permissions>
@@ -93,37 +89,40 @@
           <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Run.Update</permission>
         </permissions>
-        <assignedSIDs>
-          <sid>impes-product-owner</sid>
-          <sid>impes-technical-lead</sid>
-          <sid>impes-developer</sid>
-        </assignedSIDs>
+        <assignedSIDs/>
       </role>
       <role name="tl_user" pattern="TL-.+">
         <permissions>
-          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.model.Item.Workspace</permission>
           <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Configure</permission>
+          <permission>hudson.model.Run.Update</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+      <role name="utl_user" pattern="UT-.+">
+        <permissions>
+          <permission>hudson.model.Item.Cancel</permission>
+          <permission>hudson.model.Item.Read</permission>
+          <permission>hudson.model.Item.Workspace</permission>
+          <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Run.Update</permission>
         </permissions>
         <assignedSIDs/>
       </role>
        <role name="tl_token-management" pattern="TL-ose3-token-management">
         <permissions>
-          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Item.Cancel</permission>
           <permission>hudson.model.Item.Read</permission>
           <permission>hudson.model.Item.Workspace</permission>
           <permission>hudson.model.Item.Build</permission>
+          <permission>hudson.model.Item.Configure</permission>
           <permission>hudson.model.Run.Update</permission>
         </permissions>
-        <assignedSIDs>
-	  <sid>impes-product-owner</sid>
-          <sid>impes-technical-lead</sid>
-          <sid>impes-developer</sid>
-        </assignedSIDs>
+        <assignedSIDs/>
 
       </role>
     </roleMap>
@@ -161,7 +160,6 @@
           <permission>hudson.model.Run.Update</permission>
         </permissions>
         <assignedSIDs>
-          <sid>jenkins-administrators</sid>
           <sid>admin</sid>
         </assignedSIDs>
       </role>
@@ -169,11 +167,7 @@
         <permissions>
           <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
         </permissions>
-        <assignedSIDs>
-          <sid>impes-product-owner</sid>
-          <sid>impes-technical-lead</sid>
-          <sid>impes-developer</sid>
-        </assignedSIDs>
+        <assignedSIDs/>
       </role>
       <role name="reader" pattern=".*">
         <permissions>
@@ -222,7 +216,9 @@
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
   <workspaceDir>${ITEM_ROOTDIR}/workspace</workspaceDir>
   <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
-  <markupFormatter class="hudson.markup.EscapedMarkupFormatter"/>
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter" plugin="antisamy-markup-formatter@1.5">
+    <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
+  </markupFormatter>
   <jdks>
     <jdk>
       <name>JDK8</name>
@@ -489,7 +485,7 @@
     </listView>
     <listView>
       <owner class="hudson" reference="../../.."/>
-      <name>Job Patterns</name>
+      <name>Utilities</name>
       <filterExecutors>false</filterExecutors>
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
@@ -506,7 +502,7 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>TJ-.*</includeRegex>
+      <includeRegex>UT-.+</includeRegex>
       <recurse>false</recurse>
     </listView>
     <listView>
@@ -528,7 +524,7 @@
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
       </columns>
-      <includeRegex>(?!(TL|TJ)-.*).*</includeRegex>
+      <includeRegex>(?!(TL|TJ|UT)-.*).*</includeRegex>
       <recurse>false</recurse>
     </listView>
   </views>
@@ -537,4 +533,5 @@
   <label></label>
   <nodeProperties/>
   <globalNodeProperties/>
+  <noUsageStatistics>true</noUsageStatistics>
 </hudson>

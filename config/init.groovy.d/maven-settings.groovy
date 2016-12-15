@@ -13,9 +13,7 @@ def logger = Logger.getLogger("org.apache.maven.artifact.deployer.DefaultArtifac
 logger.info("Setting maven...")
 def mavenDeployerLogin = System.getenv("MAVEN_DEPLOYER_LOGIN")
 def mavenDeployerPasswd = System.getenv("MAVEN_DEPLOYER_PASSWD")
-if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
-  logger.severe("Maven deployer environment variables (MAVEN_DEPLOYER_LOGIN, MAVEN_DEPLOYER_PASSWD) are not set. Artifact deployment won't work")
-} else {
+if (mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim()){
   //Create creds
   def mavenDeployerCredentialsId = "maven-deployer-credentials-id";
   def systemCreds = SystemCredentialsProvider.getInstance();
@@ -44,10 +42,10 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
   def settingsFile = Jenkins.instance.getRootDir().toString()+'/userContent/customConfigs/maven-settings.xml'
   InputStream is = new FileInputStream(settingsFile)
    
-  def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL')
-  if (nexusRepositoryUrl==null) {
-    nexusRepositoryUrl='https://nexus.ci.gsnet.corp/nexus'
-  }
+  def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+  def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+  def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
+  def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
  
   //replaces environment variables inside maven-settings.xml
   def text = is.text
@@ -55,6 +53,9 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
   envMap.putAll(System.getenv())
   //in case variable has default value
   envMap.put('NEXUS_BASE_URL', nexusRepositoryUrl)
+  envMap.put('NEXUS_MAVEN_GROUP', mavenGroupRepository)
+  envMap.put('NEXUS_MAVEN_RELEASE', mavenReleaseRepository)
+  envMap.put('NEXUS_MAVEN_SNAPSHOT', mavenSnapshotRepository)
   for (entry in envMap.entrySet()) {
     String key = entry.getKey();
     String value = entry.getValue();
@@ -72,11 +73,15 @@ if (!(mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim())){
       }
   }
   // Test authentication
-  def url = new URL(nexusRepositoryUrl+"/service/local/authentication/login")
-  def connection = url.openConnection()
-  connection.setRequestMethod("GET")
-  connection.setRequestProperty("Authorization", "Basic "+(mavenDeployerLogin+':'+mavenDeployerPasswd).bytes.encodeBase64().toString());
-  connection.connect()
+  [mavenGroupRepository, mavenReleaseRepository, mavenSnapshotRepository].each { repo -> 
+    def url = new URL("$nexusRepositoryUrl$repo")
+    def connection = url.openConnection()
+    connection.setRequestMethod("GET")
+    connection.setRequestProperty("Authorization", "Basic "+(mavenDeployerLogin+':'+mavenDeployerPasswd).bytes.encodeBase64().toString());
+    connection.connect()
 
-  (connection.responseCode == 200)? logger.info('Test Nexus API connection... Success'):logger.severe('Test Nexus API connection... ERROR '+connection.inputStream.withReader { Reader reader -> reader.text })
+    (connection.responseCode == 200)? logger.info("Test Nexus Repository access $nexusRepositoryUrl$repo... Success"):logger.severe("Test Nexus Repository access $nexusRepositoryUrl$repo... ERROR "+connection.inputStream.withReader { Reader reader -> reader.text })
+  }
+} else {
+  logger.severe("Maven deployer environment variables (MAVEN_DEPLOYER_LOGIN, MAVEN_DEPLOYER_PASSWD) are not set. Artifact deployment won't work")
 }

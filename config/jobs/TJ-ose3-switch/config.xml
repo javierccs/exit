@@ -8,7 +8,7 @@
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_URL</name>
-          <description>OSE3 URL</description>
+          <description>OpenShift URL</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
@@ -19,32 +19,12 @@
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT</name>
           <description></description>
-          <defaultValue>ofVvLjWt5RNSH+PoPiiLjw==</defaultValue>
+          <defaultValue>lM8ba3x3mE2k/1h+72cjtg==</defaultValue>
         </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>OSE3_APP_NAME</name>
           <description>OSE3 application name</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_TEMPLATE_NAME</name>
-          <description>OSE3 template params</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_TEMPLATE_PARAMS</name>
-          <description></description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_AB_TESTING</name>
-          <description></description>
-          <defaultValue>OFF</defaultValue>
-        </hudson.model.StringParameterDefinition>
-		<hudson.model.StringParameterDefinition>
-          <name>OSE3_CREATE_TEMPLATE</name>
-          <description></description>
-          <defaultValue>OFF</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>PIPELINE_VERSION</name>
@@ -53,13 +33,16 @@
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.2.5">
+      <gitLabConnection>gitlab</gitLabConnection>
+    </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
       <autoRebuild>false</autoRebuild>
     </com.sonyericsson.rebuild.RebuildSettings>
     <hudson.plugins.sidebar__link.ProjectLinks plugin="sidebar-link@1.7">
       <links>
         <hudson.plugins.sidebar__link.LinkAction>
-          <url>#</url>
+          <url>endpoint.url</url>
           <text>&apos;OpenShift3&apos;</text>
           <icon>/userContent/openshift_64x64.png</icon>
         </hudson.plugins.sidebar__link.LinkAction>
@@ -69,18 +52,26 @@
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode>ose3-deploy</assignedNode>
   <canRoam>false</canRoam>
-  <disabled>true</disabled>
+  <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <jdk>(System)</jdk>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>deploy_in_ose3.sh --ab_testing=${OSE3_AB_TESTING} --create_template=${OSE3_CREATE_TEMPLATE} --login_with_token=ON</command>
+      <command>echo &quot;Executing switch from shadow to production....&quot;
+echo &quot;OpenShift URL: ${OSE3_URL}&quot;
+echo &quot;OpenShift project: ${OSE3_PROJECT_NAME}&quot;
+echo &quot;OpenShift application: ${OSE3_APP_NAME}&quot;
+echo &quot;OpenShift application version: ${PIPELINE_VERSION}&quot;
+echo &quot;OSE3_END_POINT_URL=endpoint.url&quot; &gt; ${WORKSPACE}/deploy_jenkins.properties
+switch_blue_green.sh
+</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.92.1">
       <info>
-        <propertiesFilePath>deploy_jenkins.properties</propertiesFilePath>
+        <propertiesFilePath>${WORKSPACE}/deploy_jenkins.properties</propertiesFilePath>
       </info>
     </EnvInjectBuilder>
     <hudson.plugins.groovy.SystemGroovy plugin="groovy@1.29">
@@ -89,7 +80,7 @@
   &quot;name&quot; : &quot;Update LinkAction url from environment variable&quot;,
   &quot;parameters&quot; : LINK_URL,
   &quot;authors&quot; : [
-    { name : &quot;fdelamor@isban.es&quot; }
+    { name : &quot;serenity-alm@isban.es&quot; }
   ]
 } END META**/
 import hudson.plugins.sidebar_link.LinkAction
@@ -105,6 +96,11 @@ if (inst != null) {
   </builders>
   <publishers/>
   <buildWrappers>
+    <EnvInjectPasswordWrapper plugin="envinject@1.92.1">
+      <injectGlobalPasswords>false</injectGlobalPasswords>
+      <maskPasswordParameters>true</maskPasswordParameters>
+      <passwordEntries/>
+    </EnvInjectPasswordWrapper>
     <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
       <template>${ENV,var=&quot;OSE3_APP_NAME&quot;}:${ENV,var=&quot;PIPELINE_VERSION&quot;}-${BUILD_NUMBER}</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>

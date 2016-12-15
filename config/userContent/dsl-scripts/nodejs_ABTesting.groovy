@@ -1,11 +1,9 @@
 import jenkins.model.*
-import groovy.util.*
 import java.util.regex.*;
 import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def utils = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/Utils.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -17,7 +15,6 @@ def GIT_RELEASE_BRANCH_FEATURE_B = "${GIT_RELEASE_BRANCH_FEATURE_B}".trim()
 def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
-def SERENITY_CREDENTIAL = "${SERENITY_CREDENTIAL}"
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3_FEATURE_A="${APP_NAME_OSE3_FEATURE_A}".trim().toLowerCase()
 def APP_NAME_OSE3_FEATURE_B="${APP_NAME_OSE3_FEATURE_B}".trim().toLowerCase()
@@ -28,8 +25,9 @@ def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
 def REPOSITORY_NAME = gitLabMap.repositoryName
 def GITLAB_URL = gitLabMap.url
-def GITLAB_SERVER = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabHostUrl();
-def GITLAB_API_TOKEN = Jenkins.getInstance().getDescriptor("com.dabsquared.gitlabjenkins.GitLabPushTrigger").getGitlabApiToken();
+def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
+def GITLAB_SERVER = gitLabConnectionMap.url;
+def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -58,6 +56,12 @@ def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
 def OSE3_TOKEN_PROJECT_PRE=""
 def OSE3_TOKEN_PROJECT_PRO=""
 
+def removeParam(node, String paramName) {
+  def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
+    it.name.text() == paramName
+  }
+  node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
+}
 
 def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
@@ -74,16 +78,16 @@ def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
-println ("GitLab credential type " + gitlabCredsType );
+out.println ("GitLab credential type " + gitlabCredsType );
 
 //Start AB Testing
 for ( data in abTestingData ) {
 
-def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
+def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${PIPELINE_VERSION}'
 def TZ="${TZ}".trim()
 if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
 job (data[0]) {
-  println "JOB: "+data[0]
+  out.println "JOB: "+data[0]
   label('nodejs')
   deliveryPipelineConfiguration('CI', 'Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
@@ -170,21 +174,18 @@ job (data[0]) {
       buildOnMergeRequestEvents(false)
       setBuildDescription(true)
       useCiFeatures(true)
-      allowAllBranches(false)
       includeBranches(data[1])
     }
   } //triggers
 
   wrappers {
 	preBuildCleanup()
-    credentialsBinding {
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
+    credentialsBinding {
           usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
+    }
 }
-     //adds ose3 credentials
-       usernamePassword('OSE3_USERNAME','OSE3_PASSWORD', SERENITY_CREDENTIAL)
-     }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
       sshAgent(GITLAB_CREDENTIAL)
@@ -258,7 +259,7 @@ if (JUNIT_TESTS_PATTERN?.trim()) {
 
 // Docker job
 job (data[4]) {
-  println "JOB: "+data[4]
+  out.println "JOB: "+data[4]
   label('front-build-docker')
   deliveryPipelineConfiguration('CI', 'Front Docker Build')
   parameters {
@@ -268,7 +269,7 @@ job (data[4]) {
     //buildName('${ENV,var="$FRONT_IMAGE_NAME"}:${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
 	buildName('${ENV,var="PIPELINE_VERSION_TEST"}')
     credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', SERENITY_CREDENTIAL)
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
     }
   }
   steps {
@@ -309,7 +310,7 @@ job (data[4]) {
 } // end for AB Testing                               
 //Deploy in dev job
 job (deployDevJobName) {
-  println "JOB: " + deployDevJobName
+  out.println "JOB: " + deployDevJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -325,7 +326,7 @@ job (deployDevJobName) {
 
 //Deploy in pre job
 job (deployPreJobName) {
-  println "JOB: " + deployPreJobName
+  out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -364,7 +365,7 @@ job (deployPreJobName) {
 
 //Deploy in pro job
 job (deployProJobName) {
-  println "JOB: $deployProJobName"
+  out.println "JOB: $deployProJobName"
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
