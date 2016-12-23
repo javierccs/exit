@@ -220,6 +220,7 @@ docker_settings =
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.4.0',
           labelString: 'maven',
+          environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           sshLaunchTimeoutMinutes: '1',
