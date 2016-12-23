@@ -82,12 +82,24 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"description": "Bittorent Sync Ignore List. (Use comma separator)",
                         "propertyOrder": 14
 		},
-		"CONTAINER_MEMORY_PRO": {
+		"VOLUME_CAPACITY_DEV": {
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
 			"default": "2048",
                         "propertyOrder": 16
 		}
+		"CONTAINER_MEMORY_PRO": {
+			"type": "string",
+			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
+			"default": "2048",
+                        "propertyOrder": 16
+		},
+		    "VOLUME_CAPACITY_PRO": {
+                        "type": "string",
+                        "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
+                        "default": "512Mi",
+                        "propertyOrder": 16
+                }
       }
     
     }
