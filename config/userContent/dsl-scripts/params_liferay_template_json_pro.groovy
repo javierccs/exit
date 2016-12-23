@@ -87,7 +87,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
 			"default": "2048",
                         "propertyOrder": 16
-		}
+		},
 		"CONTAINER_MEMORY_PRO": {
 			"type": "string",
 			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
