@@ -266,12 +266,13 @@ if ( gitlabCredsType == 'SSH' ){
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
     shell('parse_yaml.sh application.yml > env.properties')
+    shell('parse-dependencies-xml.sh dependencies.xml')
     shell('echo "IS_RELEASE="$IS_RELEASE >> env.properties')
     environmentVariables {
       propertiesFile('env.properties')
     }
     //TODO: get all files from yml
-    shell('zip -r liferay.zip application.yml wp-content/')
+    shell('zip -r liferay.zip application.yml /tmp/deploy/')
   }// steps
 
   publishers {
