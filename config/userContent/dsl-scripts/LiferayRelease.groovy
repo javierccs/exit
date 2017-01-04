@@ -324,7 +324,7 @@ job (dockerJobName) {
   label('liferay-docker')
   deliveryPipelineConfiguration('CI', 'Docker Build')
   parameters {
-    stringParam('ARTIFACT_NAME', 'liferay.zip', 'Wordpress artifact name')
+    stringParam('ARTIFACT_NAME', 'liferay.zip', 'Liferay artifact name')
   }
 
   wrappers {
@@ -343,7 +343,7 @@ job (dockerJobName) {
         latestSuccessful(true)
       }
     }
-    shell('generate-and-push-wordpress-image.sh')
+    shell('generate-and-push-liferay-image.sh')
   }
 
  publishers {

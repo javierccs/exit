@@ -23,38 +23,33 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"default": "",
                         "propertyOrder": 1
 		},
-		"CONFIGURATION_GIT_USER_PRE": {
+		"CONFIGURATION_GIT_USR_PRE": {
 			"type": "string",
 			"description": "User of the git repository for PHP and Apache configuration",
 			"default": "",
                         "propertyOrder": 2
 		},
-		"CONFIGURATION_GIT_PASSWORD_PRE": {
+		"CONFIGURATION_GIT_PASS_PRE": {
 			"type": "string",
 			"description": "Password of the git repository for PHP and Apache configuration",
 			"default": "",
                         "propertyOrder": 3
 		},
-		"S3_BACKUP_HOST_PRE": {
+		"JAVA_OPTS_EXT_PRE": {
 			"type": "string",
-			"description": "The S3 host fqdn where the backup is stored.",
+			"description": "Java options. If you want to redefine memory parameters write them here",
                         "propertyOrder": 6
 		}, 
-		"S3_BACKUP_BUCKET_PRE": {
+		"WILY_MOM_FQDN_PRE": {
 			"type": "string",
-			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
-                        "propertyOrder": 7
+			"description": "fully qualified domain name of the Wily Introscope MoM server",
+			 "propertyOrder": 7
 		},
-		"S3_BACKUP_ACCESS_KEY_PRE": {
+		"WILY_MOM_PORT_PRE": {
 			"type": "string",
-			"description": "The S3 access key to download the backup.",
+			"description": "port of the Wily Introscope MoM server",
                         "propertyOrder": 8
 		},
-		"S3_BACKUP_SECRET_KEY_PRE": {
-			"type": "string",
-			"description": "The S3 secret key to download the backup.",
-                        "propertyOrder": 9
-		}, 
 		"HTTP_PROXY_PRE": {
 			"type": "string",
 			"description": "Http Proxy environment variable.",

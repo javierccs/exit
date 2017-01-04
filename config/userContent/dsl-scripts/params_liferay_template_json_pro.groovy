@@ -23,38 +23,33 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"default": "",
                         "propertyOrder": 1
 		},
-		"CONFIGURATION_GIT_USER_PRO": {
+		"CONFIGURATION_GIT_USR_PRO": {
 			"type": "string",
 			"description": "User of the git repository for PHP and Apache configuration",
 			"default": "",
                         "propertyOrder": 2
 		},
-		"CONFIGURATION_GIT_PASSWORD_PRO": {
+		"CONFIGURATION_GIT_PASS_PRO": {
 			"type": "string",
 			"description": "Password of the git repository for PHP and Apache configuration",
 			"default": "",
                         "propertyOrder": 3
 		},
-		"S3_BACKUP_HOST_PRO": {
+		"JAVA_OPTS_EXT_PRO": {
 			"type": "string",
-			"description": "The S3 host fqdn where the backup is stored.",
+			"description": "Java options. If you want to redefine memory parameters write them here",
                         "propertyOrder": 6
 		}, 
-		"S3_BACKUP_BUCKET_PRO": {
+		"WILY_MOM_FQDN_PRO": {
 			"type": "string",
-			"description": "The S3 bucket where the backup is stored. (format: s3:\/\/bucket)",
-                        "propertyOrder": 7
+			"description": "fully qualified domain name of the Wily Introscope MoM server",
+			 "propertyOrder": 7
 		},
-		"S3_BACKUP_ACCESS_KEY_PRO": {
+		"WILY_MOM_PORT_PRO": {
 			"type": "string",
-			"description": "The S3 access key to download the backup.",
+			"description": "port of the Wily Introscope MoM server",
                         "propertyOrder": 8
 		},
-		"S3_BACKUP_SECRET_KEY_PRO": {
-			"type": "string",
-			"description": "The S3 secret key to download the backup.",
-                        "propertyOrder": 9
-		}, 
 		"HTTP_PROXY_PRO": {
 			"type": "string",
 			"description": "Http Proxy environment variable.",
@@ -94,12 +89,12 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"default": "2048",
                         "propertyOrder": 16
 		},
-		    "VOLUME_CAPACITY_PRO": {
-                        "type": "string",
-                        "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
-                        "default": "512Mi",
-                        "propertyOrder": 16
-                }
+		"VOLUME_CAPACITY_PRO": {
+            "type": "string",
+            "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
+            "default": "512Mi",
+            "propertyOrder": 16
+         }
       }
     
     }

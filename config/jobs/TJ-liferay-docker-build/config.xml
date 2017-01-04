@@ -33,7 +33,7 @@
     </com.sonyericsson.rebuild.RebuildSettings>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
-  <assignedNode>wordpress-docker</assignedNode>
+  <assignedNode>liferay-docker</assignedNode>
   <canRoam>false</canRoam>
   <disabled>true</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
@@ -42,7 +42,7 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>generate-and-push-wordpress-image.sh</command>
+      <command>generate-and-push-liferay-image.sh</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
