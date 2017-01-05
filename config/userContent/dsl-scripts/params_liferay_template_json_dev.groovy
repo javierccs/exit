@@ -19,19 +19,19 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 	  "properties": {
  		"CONFIGURATION_GIT_DEV": {
 			"type": "string",
-			"description": "Git repository for PHP and Apache configuration",
+			"description": "Git repository for Liferay configuration",
 			"default": "",
                         "propertyOrder": 5
 		},
 		"CONFIGURATION_GIT_USR_DEV": {
 			"type": "string",
-			"description": "User of the git repository for PHP and Apache configuration",
+			"description": "User of the git repository for Liferay configuration",
 			"default": "",
                         "propertyOrder": 5
 		},
 		"CONFIGURATION_GIT_PASS_DEV": {
 			"type": "string",
-			"description": "Password of the git repository for PHP and Apache configuration",
+			"description": "Password of the git repository for Liferay configuration",
 			"default": "",
                         "propertyOrder": 5
 		},
@@ -58,8 +58,8 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 		},
 		"CONTAINER_MEMORY_DEV": {
 			"type": "string",
-			"description": "Maximum memory for Btsync (value in Megabytes. You should not exceed your quota)", 
-			"default": "1024M",
+			"description": "Maximum memory for Liferay (value in Megabytes. You should not exceed your quota)", 
+			"default": "2048M",
                         "propertyOrder": 16
 		},
 		"VOLUME_CAPACITY_DEV": {
