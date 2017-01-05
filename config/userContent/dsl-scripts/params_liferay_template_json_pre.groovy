@@ -50,32 +50,11 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"description": "port of the Wily Introscope MoM server",
                         "propertyOrder": 8
 		},
-		"HTTP_PROXY_PRE": {
-			"type": "string",
-			"description": "Http Proxy environment variable.",
-			"propertyOrder": 10
-		}, 
-		"HTTPS_PROXY_PRE": {
-			"type": "string",
-			"description": "Https Proxy environment variable.",
-                        "propertyOrder": 11
-		}, 
-		"NO_PROXY_PRE": {
-			"type": "string",
-			"description": "No Proxy environment variable.",
-			"default": "s3.boae.paas.gsnetcloud.corp",
-                        "propertyOrder": 12
-		},
 		"TZ_PRE": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
 			"dafault": "Europe\/Madrid",
                         "propertyOrder": 13
-		},
-		"IGNORELIST_PRE": {
-			"type": "string",
-			"description": "Bittorent Sync Ignore List. (Use comma separator)",
-                        "propertyOrder": 14
 		},
 		"CONTAINER_MEMORY_PRE": {
 			"type": "string",
