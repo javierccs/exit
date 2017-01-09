@@ -382,7 +382,7 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-Shadow')
+        name('Promote-Pro')
         icon('star-gold-e')
         conditions {
           manual('impes-product-owner,impes-technical-lead,impes-developer')
@@ -412,19 +412,23 @@ job (deployPreJobName) {
 
   }
 }
-
 //Deploy in pro job
 job (deployProJobName) {
   out.println "JOB: " + deployProJobName
-  using('TJ-ose3-switch')
+  using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRO', 'Deploy')
   configure {
+    removeParam(it, 'CERTIFICATE')
+    removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
     updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO) 
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-  
+
   }
 }
 
