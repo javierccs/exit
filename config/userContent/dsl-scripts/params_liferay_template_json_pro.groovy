@@ -31,42 +31,42 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 		},
 		"CONFIGURATION_GIT_PASS_PRO": {
 			"type": "string",
-			"description": "Password/Token of the git repository for Liferay configuration",
+			"description": "Password or Token of the git repository for Liferay configuration",
 			"default": "",
                         "propertyOrder": 3
 		},
 		"JAVA_OPTS_EXT_PRO": {
 			"type": "string",
 			"description": "Java options. If you want to redefine memory parameters write them here",
-                        "propertyOrder": 6
+                        "propertyOrder": 4
 		}, 
 		"WILY_MOM_FQDN_PRO": {
 			"type": "string",
 			"description": "fully qualified domain name of the Wily Introscope MoM server",
-			 "propertyOrder": 7
+			 "propertyOrder": 5
 		},
 		"WILY_MOM_PORT_PRO": {
 			"type": "string",
 			"description": "port of the Wily Introscope MoM server",
-                        "propertyOrder": 8
+                        "propertyOrder": 6
 		},
 		"TZ_PRO": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
 			"dafault": "Europe\/Madrid",
-                        "propertyOrder": 13
+                        "propertyOrder": 7
 		},
 		"CONTAINER_MEMORY_PRO": {
 			"type": "string",
 			"description": "Maximum memory for Liferay (value in Megabytes. You should not exceed your quota)", 
 			"default": "2048M",
-                        "propertyOrder": 16
+                        "propertyOrder": 8
 		},
 		"VOLUME_CAPACITY_PRO": {
             "type": "string",
             "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
             "default": "512Mi",
-            "propertyOrder": 16
+            "propertyOrder": 9
          }
       }
     

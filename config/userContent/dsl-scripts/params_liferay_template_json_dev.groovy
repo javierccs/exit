@@ -21,52 +21,52 @@ def jsonEditorOptions = JSONObject.fromObject(/{
 			"type": "string",
 			"description": "Git repository for Liferay configuration",
 			"default": "",
-                        "propertyOrder": 5
+                        "propertyOrder": 1
 		},
 		"CONFIGURATION_GIT_USR_DEV": {
 			"type": "string",
 			"description": "User of the git repository for Liferay configuration",
 			"default": "",
-                        "propertyOrder": 5
+                        "propertyOrder": 2
 		},
 		"CONFIGURATION_GIT_PASS_DEV": {
 			"type": "string",
-			"description": "Password of the git repository for Liferay configuration",
+			"description": "Password or Token of the git repository for Liferay configuration",
 			"default": "",
-                        "propertyOrder": 5
+                        "propertyOrder": 3
 		},
 		"JAVA_OPTS_EXT_DEV": {
 			"type": "string",
 			"description": "Java options. If you want to redefine memory parameters write them here",
-                        "propertyOrder": 6
+                        "propertyOrder": 4
 		}, 
 		"WILY_MOM_FQDN_DEV": {
 			"type": "string",
 			"description": "fully qualified domain name of the Wily Introscope MoM server",
-			 "propertyOrder": 7
+			 "propertyOrder": 5
 		},
 		"WILY_MOM_PORT_DEV": {
 			"type": "string",
 			"description": "port of the Wily Introscope MoM server",
-                        "propertyOrder": 8
+                        "propertyOrder": 6
 		},
 		"TZ_DEV": {
 			"type": "string",
 			"description": "TimeZone for the running containers.",
 			"dafault": "Europe\/Madrid",
-                        "propertyOrder": 13
+                        "propertyOrder": 7
 		},
 		"CONTAINER_MEMORY_DEV": {
 			"type": "string",
 			"description": "Maximum memory for Liferay (value in Megabytes. You should not exceed your quota)", 
 			"default": "2048M",
-                        "propertyOrder": 16
+                        "propertyOrder": 8
 		},
 		"VOLUME_CAPACITY_DEV": {
                         "type": "string",
                         "description": "Volume capacity available for content data (NFS size), e.g. 512Mi, 2Gi",
                         "default": "512Mi",
-                        "propertyOrder": 16
+                        "propertyOrder": 9
                 }
       }
     }

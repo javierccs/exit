@@ -67,7 +67,7 @@
         <hudson.model.StringParameterDefinition>
           <name>OSE3_TEMPLATE_NAME</name>
           <description></description>
-          <defaultValue>liferay-experimental</defaultValue>
+          <defaultValue>liferay-portals-6-2-ce</defaultValue>
         </hudson.model.StringParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
           <name>OSE3_TEMPLATE_PARAMS_DEV</name>
