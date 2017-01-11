@@ -136,12 +136,14 @@ job (buildJobName) {
             protocol(nexus_protocol)
             nexusUrl(nexusRepositoryUrl)
             groupId(APK_GROUPID)
-            artifactId(APK_ARTIFACTID)
+            artifact {
+                      artifactId(APK_ARTIFACTID)
+                      type(apk_type)
+                      classifier('')
+                      file(WORKSPACE + '/platforms/android/build/outputs/apk/android-debug.apk')
+            }
             version(APK_VERSION)
-            type(apk_type)
-            classifier('')
             repository(apkReleaseRepository)
-            file(WORKSPACE + '/platforms/android/build/outputs/apk/android-debug.apk')
             credentialsId(nexus_credentialId)
           }
         }
