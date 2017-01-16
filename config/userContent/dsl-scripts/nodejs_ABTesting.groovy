@@ -85,7 +85,7 @@ for ( data in abTestingData ) {
 
 def OSE3_TEMPLATE_PARAMS ="APP_NAME=" + data[3] + ",DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT.toLowerCase()+':${FRONT_IMAGE_VERSION}'
 def TZ="${TZ}".trim()
-if(TZ != "") OSE3_TEMPLATE_PARAMS+="TZ="+TZ
+if(TZ != "") OSE3_TEMPLATE_PARAMS+=",TZ="+TZ
 job (data[0]) {
   out.println "JOB: "+data[0]
   label('nodejs')
