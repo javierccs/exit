@@ -4,7 +4,6 @@ import util.Utilities;
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
-def sonarqube = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/SonarQube.groovy"))
 
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
@@ -28,8 +27,7 @@ out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
 
 GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
-def buildJobName = GITLAB_PROJECT+'-ci-build'
-def dockerJobName = GITLAB_PROJECT+'-ci-docker'
+def dockerJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
 def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
@@ -48,10 +46,9 @@ def VOLUME_CAPACITY_DEV = "${VOLUME_CAPACITY_DEV}".trim()
 
 //in case the template params, if blank we left the default pf PAAS
 def OTHER_OSE3_TEMPLATE_PARAMS_DEV=""
-if (JAVA_OPTS_EXT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",S3_BACKUP_HOST="+JAVA_OPTS_EXT_DEV
-if (WILY_MOM_FQDN_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",S3_BACKUP_BUCKET="+WILY_MOM_FQDN_DEV
-if (WILY_MOM_PORT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",S3_BACKUP_ACCESS_KEY="+WILY_MOM_PORT_DEV
-if (TZ_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",S3_BACKUP_SECRET_KEY="+TZ_DEV
+if (JAVA_OPTS_EXT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",JAVA_OPTS_EXT="+JAVA_OPTS_EXT_DEV
+if (WILY_MOM_PORT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",WILY_MOM_PORT="+WILY_MOM_PORT_DEV
+if (WILY_MOM_FQDN_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",WILY_MOM_FQDN="+WILY_MOM_FQDN_DEV
 if (TZ_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",TZ="+TZ_DEV
 if (CONFIGURATION_GIT_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_DEV
 if (CONFIGURATION_GIT_USR_DEV != "") OTHER_OSE3_TEMPLATE_PARAMS_DEV+=",CONFIGURATION_GIT_USR="+CONFIGURATION_GIT_USR_DEV
@@ -80,7 +77,7 @@ if (WILY_MOM_FQDN_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",WILY_MOM_FQDN="+W
 if (TZ_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",TZ="+TZ_PRE
 if (CONFIGURATION_GIT_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT="+CONFIGURATION_GIT_PRE
 if (CONFIGURATION_GIT_USR_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT_USR="+CONFIGURATION_GIT_USR_PRE
-if (CONFIGURATION_GIT_PASS_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT_PAS="+CONFIGURATION_GIT_PASS_PRE
+if (CONFIGURATION_GIT_PASS_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONFIGURATION_GIT_PASS="+CONFIGURATION_GIT_PASS_PRE
 if (CONTAINER_MEMORY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRE
 if (VOLUME_CAPACITY_PRE != "") OTHER_OSE3_TEMPLATE_PARAMS_PRE+=",VOLUME_CAPACITY="+VOLUME_CAPACITY_PRE
 def OSE3_TEMPLATE_PARAMS_PRE="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRE}"
@@ -108,7 +105,6 @@ if (CONFIGURATION_GIT_USR_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONFIGURA
 if (CONFIGURATION_GIT_PASS_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONFIGURATION_GIT_PASS="+CONFIGURATION_GIT_PASS_PRO
 if (CONTAINER_MEMORY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",CONTAINER_MEMORY="+CONTAINER_MEMORY_PRO
 if (VOLUME_CAPACITY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",VOLUME_CAPACITY="+VOLUME_CAPACITY_PRO
-
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
 //creck gitlab credentials
@@ -124,11 +120,12 @@ def removeParam(node, String paramName) {
   }
   node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
-// Build job
-def buildJob = job (buildJobName) {
-  out.println "JOB: "+buildJobName
-  label('liferay-build')
-  deliveryPipelineConfiguration('CI', 'Build&Package')
+
+// Docker job
+job (dockerJobName) {
+  out.println "JOB: "+dockerJobName
+  label('liferay-docker')
+  deliveryPipelineConfiguration('CI', 'Docker Build')
   logRotator(daysToKeep=30, numToKeep=10, artifactDaysToKeep=-1,artifactNumToKeep=-1)
 
   parameters {
@@ -211,15 +208,16 @@ def buildJob = job (buildJobName) {
   } //triggers
 
   wrappers {
+    credentialsBinding {
+      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
 //If user password credentials are provided bind is required
 if ( gitlabCredsType == 'UserPassword' ){
-    credentialsBinding {
-          usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
-    }
+      usernamePassword('GITLAB_CREDENTIAL', GITLAB_CREDENTIAL)
 }
+    }
 //if ssh credentials ssAgent is added
 if ( gitlabCredsType == 'SSH' ){
-      sshAgent(GITLAB_CREDENTIAL)
+    sshAgent(GITLAB_CREDENTIAL)
 }
 
     buildName(OSE3_APP_NAME+'-${ENV,var="LIFERAY_IMAGE_VERSION"}-${BUILD_NUMBER}')
@@ -243,27 +241,32 @@ if ( gitlabCredsType == 'SSH' ){
 
   steps {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
-    shell('parse_yaml.sh application.yml > env.properties')
-    shell('parse-dependencies-xml.sh dependencies.xml')
-    shell('echo "IS_RELEASE="$IS_RELEASE >> env.properties')
+    shell('parse_yaml.sh application.yml > env.properties\n'+
+          'parse-dependencies-xml.sh dependencies.xml')
     environmentVariables {
       propertiesFile('env.properties')
     }
     //TODO: get all files from yml
-    shell('zip -r liferay.zip application.yml /tmp/deploy/')
+    shell("export PIPELINE_VERSION=$GITLAB_PROJECT"+':${LIFERAY_IMAGE_VERSION//SNAPSHOT/SNAPSHOT-$BUILD_NUMBER}\n'+
+          'generate-and-push-liferay-image.sh')
   }// steps
 
   publishers {
-    archiveArtifacts('**/*.zip')
-    downstreamParameterized {
-      trigger(dockerJobName) {
-        condition('SUCCESS')
-        parameters {
-          propertiesFile('env.properties', true)
-          predefinedProp('PIPELINE_VERSION_TEST',GITLAB_PROJECT+':${LIFERAY_IMAGE_VERSION}')
-        }
-      }
-    }
+    flexiblePublish {
+      conditionalAction {
+        condition { not { booleanCondition('${ENV,var="IS_RELEASE"}') } }
+        publishers {
+          downstreamParameterized {
+            trigger(deployDevJobName) {
+              condition('SUCCESS')
+              parameters {
+                predefinedProp('PIPELINE_VERSION','${LIFERAY_IMAGE_VERSION}')
+              } //parameters
+            }//trigger
+          } //downstream
+        } //publishers
+      } //conditionalAction
+    }//flexiblePublish
     extendedEmail {
       defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
       contentType('text/html')
@@ -287,64 +290,6 @@ if ( gitlabCredsType == 'SSH' ){
       }
     } //extendedEmail
   } //publishers
-} //job
-
-//SONARQUBE
-String NAME="Serenity SonarQube"
-def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
-boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
-if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "wp-content" , "sonar.projectKey" : "serenity:wp:$GROUP_NAME-$REPOSITORY_NAME" ,
-  "sonar.projectName" : '$LIFERAY_DESCRIPTION' , "sonar.projectVersion" : '$LIFERAY_IMAGE_VERSION'])
-
-// Docker job
-job (dockerJobName) {
-  out.println "JOB: "+dockerJobName
-  label('liferay-docker')
-  deliveryPipelineConfiguration('CI', 'Docker Build')
-  parameters {
-    stringParam('ARTIFACT_NAME', 'liferay.zip', 'Liferay artifact name')
-  }
-
-  wrappers {
-    buildName('${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}')
-    credentialsBinding {
-      usernamePassword('DOCKER_REGISTRY_USERNAME','DOCKER_REGISTRY_PASSWORD', 'docker-registry-credential-id')
-    }
-  }
-  steps {
-    copyArtifacts(buildJobName) {
-      includePatterns('**/*.zip')
-      flatten()
-      optional(false)
-      fingerprintArtifacts(false)
-      buildSelector {
-        latestSuccessful(true)
-      }
-    }
-    shell('generate-and-push-liferay-image.sh')
-  }
-
- publishers {
-    flexiblePublish {
-       conditionalAction {
-         condition { not {
-             booleanCondition('${ENV,var="IS_RELEASE"}')
-           }
-         }
-         publishers {
-          downstreamParameterized {
-          trigger(deployDevJobName) {
-             condition('SUCCESS')
-               parameters {
-                 predefinedProp('TOKEN_PROJECT_OSE3','${TOKEN_PROJECT_OSE3_DEV}')
-                 predefinedProp('PIPELINE_VERSION','${LIFERAY_IMAGE_VERSION}')
-               } //parameters
-             }//trigger
-           } //downstream
-         } //publishers
-    } //conditionalAction
-  }//flexiblePublish
- } //publishers
 } //job
 
 def updateParam(node, String paramName, String defaultValue) {
@@ -432,4 +377,4 @@ job (deployProJobName) {
   }
 }
 
-gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
+gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, dockerJobName)
