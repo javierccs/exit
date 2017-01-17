@@ -1,4 +1,4 @@
-FROM jenkins:2.7.4
+FROM jenkins:2.32.1
 MAINTAINER serenity-alm <serenity-alm@isban.com>
 
 LABEL description="Serenity ALM Jenkins image" \
@@ -31,7 +31,7 @@ ENV http_proxy=http://proxyapps.gsnet.corp:80 \
 RUN  curl https://packages.treasuredata.com/GPG-KEY-td-agent | apt-key add - \
  && echo "deb http://packages.treasuredata.com/2/debian/jessie/ jessie contrib" > /etc/apt/sources.list.d/treasure-data.list \
  && apt-get update \
- && apt-get install -y --force-yes td-agent gettext-base \
+ && apt-get install -y --force-yes td-agent gettext-base zip \
  && sed -i 's/TD_AGENT_USER=td-agent/TD_AGENT_USER=jenkins/g' /etc/init.d/td-agent \
  && sed -i 's/TD_AGENT_GROUP=td-agent/TD_AGENT_GROUP=jenkins/g' /etc/init.d/td-agent \
  && chown -R jenkins:jenkins /etc/td-agent \

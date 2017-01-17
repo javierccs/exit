@@ -51,6 +51,8 @@ docker run -d \
 	-e SONARQUBE_DATABASE_PASSWORD=<(Optional) SonarQube database password> \
 	-e JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true"\
 	-e TZ="Europe/Madrid"\
+        -e SERENITY_ALM_LIBRARY_VERSION=<Optional> Serenity alm version tag (i.e. v1.0 ). If not defined no library is defined.\
+        -e SERENITY_ALM_LIBRARY_REPOSITORY=<Optional> if defined, this repository is used for serenity alm librare, else "${GITLAB_URL}serenity-alm/serenity-alm-jenkins-library.git" is used."\
         -e REMOTE_TENANT_URL=<(Optional)"https://<REMOTE_TENANT_URL>/">\
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version]   #Jenkins volume
