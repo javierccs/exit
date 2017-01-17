@@ -5,7 +5,7 @@ ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
 ant:1.4 (Ant Plugin)
 structs:1.5 (Structs plugin, required by ant)
 antisamy-markup-formatter:1.5 (OWASP Markup Formatter Plugin)
-branch-api:1.11.1 (Branch API Plugin)
+branch-api:2.0.0 (Branch API Plugin)
 cloudbees-folder:5.16 (Folders Plugin)
 credentials:2.1.10 (Credentials Plugin)
 build-timeout:1.18 (build timeout plugin)
@@ -16,7 +16,7 @@ workflow-step-api:2.7 (Pipeline: Step API)
 plain-credentials:1.3 (Plain Credentials Plugin)
 durable-task:1.12 (Durable Task Plugin)
 email-ext:2.53 (Email Extension Plugin)
-config-file-provider:2.15.4 (configuration files)
+config-file-provider:2.13 (configuration files)
 ssh-credentials:1.12 (SSH Credentials Plugin)
 matrix-project:1.8 (Matrix Project Plugin)
 junit:1.19 (JUnit Plugin)
@@ -33,8 +33,8 @@ workflow-job:2.9 (Pipeline: Job)
 
 #revisar 
 external-monitor-job:1.7 (External Monitor Job Type Plugin)
-git:3.0.1 (Git plugin)
-git-client:2.2.0 (Git client plugin)
+git:3.0.2 (Git plugin)
+git-client:2.2.1 (Git client plugin)
 promoted-builds:2.28 (promote)
 rebuild:1.25
 job-dsl:1.53
@@ -42,7 +42,7 @@ parameterized-trigger:2.32
 conditional-buildstep:1.3.5
 run-condition:1.0
 workflow-scm-step:2.3 (Pipeline: SCM Step)
-scm-api:1.3 (SCM API Plugin)
+scm-api:2.0.1 (SCM API Plugin)
 #end git
 git-server:1.7 (GIT server Plugin)
 workflow-cps:2.23 (Pipeline: Groovy)
@@ -50,7 +50,7 @@ workflow-support:2.12 (Pipeline: Supporting APIs)
 workflow-api:2.8 (Pipeline: API)
 jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
 #end workflow-cps
-workflow-multibranch:2.9.2 (Pipeline: Multibranch)
+workflow-multibranch:2.10 (Pipeline: Multibranch)
 workflow-cps-global-lib:2.5 (Pipeline: Shared Groovy Libraries)
 #end github-organization-folder
 gradle:1.25 (Gradle Plugin)
@@ -79,7 +79,7 @@ pipeline-milestone-step:1.3
 workflow-durable-task-step:2.8 (Pipeline: Nodes and Processes)
 
 ws-cleanup:0.32 (Workspace Cleanup Plugin)
-resource-disposer:0.5 (required by ws-cleanup)
+resource-disposer:0.6 (required by ws-cleanup)
 
 sidebar-link:1.7
 copy-to-slave:1.4.4
@@ -100,7 +100,7 @@ build-pipeline-plugin:1.5.6
 delivery-pipeline-plugin:0.10.2
 
 #job dsl
-managed-scripts:1.3
+managed-scripts:1.2.4
 
 #Integrations
 docker-plugin:0.16.2 (Docker Plugin)
