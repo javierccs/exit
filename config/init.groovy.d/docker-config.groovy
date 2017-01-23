@@ -95,6 +95,7 @@ docker_settings =
        [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-docker-image-builder:latest',
           labelString: 'liferay-docker',
+          environmentsString: "MVN_REPO_URL=${nexusRepositoryUrl}\nMVN_REPO_PATH=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
           sshLaunchTimeoutMinutes: '1',
@@ -112,28 +113,6 @@ docker_settings =
           tty: false,
           macAddress: '',
           mode: Node.Mode.EXCLUSIVE
-        ],
-        [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-builder:latest',
-          labelString: 'liferay-build',
-          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password",
-          remoteFs: '/home/jenkins',
-          credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
-          jvmOptions: '',
-          javaPath: '',
-          instanceCapStr: '',
-          dnsString: '',
-          dockerCommand: 'start',
-          volumesString: '',
-          volumesFromString: '',
-          hostname: '',
-          bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
-          mode: Node.Mode.EXCLUSIVE 
         ],
         [
           image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:latest',
