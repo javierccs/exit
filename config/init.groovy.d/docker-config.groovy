@@ -343,7 +343,7 @@ docker_settings =
       )
 
 
-      final int idleTerminationMinutes = 180
+      final int idleTerminationMinutes = 5
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
       dockerTemplate.setMode(template.mode)
       dockerTemplate.setNumExecutors(2)
