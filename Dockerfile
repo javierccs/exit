@@ -1,12 +1,6 @@
 FROM jenkins:2.7.4
 MAINTAINER serenity-alm <serenity-alm@isban.com>
 
-LABEL description="Serenity ALM Jenkins image" \
-      com.serenity.imageowner="Serenity-ALM" \
-      com.serenity.description="Jenkins" \
-      com.serenity.components="git;zip" \
-      com.serenity.image.version="1.4.0"
-
 ENV com.serenity.imageowner="Serenity-ALM" \
     com.serenity.description="Jenkins" \
     com.serenity.components="git;zip" \
