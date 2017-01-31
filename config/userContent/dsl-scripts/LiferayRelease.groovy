@@ -260,7 +260,7 @@ if ( gitlabCredsType == 'SSH' ){
             trigger(deployDevJobName) {
               condition('SUCCESS')
               parameters {
-                predefinedProp('PIPELINE_VERSION','${LIFERAY_IMAGE_VERSION}')
+                predefinedProp('PIPELINE_VERSION','${LIFERAY_IMAGE_VERSION}-${BUILD_NUMBER}')
               } //parameters
             }//trigger
           } //downstream
