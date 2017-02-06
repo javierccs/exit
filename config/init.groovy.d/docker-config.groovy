@@ -21,10 +21,12 @@ def dockerRegistryCredentialId = 'docker-registry-credential-id'
 //def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
 def dockerRegistryUsername = System.getenv('DOCKER_REGISTRY_USERNAME').trim()
 def dockerRegistryPassword = System.getenv('DOCKER_REGISTRY_PASSWORD').trim()
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
+def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/repository/maven-public/'
 def npmGroupRepository = System.getenv('NPM_REGISTRY')
 def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
+def webRepository = System.getenv('WEB_REPOSITORY') ?: "$nexusRepositoryUrl/repository/web/"
+def webRepositoryDev = System.getenv('WEB_REPOSITORY_SNAPSHOTS') ?: "$nexusRepositoryUrl/repository/web-snapshots/"
 def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
 def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
 
@@ -235,6 +237,7 @@ docker_settings =
             (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs"] ?: "latest"),
           labelString: 'nodejs',
           environmentsString: 
+              "WEB_REGISTRY=$webRepository\nWEB_REGISTRY_DEV=$webRepositoryDev"+
               ((npmGroupRepository == null)? '':"\nNPM_REGISTRY=$npmGroupRepository")+
               ((bowerGroupRepository == null)? '':"\nBOWER_REGISTRY=$bowerGroupRepository"),
           remoteFs: '/home/jenkins',
