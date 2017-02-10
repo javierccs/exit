@@ -10,7 +10,9 @@ import com.cloudbees.plugins.credentials.SystemCredentialsProvider
 import com.nirima.jenkins.plugins.docker.*
 import com.nirima.jenkins.plugins.docker.launcher.*
 import com.nirima.jenkins.plugins.docker.strategy.*
+import java.io.File
 import java.util.logging.Logger
+import java.util.Properties
 
 def logger = Logger.getLogger('com.nirima.jenkins.plugins.docker.DockerCloud')
 logger.info("Setting docker cloud...")
@@ -19,10 +21,14 @@ def dockerRegistryCredentialId = 'docker-registry-credential-id'
 //def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
 def dockerRegistryUsername = System.getenv('DOCKER_REGISTRY_USERNAME').trim()
 def dockerRegistryPassword = System.getenv('DOCKER_REGISTRY_PASSWORD').trim()
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
+def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/repository/maven-public/'
 def npmGroupRepository = System.getenv('NPM_REGISTRY')
 def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
+def webRepository = System.getenv('WEB_REPOSITORY') ?: "$nexusRepositoryUrl/repository/web/"
+def webRepositoryDev = System.getenv('WEB_REPOSITORY_SNAPSHOTS') ?: "$nexusRepositoryUrl/repository/web-snapshots/"
+def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
+def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
 
 ///////////////////////////////////////////////////:
 // Configure credz
@@ -78,252 +84,221 @@ if (inst != null) {
   Jenkins.instance.clouds.remove(inst)
 }
 
+JENKINS_HOME=System.getenv("JENKINS_HOME")
+Properties dockerCloudProperties = new Properties()
+File dockerCloudPropertiesFile = new File("$JENKINS_HOME/init.groovy.d/docker-cloud.properties")
+dockerCloudPropertiesFile.withInputStream {
+    dockerCloudProperties.load(it)
+}
 def docker_settings = [:]
 docker_settings =
   [
     [
       name: CLOUD_NAME,
       serverUrl: swarmMasterUrl,
-      containerCapStr: '50',
+      containerCapStr: '2147483643',
       connectionTimeout: 10,
       readTimeout: 60,
       credentialsId: '', // dockerCertificatesDirectoryCredentialsId,
       version: '',
       templates: [
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder"] ?: "latest"),
           labelString: 'wordpress-build',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: "$defaultRootPathForVolumes/sonar:/tmp/.sonar",
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-ansible:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/almcloud/jslave-ansible:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/almcloud/jslave-ansible"] ?: "latest"),
           labelString: 'ansible',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
-          dnsString: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket"] ?: "latest"),
           labelString: 'docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
-          dnsString: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
 	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder"] ?: "latest"),
           labelString: 'front-build-docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
-          dnsString: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder"] ?: "latest"),
           labelString: 'wordpress-docker',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
-          dnsString: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer"] ?: "latest"),
           labelString: 'ose3-deploy',
           environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: '',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-maven"] ?: "latest"),
           labelString: 'maven',
           environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2\n$defaultRootPathForVolumes/sonar:/tmp/.sonar",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge"] ?: "latest"),
           labelString: 'hpalm_bridge',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
           volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:'',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs"] ?: "latest"),
           labelString: 'nodejs',
           environmentsString: 
+              "WEB_REGISTRY=$webRepository\nWEB_REGISTRY_DEV=$webRepositoryDev"+
               ((npmGroupRepository == null)? '':"\nNPM_REGISTRY=$npmGroupRepository")+
               ((bowerGroupRepository == null)? '':"\nBOWER_REGISTRY=$bowerGroupRepository"),
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: (nodeJSDataContainer?.trim())? '':"$defaultRootPathForVolumes/nodejs-cache:/cache\n$defaultRootPathForVolumes/sonar:/tmp/.sonar",
           volumesFromString: (nodeJSDataContainer?.trim())? nodeJSDataContainer:'',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-builder:1.4.0',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-builder:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-builder"] ?: "latest"),
           labelString: '',
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
           dockerCommand: 'start',
           volumesString: "$defaultRootPathForVolumes/sonar:/tmp/.sonar",
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.NORMAL
         ],
-	[
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:1.4.0',
-          labelString: 'apic',
+        [
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-cordova:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-cordova"] ?: "latest"),
+          labelString: 'cordova',
+          environmentsString: "JENKINS_USERLOGIN=jenkins\nJENKINS_USERPASSWORD=$password\nMAVEN_DEPLOYER_LOGIN=$nexus_user\nMAVEN_DEPLOYER_PASSWD=$nexus_password",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
           instanceCapStr: '',
-          dnsString: '',
+          dockerCommand: 'start',
+          volumesString: "$defaultRootPathForVolumes/sonar:/tmp/.sonar",
+          volumesFromString: '',
+          hostname: '',
+          bindPorts: '',
+          mode: Node.Mode.NORMAL
+        ],
+	[
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:' +
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-apic"] ?: "latest"),
+          labelString: 'apic',
+          remoteFs: '/home/jenkins',
+          credentialsId: jenkinsSlaveCredentialsId,
+          jvmOptions: '',
+          javaPath: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ]
       ]
@@ -338,7 +313,7 @@ docker_settings =
       def dockerTemplateBase =
         new DockerTemplateBase(
           template.image,
-          template.dnsString,
+          '', //template.dnsString,
           null, //template.network,
           template.dockerCommand,
           template.volumesString,
@@ -351,10 +326,10 @@ docker_settings =
           null, //template.memorySwap,
           null, //template.cpuShares,
           template.bindPorts,
-          template.bindAllPorts,
-          template.privileged,
-          template.tty,
-          template.macAddress
+          false, //template.bindAllPorts,
+          false, //template.privileged,
+          false, //template.tty,
+          ''    // template.macAddress
         )
 
       def dockerTemplate =
@@ -371,7 +346,7 @@ docker_settings =
       )
 
 
-      final int idleTerminationMinutes = 180
+      final int idleTerminationMinutes = 5
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
       dockerTemplate.setMode(template.mode)
       dockerTemplate.setNumExecutors(2)

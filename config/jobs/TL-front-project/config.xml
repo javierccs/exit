@@ -16,7 +16,7 @@
           <name>GITLAB_PROJECT</name>
           <description>GitLab Project URL (p.ej ssh://git@githost:gitport/groupname/reponame.git)</description>
           <defaultValue></defaultValue>
-          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.-_]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
+          <regex>((?:(?:ssh|git|https?):\/\/)?(?:.+(?:(?::.+)?)@)?[\w\.-]+(?::\d+)?\/)?([^\/\s]+)\/([^\.\s]+)(?:\.git)?</regex>
           <failedValidationMessage>Insert a valid GitLab project URL</failedValidationMessage>
         </hudson.plugins.validating__string__parameter.ValidatingStringParameterDefinition>
         <hudson.model.StringParameterDefinition>
@@ -36,88 +36,37 @@
           <credentialType>com.cloudbees.plugins.credentials.common.StandardCredentials</credentialType>
           <required>true</required>
         </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>OSE3_PROJECT_NAME</name>
-          <description>Name of the OpenShift project.(Openshift project name excluding the suffix &quot;-dev&quot;)</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-		<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
-          <name>COMPILER</name>
-          <description>Static files compilation mode</description>
+	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>FRONT_BUILD</name>
+          <description></description>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>5</visibleItemCount>
-          <type>PT_SINGLE_SELECT</type>
-          <propertyFile>/var/jenkins_home/userContent/customConfigs/frontCompilerModeList.properties</propertyFile>
-          <propertyKey>compilerModes</propertyKey>
-          <multiSelectDelimiter>,</multiSelectDelimiter>
-        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
-		<hudson.model.StringParameterDefinition>
-          <name>DIST_DIR</name>
-          <description>Distribution directory (i.e.  &quot;dist &quot;,  &quot;. &quot;,...)</description>
-          <defaultValue>dist</defaultValue>
-        </hudson.model.StringParameterDefinition>
-		<hudson.model.StringParameterDefinition>
-          <name>OSE3_APP_NAME</name>
-          <description>Name of the application to deploy in OpenShift</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
-          <name>OSE3_URL</name>
-          <description>OpenShift PAAS region URL</description>
-          <quoteValue>false</quoteValue>
-          <saveJSONParameterToFile>false</saveJSONParameterToFile>
-          <visibleItemCount>5</visibleItemCount>
-          <type>PT_SINGLE_SELECT</type>
-          <propertyFile>/var/jenkins_home/userContent/customConfigs/paasRegionList.properties</propertyFile>
-          <propertyKey>regions</propertyKey>
+          <type>PT_JSON</type>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params/front_build.groovy</groovyScriptFile>
+          <bindings></bindings>
+          <groovyClasspath></groovyClasspath>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT_DEV</name>
           <description>A valid OSE3 token for dev project</description>
           <defaultValue></defaultValue>
-       </hudson.model.PasswordParameterDefinition>
-	<hudson.model.StringParameterDefinition>
-          <name>OSE3_TEMPLATE_NAME</name>
-          <description>OpenShift template to be used in deployment</description>
-          <defaultValue>nginx-alm-1.0</defaultValue>
-        </hudson.model.StringParameterDefinition>
-	<com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
-          <name>FRONT_CUSTOMIZE</name>
-          <description></description>
+        </hudson.model.PasswordParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.56">
+          <name>OPENSHIFT3</name>
+          <description/>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>5</visibleItemCount>
           <type>PT_JSON</type>
-          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/nodejs_template_json.groovy</groovyScriptFile>
-          <bindings></bindings>
-          <groovyClasspath></groovyClasspath>
+          <groovyScriptFile>/var/jenkins_home/userContent/dsl-scripts/params/openshift3.groovy</groovyScriptFile>
+          <bindings>STARTVAL={ \ name: "", region: "https:\/\/api.boaw.paas.gsnetcloud.corp:8443", \ environments: [ \ { \ name: "dev", template: "nginx", \ parameters: [ \ { name: "APP_NAME", value: "" }, \ { name: "ARTIFACT_URL", value: "${ARTIFACT_URL}" }, \ { name: "ARTIFACTCONF_URL", value: "${ARTIFACTCONF_URL}" }, \ { name: "TZ", value: "Europe\/Madrid" } \ ] \ }, \ { \ name: "pre", template: "nginx", \ parameters: [ \ { name: "APP_NAME", value: "" }, \ { name: "ARTIFACT_URL", value: "${ARTIFACT_URL}" }, \ { name: "ARTIFACTCONF_URL", value: "${ARTIFACTCONF_URL}" }, \ { name: "TZ", value: "Europe\/Madrid" } \ ] \ }, \ { \ name: "pro", template: "nginx", \ parameters: [ \ { name: "APP_NAME", value: "" }, \ { name: "ARTIFACT_URL", value: "${ARTIFACT_URL}" }, \ { name: "ARTIFACTCONF_URL", value: "${ARTIFACTCONF_URL}" }, \ { name: "TZ", value: "Europe\/Madrid" } \ ] \ } \ ] \ }</bindings>
+          <groovyClasspath/>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
-    <EnvInjectJobProperty plugin="envinject@1.92.1">
-      <info>
-        <groovyScriptContent>
-import groovy.json.*
-def FRONT_CUSTOMIZE= &quot;${FRONT_CUSTOMIZE}&quot;.trim()
-
-def slurperFRONT_CUSTOMIZE = new JsonSlurper()
-def listFRONT_CUSTOMIZE = slurperFRONT_CUSTOMIZE.parseText(FRONT_CUSTOMIZE)
-
-
-return listFRONT_CUSTOMIZE 
-
-</groovyScriptContent>
-        <loadFilesFromMaster>false</loadFilesFromMaster>
-      </info>
-      <on>true</on>
-      <keepJenkinsSystemVariables>true</keepJenkinsSystemVariables>
-      <keepBuildVariables>true</keepBuildVariables>
-      <overrideBuildParameters>false</overrideBuildParameters>
-      <contributors/>
-    </EnvInjectJobProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
       <autoRebuild>false</autoRebuild>
     </com.sonyericsson.rebuild.RebuildSettings>
@@ -142,9 +91,6 @@ return listFRONT_CUSTOMIZE
   </builders>
   <publishers/>
   <buildWrappers>
-    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.5.1">
-      <template>#${BUILD_NUMBER}: ${OSE3_APP_NAME}->${OSE3_PROJECT_NAME} (nodejs)</template>
-    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
       <includes>dsl-scripts/nodejs.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
       <excludes></excludes>
@@ -153,5 +99,22 @@ return listFRONT_CUSTOMIZE
       <hudsonHomeRelative>false</hudsonHomeRelative>
       <relativeTo>userContent</relativeTo>
     </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+    <EnvInjectBuildWrapper plugin="envinject@1.93.1">
+      <info>
+        <groovyScriptContent>import groovy.json.JsonSlurper
+import java.util.regex.*
+Pattern pattern = Pattern.compile("((?:(?:ssh|git|https?):\\/\\/)?(?:.+(?:(?::.+)?)@)?[\\w\\.-]+(?::\\d+)?\\/)?([^\\/\\s]+)\\/([^\\.\\s]+)(?:\\.git)?");
+Matcher matcher = pattern.matcher("${GITLAB_PROJECT}".trim());
+assert matcher.matches() : "[ERROR] Syntax error: " + gitUrl + " doesn't match expected url pattern.";
+def ose3props = new JsonSlurper().parseText("${OPENSHIFT3}".trim())
+return [GITLAB_PROJECT: matcher.group(2)+'/'+matcher.group(3), OSE3_PROJECT_NAME: "${ose3props.name}"]</groovyScriptContent>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+    <org.jenkinsci.plugins.buildnamesetter.BuildNameSetter plugin="build-name-setter@1.6.5">
+      <template>#${BUILD_NUMBER}: ${GITLAB_PROJECT}->${OSE3_PROJECT_NAME} (nodejs)</template>
+      <runAtStart>true</runAtStart>
+      <runAtEnd>false</runAtEnd>
+    </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
   </buildWrappers>
 </project>
