@@ -237,6 +237,7 @@ if ( COMPILER.equals ( "None" )) {
     } else {
         auxFrontImageName = '$FRONT_IMAGE_NAME';
     }
+	
     it / buildWrappers / 'hudson.plugins.sonar.SonarBuildWrapper'
     it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
       properties ('sonar.sourceEncoding=UTF-8\n'+
@@ -250,7 +251,7 @@ if ( COMPILER.equals ( "None" )) {
     shell ("set +x\n"+
            "curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {\n"+
            "  echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "  exit 1; }\n" +
+           "  exit 1; }\n" + 
            "if [ -f config.zip ]; then\n"+
            "  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {\n"+
            "    echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
