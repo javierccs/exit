@@ -21,10 +21,12 @@ def dockerRegistryCredentialId = 'docker-registry-credential-id'
 //def dockerRegistryUrl = System.getenv('DOCKER_REGISTRY_BASE_URL') ?: 'https://registry.lvtc.gsnet.corp'
 def dockerRegistryUsername = System.getenv('DOCKER_REGISTRY_USERNAME').trim()
 def dockerRegistryPassword = System.getenv('DOCKER_REGISTRY_PASSWORD').trim()
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
-def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/content/groups/public/'
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
+def mavenGroupRepository = System.getenv('NEXUS_MAVEN_GROUP') ?: '/repository/maven-public/'
 def npmGroupRepository = System.getenv('NPM_REGISTRY')
 def bowerGroupRepository = System.getenv('BOWER_REGISTRY')
+def webRepository = System.getenv('WEB_REPOSITORY') ?: "$nexusRepositoryUrl/repository/web/"
+def webRepositoryDev = System.getenv('WEB_REPOSITORY_SNAPSHOTS') ?: "$nexusRepositoryUrl/repository/web-snapshots/"
 def nexus_user = System.getenv('MAVEN_DEPLOYER_LOGIN')
 def nexus_password = System.getenv('MAVEN_DEPLOYER_PASSWD')
 
@@ -94,7 +96,7 @@ docker_settings =
     [
       name: CLOUD_NAME,
       serverUrl: swarmMasterUrl,
-      containerCapStr: '50',
+      containerCapStr: '2147483643',
       connectionTimeout: 10,
       readTimeout: 60,
       credentialsId: '', // dockerCertificatesDirectoryCredentialsId,
@@ -106,20 +108,14 @@ docker_settings =
           environmentsString: "MVN_REPO_URL=${nexusRepositoryUrl}\nMVN_REPO_PATH=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
           credentialsId: jenkinsSlaveCredentialsId,
-          sshLaunchTimeoutMinutes: '1',
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
-          dnsString: '',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
           hostname: '',
           bindPorts: '',
-          bindAllPorts: false,
-          privileged: false,
-          tty: false,
-          macAddress: '',
           mode: Node.Mode.EXCLUSIVE
         ],
         [
@@ -146,7 +142,7 @@ docker_settings =
           credentialsId: jenkinsSlaveCredentialsId,
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
@@ -162,7 +158,7 @@ docker_settings =
           credentialsId: jenkinsSlaveCredentialsId,
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
@@ -178,7 +174,7 @@ docker_settings =
           credentialsId: jenkinsSlaveCredentialsId,
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
@@ -194,7 +190,7 @@ docker_settings =
           credentialsId: jenkinsSlaveCredentialsId,
           jvmOptions: '',
           javaPath: '',
-          instanceCapStr: '2',
+          instanceCapStr: '',
           dockerCommand: 'start',
           volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
           volumesFromString: '',
@@ -257,6 +253,7 @@ docker_settings =
             (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs"] ?: "latest"),
           labelString: 'nodejs',
           environmentsString: 
+              "WEB_REGISTRY=$webRepository\nWEB_REGISTRY_DEV=$webRepositoryDev"+
               ((npmGroupRepository == null)? '':"\nNPM_REGISTRY=$npmGroupRepository")+
               ((bowerGroupRepository == null)? '':"\nBOWER_REGISTRY=$bowerGroupRepository"),
           remoteFs: '/home/jenkins',
@@ -365,7 +362,7 @@ docker_settings =
       )
 
 
-      final int idleTerminationMinutes = 180
+      final int idleTerminationMinutes = 5
       dockerTemplate.setLauncher(dockerComputerSSHLauncher)
       dockerTemplate.setMode(template.mode)
       dockerTemplate.setNumExecutors(2)
