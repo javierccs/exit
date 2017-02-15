@@ -19,7 +19,7 @@ if (System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.tr
   def gitLabConfig = Jenkins.getInstance().getDescriptorByType(com.dabsquared.gitlabjenkins.connection.GitLabConnectionConfig);
   def GITLAB_NAME = "Serenity GitLab"
   def GITLAB_URL = (System.getenv("GITLAB_URL").endsWith('/'))? System.getenv("GITLAB_URL") : System.getenv("GITLAB_URL") + '/';
-  def GITLAB_API_TOKEN = System.getenv("GITLAB_API_TOKEN") 
+  def GITLAB_API_TOKEN = System.getenv("GITLAB_API_TOKEN")
   logger.info("GitLab config: {name=$GITLAB_NAME, url=\"$GITLAB_URL\", token=\""+GITLAB_API_TOKEN.replaceAll('.', '*')+"\"}")
 
   // Creating global credential
@@ -42,19 +42,20 @@ if (System.getenv("GITLAB_API_TOKEN")?.trim() && System.getenv("GITLAB_URL")?.tr
   )
   systemCreds.save();
 
+  gitLabConfig.getConnections().clear()
+  def gitlab = new GitLabConnection(GITLAB_NAME, GITLAB_URL, serenityGitlabCredentialId, true, 10, 10)
+  gitLabConfig.addConnection(gitlab)
+  gitLabConfig.save()
+
   //testing connection
   def result = gitLabConfig.doTestConnection(GITLAB_URL, serenityGitlabCredentialId, true, 10, 10)
   if (result.toString().startsWith("OK")) {
     logger.info("Test $GITLAB_NAME API connection... " + result)
-    //def old = gitLabConfig.getConnections().findAll { GITLAB_NAME.equals(it.getName()) }
-    //gitLabConfig.getConnections().removeAll(old)
-    gitLabConfig.getConnections().clear()
-    def gitlab = new GitLabConnection(GITLAB_NAME, GITLAB_URL, serenityGitlabCredentialId, true, 10, 10)
-    gitLabConfig.addConnection(gitlab)
-    gitLabConfig.save()
   } else {
     logger.severe("Test $GITLAB_NAME API connection... " + result)
-    System.exit(-1)
+    if (System.getenv("ALM_ENV") != "test") {
+      System.exit(-1)
+    }
   }
 } else {
   logger.severe('GitLab environment variables not set. Gitlab access won\'t work')
