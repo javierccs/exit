@@ -34,6 +34,7 @@ docker run -d \
 	-e LDAP_DISPLAY_NAME=<(Optional) LDAP Display Name (default value: cn)>\
         -e LDAP_ADMIN_GROUPS=<(Optional) LDAP admin groups>\
         -e LDAP_PROMOTER_GROUPS=<(Optional) LDAP promoter groups>\
+        -e LDAP_PRO_PROMOTER_GROUPS=<(Optional) LDAP production promoter groups. If not defined LDAP_PROMOTER_GROUPS value is used>\
         -e LDAP_USER_GROUPS=<(Optional) LDAP user groups>\
 		### SMTP ###
 	-e SMTP_HOST=<(Optional) SMTP Server hostname> \

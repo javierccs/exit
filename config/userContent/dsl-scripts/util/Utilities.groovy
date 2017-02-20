@@ -64,4 +64,11 @@ class Utilities {
       ).find { gitLabConnection.getApiTokenId().equals(it.id) };
     return [name: name, url: gitLabConnection.getUrl(), credential: gitLabCredential];
   }
+  // Returns list of roles that can promote to pre production environment
+  static getPrePromotionRoleGroups(){
+    return System.getenv('LDAP_PROMOTER_GROUPS') ?: 'impes-product-owner,impes-technical-lead,impes-developer'
+  }
+  static getProPromotionRoleGroups(){
+    return  System.getenv('LDAP_PRO_PROMOTER_GROUPS') ?: Utilities.getPrePromotionRoleGroups()
+  }
 }

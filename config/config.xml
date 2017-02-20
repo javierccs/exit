@@ -162,7 +162,13 @@
           <sid>admin</sid>
         </assignedSIDs>
       </role>
-      <role name="promoter" pattern=".*">
+      <role name="promoter-pre" pattern=".*">
+        <permissions>
+          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
+        </permissions>
+        <assignedSIDs/>
+      </role>
+      <role name="promoter-pro" pattern=".*">
         <permissions>
           <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
         </permissions>
