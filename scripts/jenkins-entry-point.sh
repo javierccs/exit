@@ -19,6 +19,8 @@
 #Includes jenkins styles
 . /usr/local/bin/include-styles.sh
 
+#Jenkins war will be modified by entrypoint to add serenity-alm.css
+chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 #Starts jenkins with jenkins user
 su jenkins /usr/local/bin/jenkins-start.sh
 echo Error starting jenkins!
