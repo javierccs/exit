@@ -7,9 +7,10 @@ class AuthorizationJobFactory{
   // @param jobBuildName Build name
   // @jobStringParams Job String parameters
   // @param triggeredJobName Job to trigger
+  // @param blueGreenDeployment B
   // @param triggeredJobTokenParam triggered job's ose3 token param name ('OSE3_TOKEN_PROJECT' by default)
   static createApprovalJob (dslFactory, jobName, production,
-    jobBuildName, jobStringParams, triggeredJobName,
+    jobBuildName, jobStringParams, triggeredJobName, blueGreenDeployment = false,
     triggeredJobTokenParam = 'OSE3_TOKEN_PROJECT') {
     // pre approval job
     dslFactory.out.println ("createApprovalJob: " + jobName)
@@ -27,7 +28,7 @@ class AuthorizationJobFactory{
       properties {
         promotions {
           promotion {
-            name(production ? 'Promote-Shadow' : 'Promote-pre')
+            name(production ? (blueGreenDeployment?'Promote-Shadow':'Promote-PRO') : 'Promote-PRE')
             icon(production ? 'star-gold-w' : 'star-silver-w')
             conditions {
               manual(production ? Utilities.getProPromotionRoleGroups() : Utilities.getPrePromotionRoleGroups()) {

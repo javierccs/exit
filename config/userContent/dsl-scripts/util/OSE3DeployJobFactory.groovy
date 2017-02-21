@@ -25,7 +25,7 @@ class OSE3DeployJobFactory{
    * @param jobArgs Params to pass to deployment job
    * @param gitlabProjectName Repository name. Is used to generate deployment job names
    * @param ose3Url OpenShift url
-   * @param ose3Project Openshift project name
+   * @param ose3Project Openshift project name (with -pro)
    * @param ose3Application Openshift application name
    * @param ose3Template deployment tempalte name
    * @ose3TemplateParams template params
@@ -42,7 +42,8 @@ class OSE3DeployJobFactory{
     AuthorizationJobFactory.createApprovalJob(dslFactory,
       OSE3DeployJobFactory.getDeployProCheckJobName(gitlabProjectName), true,
       buildName, jobArgs,
-      blueGreenDeployment?getHideJobName(gitlabProjectName):getProJobName(false, gitlabProjectName))
+      blueGreenDeployment?getHideJobName(gitlabProjectName):getProJobName(false, gitlabProjectName),
+      blueGreenDeployment)
 
     //Deploy in hide environment job
     def jobName = blueGreenDeployment?getHideJobName(gitlabProjectName):getProJobName(false, gitlabProjectName)
@@ -75,7 +76,7 @@ if (blueGreenDeployment) {
             }
             actions {
               downstreamParameterized {
-                trigger(getDeployProCheckJobName(false, gitlabProjectName)) {
+                trigger(getProJobName(true, gitlabProjectName)) {
                   parameters {
                     jobArgs.each {
                         predefinedProp(it[0], '${' + it[0] + '}');
@@ -93,7 +94,7 @@ if (blueGreenDeployment) {
       configure {
         utils.removeParam(it, 'OSE3_TEMPLATE_PARAMS')
         utils.updateParam(it, 'OSE3_URL', ose3Url)
-        utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project + '-pro')
+        utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project)
         utils.updateParam(it, 'OSE3_APP_NAME',  ose3Application)
         utils.updateParam(it, 'OSE3_TEMPLATE_NAME', ose3Template)
         utils.updateParam(it, 'OSE3_TOKEN_PROJECT', '')
@@ -108,7 +109,7 @@ for (def nodeXml : nodes ) {
 // this jobs executes switch between blue and green
 if (blueGreenDeployment) {
     //Deploy in pro job
-    def finalProJobName = getDeployProCheckJobName(true, gitlabProjectName)
+    def finalProJobName = getProJobName(true, gitlabProjectName)
     dslFactory.job (finalProJobName) {
       dslFactory.out.println "JOB: $finalProJobName"
       using('TJ-ose3-switch')
@@ -122,7 +123,7 @@ if (blueGreenDeployment) {
 
       configure {
         utils.updateParam(it, 'OSE3_URL', ose3Url)
-        utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project + '-pro')
+        utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project )
         utils.updateParam(it, 'OSE3_APP_NAME',  ose3Application)
         utils.updateParam(it, 'OSE3_TOKEN_PROJECT', '')
 
