@@ -1,6 +1,7 @@
 import jenkins.model.*
 import java.util.regex.*;
 import util.Utilities;
+import util.AuthorizationJobFactory
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -29,8 +30,11 @@ out.println("GitLab Project: " + REPOSITORY_NAME);
 GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
 def dockerJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
+def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
+def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
-def deployProJobName = GITLAB_PROJECT+'-pro-ose3-deploy'
+def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
+def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
 
 //DEV
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
@@ -140,15 +144,22 @@ job (dockerJobName) {
   properties{
     promotions{
       promotion {
-        name('Promote-pre')
-        icon('star-silver-w')
+        name('DEV')
+           icon('star-blue')
+           conditions {
+             downstream(false, deployDevJobName)
+           }
+      }
+      promotion {
+        name('PRE-Check')
+        icon('star-purple')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          selfPromotion(false)
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName) {
+            trigger(deployPreCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${LIFERAY_IMAGE_VERSION}')
               }
@@ -157,17 +168,17 @@ job (dockerJobName) {
         }
       }
       promotion {
-        name('DEV')
-        icon('star-blue')
-        conditions {
-          downstream(false, deployDevJobName)
-        }
-      }
-      promotion {
         name('PRE')
         icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
+        }
+      }
+      promotion {
+        name('Shadow')
+        icon('star-gold-w')
+        conditions {
+          downstream(false, deployHideJobName)
         }
       }
       promotion {
@@ -308,15 +319,26 @@ job (deployDevJobName) {
   configure {
     removeParam(it, 'CERTIFICATE')
     removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')    
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV) 
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
+
+
+def approvalJobArgs = [
+  ['PIPELINE_VERSION','${PIPELINE_VERSION}']
+
+]
+def approvalJobBuildName = '${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}'
+// pre approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployPreCheckJobName, false, approvalJobBuildName,
+  approvalJobArgs, deployPreJobName)
 
 //Deploy in pre job
 job (deployPreJobName) {
@@ -327,14 +349,14 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-Pro')
-        icon('star-gold-e')
+        name('PRO-Check')
+        icon('star-purple')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getPrePromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
-            trigger(deployProJobName) {
+            trigger(deployProCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
@@ -350,13 +372,57 @@ job (deployPreJobName) {
     removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE) 
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
 
   }
 }
+
+// production approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployProCheckJobName, true, approvalJobBuildName,
+  approvalJobArgs, deployHideJobName)
+
+//Deploy in hide job
+job (deployHideJobName) {
+  out.println "JOB: " + deployHideJobName
+  using('TJ-ose3-deploy')
+  disabled(false)
+  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
+  properties {
+    promotions {
+      promotion {
+        name('Promote-PRO')
+        icon('star-gold-e')
+        conditions {
+          manual(Utilities.getProPromotionRoleGroups())
+        }
+        actions {
+          downstreamParameterized {
+            trigger(deployProJobName) {
+              parameters {
+                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
+                predefinedProp('OSE3_TOKEN_PROJECT','${OSE3_TOKEN_PROJECT}')
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  configure {
+    updateParam(it,'OSE3_URL', OSE3_URL)
+    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
+    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
+    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
+  }
+}
+
 //Deploy in pro job
 job (deployProJobName) {
   out.println "JOB: " + deployProJobName
@@ -369,9 +435,9 @@ job (deployProJobName) {
     removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO) 
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
 
   }
