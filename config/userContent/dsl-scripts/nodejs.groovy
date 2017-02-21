@@ -1,6 +1,7 @@
 import jenkins.model.*
 import groovy.json.JsonSlurper
 import util.Utilities
+import util.AuthorizationJobFactory
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -9,6 +10,7 @@ def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
     it.name != null && it.name.text() == paramName
   }
+  assert aux != null : "Param name '$paramName' not found in node '$node'"
   aux.defaultValue[0].value = defaultValue
 }
 
@@ -58,6 +60,8 @@ out.println("GitLab Project: " + REPOSITORY_NAME);
 
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
+def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
+def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
 def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
 def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
@@ -101,15 +105,15 @@ def buildJob = job (buildJobName) {
   properties{
     promotions{
       promotion {
-        name('Promote-pre')
-        icon('star-gold-w')
+        name('PRE-Check')
+        icon('star-purple')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          selfPromotion(false)
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName) {
+            trigger(deployPreCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
                 predefinedProp('ARTIFACT_URL',ARTIFACT_URL)
@@ -140,8 +144,6 @@ def buildJob = job (buildJobName) {
           downstream(false, deployHideJobName)
         }
       }
-
-      
       promotion {
         name('PRO')
         icon('star-gold-w')
@@ -219,15 +221,15 @@ if ( COMPILER.equals ( "None" )) {
   steps {
 if ( COMPILER.equals ( "None" )) {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
-} else {	
+} else {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
-}       
+}
     shell(
       "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
 		)
     environmentVariables {
       propertiesFile('env.properties')
-    }	 
+    }
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}' '${CONFIG_DIRECTORY}'")
   }
   configure {
@@ -237,7 +239,7 @@ if ( COMPILER.equals ( "None" )) {
     } else {
         auxFrontImageName = '$FRONT_IMAGE_NAME';
     }
-	
+
     it / buildWrappers / 'hudson.plugins.sonar.SonarBuildWrapper'
     it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
       properties ('sonar.sourceEncoding=UTF-8\n'+
@@ -251,7 +253,7 @@ if ( COMPILER.equals ( "None" )) {
     shell ("set +x\n"+
            "curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {\n"+
            "  echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "  exit 1; }\n" + 
+           "  exit 1; }\n" +
            "if [ -f config.zip ]; then\n"+
            "  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {\n"+
            "    echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
@@ -319,13 +321,25 @@ job (deployDevJobName) {
   }
 }
 
+def approvalJobArgs = [
+  ['PIPELINE_VERSION','${PIPELINE_VERSION}'],
+  ['ARTIFACT_URL','${ARTIFACT_URL}'],
+  ['ARTIFACTCONF_URL','${ARTIFACTCONF_URL}']
+]
+def approvalJobBuildName = REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}'
+// pre approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployPreCheckJobName, false, approvalJobBuildName,
+  approvalJobArgs, deployPreJobName)
+
+
 //Deploy in pre job
 job (deployPreJobName) {
   out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
-  
+
   parameters {
     stringParam('ARTIFACT_URL', '', '')
     stringParam('ARTIFACTCONF_URL', '', '')
@@ -334,14 +348,14 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-Shadow')
-        icon('star-gold-e')
+        name('PRO-Check')
+        icon('star-purple')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getPrePromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
-            trigger(deployHideJobName) {
+            trigger(deployProCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
                 predefinedProp('ARTIFACT_URL','${ARTIFACT_URL}')
@@ -365,6 +379,11 @@ job (deployPreJobName) {
   }
 }
 
+// production approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployProCheckJobName, true, approvalJobBuildName,
+  approvalJobArgs, deployHideJobName)
+
 //Deploy in hide environment jo
 job (deployHideJobName) {
   out.println "JOB: $deployHideJobName"
@@ -383,7 +402,7 @@ job (deployHideJobName) {
         name('Promote-PRO')
         icon('star-gold-e')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getProPromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
@@ -427,8 +446,6 @@ job (deployProJobName) {
     updateParam(it, 'OSE3_URL', ose3props.region)
     updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[2].name)
     updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[2].APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[2].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
   }
 }
 

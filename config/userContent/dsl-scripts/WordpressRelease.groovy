@@ -198,13 +198,6 @@ def buildJob = job (buildJobName) {
         }
       }
       promotion {
-        name('DEV')
-        icon('star-blue')
-        conditions {
-          downstream(false, deployDevJobName)
-        }
-      }
-      promotion {
         name('PRE')
         icon('star-silver-w')
         conditions {
@@ -467,7 +460,7 @@ job (deployPreJobName) {
   }
 }
 
-// pre approval job
+// production approval job
 AuthorizationJobFactory.createApprovalJob(this,
   deployProCheckJobName, true, approvalJobBuildName,
   approvalJobArgs, deployHideJobName)
