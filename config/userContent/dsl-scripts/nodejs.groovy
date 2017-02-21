@@ -2,6 +2,7 @@ import jenkins.model.*
 import groovy.json.JsonSlurper
 import util.Utilities
 import util.AuthorizationJobFactory
+import util.OSE3DeployJobFactory
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -44,7 +45,8 @@ if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
 out.println ("GitLab credential type " + gitlabCredsType );
-
+// if true generates blue green deployment jobs
+boolean blueGreenDeployment = false
 // Static values
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
@@ -63,8 +65,8 @@ def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
 def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
 def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
-def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
-def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
+def deployHideJobName = OSE3DeployJobFactory.getHideJobName(GITLAB_PROJECT)
+def deployProJobName = OSE3DeployJobFactory.getProJobName(blueGreenDeployment, GITLAB_PROJECT)
 
 def COMPILER = buildProps.COMPILER.trim()
 def CONFIG_DIRECTORY = buildProps.CONFIG_DIRECTORY.trim()
@@ -137,6 +139,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployPreJobName)
         }
       }
+if (blueGreenDeployment) {
       promotion {
         name('Shadow')
         icon('star-gold-w')
@@ -144,6 +147,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployHideJobName)
         }
       }
+}
       promotion {
         name('PRO')
         icon('star-gold-w')
@@ -379,74 +383,14 @@ job (deployPreJobName) {
   }
 }
 
-// production approval job
-AuthorizationJobFactory.createApprovalJob(this,
-  deployProCheckJobName, true, approvalJobBuildName,
-  approvalJobArgs, deployHideJobName)
-
-//Deploy in hide environment jo
-job (deployHideJobName) {
-  out.println "JOB: $deployHideJobName"
-  using('TJ-ose3-deploy')
-  disabled(false)
-  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
-
-  parameters {
-    stringParam('ARTIFACT_URL', '', '')
-    stringParam('ARTIFACTCONF_URL', '', '')
-  }
-
-   properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual(Utilities.getProPromotionRoleGroups())
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-                predefinedProp('ARTIFACT_URL','${ARTIFACT_URL}')
-                predefinedProp('ARTIFACTCONF_URL','${ARTIFACTCONF_URL}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  configure {
-    updateParam(it, 'OSE3_URL', ose3props.region)
-    updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[2].name)
-    updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[2].APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[2].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
-    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
-  }
-}
-
-
-//Deploy in pro job
-job (deployProJobName) {
-  out.println "JOB: $deployProJobName"
-  using('TJ-ose3-switch')
-  disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')
-
-  parameters {
-    stringParam('ARTIFACT_URL', '', '')
-    stringParam('ARTIFACTCONF_URL', '', '')
-  }
-
-  configure {
-    updateParam(it, 'OSE3_URL', ose3props.region)
-    updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[2].name)
-    updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[2].APP_NAME)
-  }
-}
+// pro approval and deployment Jobs
+OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
+  deployProCheckJobName,
+    approvalJobArgs, GITLAB_PROJECT,
+    ose3props.region,
+    ose3props.name+'-'+ose3props.environments[2].name,
+    OSE3_TEMPLATE_PARAMS[2].APP_NAME,
+    ose3props.environments[2].template,
+    OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

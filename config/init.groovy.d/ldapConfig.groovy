@@ -8,7 +8,7 @@ import hudson.util.Secret
  def addRoles(roleBasedStrategy, roleBasedType, arrayGroups, arrayRoles) {
    def logger = Logger.getLogger('hudson.security.LDAPSecurityRealm')
    arrayRoles.each { roleName ->
-	
+
      def role = roleBasedStrategy.getGrantedRoles(roleBasedType).keySet().find() {roleName.equals(it.getName())}
      assert (role != null) : logger.severe("Role $roleName not found.")
      arrayGroups.split(',').each {
@@ -60,16 +60,12 @@ SecurityRealm ldap_realm = new LDAPSecurityRealm(server, '', userSearchBase, use
 Jenkins.instance.setSecurityRealm(ldap_realm)
 
 logger.info("LDAP environment variables are set. Using LDAP security realm.")
- 
+
 logger.info ("Configuring roles...")
 def realm = Jenkins.instance.getAuthorizationStrategy()
 assert (realm instanceof RoleBasedAuthorizationStrategy) : logger.severe("RoleBasedAuthorizationStrategy not found")
-logger.info ("Adding role 'admin' to " + adminGroups) 
+logger.info ("Adding role 'admin' to " + adminGroups)
 addRoles(realm, realm.GLOBAL, adminGroups, ['admin'])
-logger.info ("Adding role 'promoter-pre' to " + promoterGroups)
-addRoles(realm, realm.GLOBAL, promoterGroups, ['promoter-pre'])
-logger.info ("Adding role 'promoter-pro' to " + proPromoterGroups)
-addRoles(realm, realm.GLOBAL, proPromoterGroups, ['promoter-pro'])
 logger.info ("Adding role 'user' to " + userGroups)
 addRoles(realm, realm.GLOBAL, userGroups, ['user'])
 addRoles(realm, realm.PROJECT, userGroups, ['ci_user','dev_user','tl_user','utl_user'])

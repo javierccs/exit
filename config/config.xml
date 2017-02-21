@@ -67,6 +67,7 @@
           <permission>hudson.model.Item.Move</permission>
           <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Run.Update</permission>
+          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
         </permissions>
         <assignedSIDs/>
       </role>
@@ -88,6 +89,7 @@
           <permission>hudson.model.Item.Move</permission>
           <permission>hudson.model.Item.Discover</permission>
           <permission>hudson.model.Run.Update</permission>
+          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
         </permissions>
         <assignedSIDs/>
       </role>
@@ -161,18 +163,6 @@
         <assignedSIDs>
           <sid>admin</sid>
         </assignedSIDs>
-      </role>
-      <role name="promoter-pre" pattern=".*">
-        <permissions>
-          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
-        </permissions>
-        <assignedSIDs/>
-      </role>
-      <role name="promoter-pro" pattern=".*">
-        <permissions>
-          <permission>hudson.plugins.promoted_builds.Promotion.Promote</permission>
-        </permissions>
-        <assignedSIDs/>
       </role>
       <role name="reader" pattern=".*">
         <permissions>
