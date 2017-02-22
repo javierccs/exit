@@ -70,6 +70,7 @@ class AuthorizationJobFactory{
 import com.cloudbees.plugins.credentials.common.StandardCredentials
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import hudson.model.*
+hudson.model.Result
 
 // Get Promotion actions needed
 def params = build.getAction(hudson.plugins.promoted_builds.Promotion.PromotionParametersAction)
@@ -82,13 +83,20 @@ def credId = params.find { it.name == CRED_PARAM_NAME }.value
 def item = jenkins.model.Jenkins.instance
 def auth = User.get(cause.getUserName(), false, Collections.emptyMap()).impersonate()
 def cred = CredentialsProvider.lookupCredentials(StandardCredentials.class,item,auth,null).find { credId == it.getId() }
+if ( cred == null ) {
+  // credential not found at user scope
+  throw new Exception("Promotion credentials must be defined at user scope for security reasons. Please, create credential at user scope and retry promotion with this new credential.")
+}
+else {
+  // Add a new PasswordParameterValue to Promotion Actions with the secret plain text
+  def mod_parameters = new ArrayList<StringParameterValue>();
+  mod_parameters.add(new PasswordParameterValue(SECRET_NAME, cred.getSecret().getPlainText()))
+  mod_parameters.addAll(params.getParameters())
+  def promoted_params = hudson.plugins.promoted_builds.Promotion.PromotionParametersAction.buildFor(target.resolve(), mod_parameters)
+  build.actions.remove(params)
+  build.actions.add(promoted_params)
+}
+"""
 
-// Add a new PasswordParameterValue to Promotion Actions with the secret plain text
-def mod_parameters = new ArrayList<StringParameterValue>();
-mod_parameters.add(new PasswordParameterValue(SECRET_NAME, cred.getSecret().getPlainText()))
-mod_parameters.addAll(params.getParameters())
-def promoted_params = hudson.plugins.promoted_builds.Promotion.PromotionParametersAction.buildFor(target.resolve(), mod_parameters)
-build.actions.remove(params)
-build.actions.add(promoted_params)"""
   }
 } // AuthorizationJobFactory
