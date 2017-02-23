@@ -59,6 +59,11 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>OSE3_BLUE_GREEN_DEPLOYMENT</name>
+          <description>If enabled, deploy to shadow and switch from shadow to pro jobs will be generated to use blue/green deployment in production environment</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT_DEV</name>
           <description>A valid OSE3 token for dev project</description>

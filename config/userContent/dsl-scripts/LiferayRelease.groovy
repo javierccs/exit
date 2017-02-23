@@ -16,7 +16,7 @@ def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
 
 // if true generates blue green deployment jobs
-boolean blueGreenDeployment = false
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 //checks gitlab url
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName

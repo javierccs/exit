@@ -46,7 +46,7 @@ if ( gitlabCredsType == null ) {
 }
 out.println ("GitLab credential type " + gitlabCredsType );
 // if true generates blue green deployment jobs
-boolean blueGreenDeployment = false
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 // Static values
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName

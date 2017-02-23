@@ -18,7 +18,7 @@ def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3="${APP_NAME_OSE3}".trim().toLowerCase()
 // if true generates blue green deployment jobs
-boolean blueGreenDeployment = false
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 
 // Static values
 //checks gitlab url
