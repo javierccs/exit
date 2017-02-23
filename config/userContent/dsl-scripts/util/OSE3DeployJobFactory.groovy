@@ -92,13 +92,16 @@ if (blueGreenDeployment) {
 } // end blue green deployment promotion
       }
       configure {
-        utils.removeParam(it, 'OSE3_TEMPLATE_PARAMS')
         utils.updateParam(it, 'OSE3_URL', ose3Url)
         utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project)
         utils.updateParam(it, 'OSE3_APP_NAME',  ose3Application)
         utils.updateParam(it, 'OSE3_TEMPLATE_NAME', ose3Template)
+        utils.updateParam(it, 'OSE3_TEMPLATE_PARAMS', ose3TemplateParams)
         utils.updateParam(it, 'OSE3_TOKEN_PROJECT', '')
         utils.updateParam(it, 'OSE3_BLUE_GREEN', blueGreenDeployment?'ON':'OFF')
+        utils.removeParam(it, 'CERTIFICATE')
+        utils.removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
+        utils.removeParam(it, 'CA_CERTIFICATE')
 // adds optional xml nodes
 for (def nodeXml : nodes ) {
         (it / builders).children().add(0, new XmlParser().parseText(nodeXml))

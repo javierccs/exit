@@ -32,10 +32,10 @@ def slurper = new JsonSlurper()
 def buildProps = slurper.parseText("${FRONT_BUILD}".trim())
 def ose3props = slurper.parseText("${OPENSHIFT3}".trim())
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def NEXUS_BASE_URL = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
+//Nexus repository for web SNAPSHOTS
+def WEB_REGISTRY_DEV  =  System.getenv('WEB_REPOSITORY') ?: NEXUS_BASE_URL + '/repository/web/'
 
-//checks gitlab url
-def webRepository = System.getenv('WEB_REPOSITORY')
-assert webRepository != null: "[SEVERE] WEB_REPOSITORY env variable not found."
 //checks openshift params
 assert ose3props.name?.trim() : "[ERROR] OpenShift3 project name (OPENSHIFT3.name) not provided! "
 assert OSE3_TOKEN_PROJECT_DEV?.trim() : "[ERROR] OpenShift3 dev token (OSE3_TOKEN_PROJECT_DEV) not provided! "
@@ -74,8 +74,8 @@ def DIST_DIR = buildProps.DIST_DIR.trim()
 def DIST_INCLUDE = buildProps.DIST_INCLUDE.trim()
 def DIST_EXCLUDE= buildProps.DIST_EXCLUDE.trim()
 
-def ARTIFACT_URL = "\${WEB_REGISTRY_DEV}$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
-def ARTIFACTCONF_URL = "\${WEB_REGISTRY_DEV}$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
+def ARTIFACT_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
+def ARTIFACTCONF_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
 
 //OSE3 TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS = ose3props.environments.collect { it.parameters.collectEntries { p -> [p.name, p.value] } }
@@ -254,16 +254,19 @@ if ( COMPILER.equals ( "None" )) {
     }
   }
   steps {
-    shell ("set +x\n"+
-           "curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {\n"+
-           "  echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "  exit 1; }\n" +
-           "if [ -f config.zip ]; then\n"+
-           "  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {\n"+
-           "    echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "    exit 1; }\n"+
-           "else echo \"[WARN] No config.zip file found!\"; fi\n")
+    shell ("""
+curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {
+  echo "[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}."
+  exit 1;
+}
+if [ -f config.zip ]; then
+  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {
+    echo "[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}."
+    exit 1;
   }
+  else echo \"[WARN] No config.zip file found!"; fi
+"""
+  )}
 
   publishers {
 if (buildProps.JUNIT_TESTS_PATTERN?.trim()) {
@@ -384,6 +387,8 @@ job (deployPreJobName) {
 }
 
 // pro approval and deployment Jobs
+def ose3ProTemplateParams = OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(",")
+out.println ("Pro template params = " + ose3ProTemplateParams);
 OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
   deployProCheckJobName,
     approvalJobArgs, GITLAB_PROJECT,
@@ -391,6 +396,6 @@ OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
     ose3props.name+'-'+ose3props.environments[2].name,
     OSE3_TEMPLATE_PARAMS[2].APP_NAME,
     ose3props.environments[2].template,
-    OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
+    ose3ProTemplateParams)
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
