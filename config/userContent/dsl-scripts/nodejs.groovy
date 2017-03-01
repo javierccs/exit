@@ -388,7 +388,6 @@ job (deployPreJobName) {
 
 // pro approval and deployment Jobs
 def ose3ProTemplateParams = OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(",")
-out.println ("Pro template params = " + ose3ProTemplateParams);
 OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
   deployProCheckJobName,
     approvalJobArgs, GITLAB_PROJECT,
