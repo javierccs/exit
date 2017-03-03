@@ -96,7 +96,13 @@ if (blueGreenDeployment) {
         utils.updateParam(it, 'OSE3_PROJECT_NAME', ose3Project)
         utils.updateParam(it, 'OSE3_APP_NAME',  ose3Application)
         utils.updateParam(it, 'OSE3_TEMPLATE_NAME', ose3Template)
+if (ose3TemplateParams){
+        // if template params is indicated is set otherwise is deleted
+        // maven template injects template params with a shell
         utils.updateParam(it, 'OSE3_TEMPLATE_PARAMS', ose3TemplateParams)
+}else{
+        utils.removeParam(it, 'OSE3_TEMPLATE_PARAMS')
+}
         utils.updateParam(it, 'OSE3_TOKEN_PROJECT', '')
         utils.updateParam(it, 'OSE3_BLUE_GREEN', blueGreenDeployment?'ON':'OFF')
         utils.removeParam(it, 'CERTIFICATE')

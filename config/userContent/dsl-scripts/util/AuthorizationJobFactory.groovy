@@ -17,6 +17,7 @@ class AuthorizationJobFactory{
     dslFactory.job (jobName) {
       disabled(false)
       deliveryPipelineConfiguration((production ? 'PRO Approval' : 'PRE Approval'), 'Manual approval')
+      dslFactory.out.println ("Setting build name: $jobBuildName")
       wrappers {
         buildName(jobBuildName)
       }
@@ -90,7 +91,7 @@ if ( cred == null ) {
 else {
   // Add a new PasswordParameterValue to Promotion Actions with the secret plain text
   def mod_parameters = new ArrayList<StringParameterValue>();
-  mod_parameters.add(new PasswordParameterValue(SECRET_NAME, cred.getSecret().getPlainText()))
+    mod_parameters.add(new PasswordParameterValue(SECRET_NAME, cred.getSecret().getPlainText()))
   mod_parameters.addAll(params.getParameters())
   def promoted_params = hudson.plugins.promoted_builds.Promotion.PromotionParametersAction.buildFor(target.resolve(), mod_parameters)
   build.actions.remove(params)
