@@ -3,7 +3,7 @@
   <actions/>
   <description>
 <![CDATA[
-<p>This template will create a pipeline for <b><a href='http://projects.spring.io/spring-boot/'>Spring Boot Java projects</a></b> compiled with <b><a href='https://maven.apache.org/'>Apache Maven</a></b>.</p> 
+<p>This template will create a pipeline for <b><a href='http://projects.spring.io/spring-boot/'>Spring Boot Java projects</a></b> compiled with <b><a href='https://maven.apache.org/'>Apache Maven</a></b>.</p>
 <p>Template documentation info is avaliable at <b><a href='http://portalserenity.eng.gsnetcloud.corp:8080/web/alm/reference-guides/detail?p_p_id=110_INSTANCE_OUXj4se4Z6Co&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_110_INSTANCE_OUXj4se4Z6Co_struts_action=%2Fdocument_library_display%2Fview_file_entry&_110_INSTANCE_OUXj4se4Z6Co_redirect=%2Fweb%2Falm%2Fdocumentation&_110_INSTANCE_OUXj4se4Z6Co_fileEntryId=47276'>Maven template guide</a></b>.</p>
 ]]>
 </description>
@@ -57,6 +57,11 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>OSE3_BLUE_GREEN_DEPLOYMENT</name>
+          <description>If enabled, deploy to shadow and switch from shadow to pro jobs will be generated to use blue/green deployment in production environment</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT_DEV</name>
           <description>A valid OSE3 token for dev project</description>
@@ -146,7 +151,7 @@ return listBridge + listOSE3_PARAMS  </groovyScriptContent>
       <template>#${BUILD_NUMBER}: ${APP_NAME_OSE3}->${OSE3_PROJECT_NAME} (maven)</template>
     </org.jenkinsci.plugins.buildnamesetter.BuildNameSetter>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/maven.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy</includes>
+      <includes>dsl-scripts/maven.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/UpdateLinkAction.groovy,dsl-scripts/util/Utilities.groovy,dsl-scripts/util/AuthorizationJobFactory.groovy,dsl-scripts/util/OSE3DeployJobFactory.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>

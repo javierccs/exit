@@ -1,6 +1,8 @@
 import jenkins.model.*
-import java.util.regex.*;
-import util.Utilities;
+import java.util.regex.*
+import util.Utilities
+import util.AuthorizationJobFactory
+import util.OSE3DeployJobFactory
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -15,6 +17,8 @@ def OSE3_URL ="${OSE3_URL}".trim()
 def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim()
 // APP_name for OSE3 -it doesnt allow uppercase chars!!
 def APP_NAME_OSE3="${APP_NAME_OSE3}".trim().toLowerCase()
+// if true generates blue green deployment jobs
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 
 // Static values
 //checks gitlab url
@@ -25,6 +29,8 @@ def GITLAB_URL = gitLabMap.url
 def gitLabConnectionMap = Utilities.getGitLabConnection ("Serenity GitLab")
 def GITLAB_SERVER = gitLabConnectionMap.url;
 def GITLAB_API_TOKEN = gitLabConnectionMap.credential.getApiToken().toString();
+
+
 out.println("GitLab URL: " + GITLAB_URL);
 out.println("GitLab Group: " + GROUP_NAME);
 out.println("GitLab Project: " + REPOSITORY_NAME);
@@ -34,10 +40,13 @@ def buildJobName = GITLAB_PROJECT+'-ci-build'
 def BridgeHPALMJobName = GITLAB_PROJECT+'-pre-hpalm-bridge'
 def BridgeHPALMJobNameDEV = GITLAB_PROJECT+'-dev-hpalm-bridge'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
+def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
+def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
-def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
-def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
-def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.ci.gsnet.corp/nexus'
+def preCheckJobName = GITLAB_PROJECT+'-pre-check'
+def deployHideJobName = OSE3DeployJobFactory.getHideJobName(GITLAB_PROJECT)
+def deployProJobName = OSE3DeployJobFactory.getProJobName(blueGreenDeployment, GITLAB_PROJECT)
+def nexusRepositoryUrl = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
 def mavenReleaseRepository = System.getenv('NEXUS_MAVEN_RELEASES') ?: '/content/repositories/releases/'
 def mavenSnapshotRepository = System.getenv('NEXUS_MAVEN_SNAPSHOTS') ?: '/content/repositories/snapshots/'
 if(APP_NAME_OSE3 == "")
@@ -105,23 +114,6 @@ def buildJob = mavenJob (buildJobName) {
   properties{
     promotions{
       promotion {
-        name('Promote-pre')
-        icon('star-silver-w')
-        conditions {
-          releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployPreJobName) {
-              parameters {
-                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${POM_VERSION}'])
-              }
-            }
-          }
-        }
-      }
-      promotion {
         name('DEV')
         icon('star-blue')
         conditions {
@@ -129,19 +121,44 @@ def buildJob = mavenJob (buildJobName) {
         }
       }
       promotion {
+        name('PRE-Check')
+        icon('star-purple')
+        conditions {
+          releaseBuild()
+          selfPromotion(false)
+        }
+        actions {
+          downstreamParameterized {
+            trigger(deployPreCheckJobName) {
+              parameters {
+                predefinedProps([
+                  'POM_GROUPID':'${POM_GROUPID}',
+                  'POM_ARTIFACTID':'${POM_ARTIFACTID}',
+                  'POM_PACKAGING':'${POM_PACKAGING}',
+                  'PIPELINE_VERSION':'${POM_VERSION}'])
+              }
+            }  //trigger deployPreCheckJobName
+          }  // end downstreamParameterized
+        } // end actions pre-check
+      } // end promotion
+
+      promotion {
         name('PRE')
         icon('star-silver-w')
         conditions {
           downstream(false, deployPreJobName)
         }
       }
-       promotion {
+if (blueGreenDeployment) {
+      promotion {
         name('Shadow')
         icon('star-gold-w')
         conditions {
           downstream(false, deployHideJobName)
         }
-      }
+     }
+}
+      //in pro
       promotion {
         name('PRO')
         icon('star-gold')
@@ -149,6 +166,7 @@ def buildJob = mavenJob (buildJobName) {
           downstream(false, deployProJobName)
         }
       }
+      //in pro
     }
   }
 
@@ -203,7 +221,7 @@ if ( gitlabCredsType == 'SSH' ){
         environmentVariables {
           env('IS_RELEASE', 'true')
         }
-      } 
+      }
       postBuildSteps {
         systemGroovyCommand(readFileFromWorkspace('dsl-scripts/util/InjectBuildParameters.groovy')) {
           binding('ENV_LIST', '["IS_RELEASE","POM_GROUPID","POM_ARTIFACTID","POM_PACKAGING","POM_VERSION"]')
@@ -267,8 +285,8 @@ if ( gitlabCredsType == 'SSH' ){
               }
             }
           }
-        }
-      } //conditionalAction
+        } // end publishers not release
+      }  // end conditional action not release
     } // flexiblePublish
     extendedEmail {
       defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
@@ -400,6 +418,12 @@ def envnode =
   '${WORKSPACE}/NEXUS_URL_${BUILD_NUMBER}.properties'+
   '</propertiesFilePath></info></EnvInjectBuilder>'
 
+def approvalJobArgs = [
+  ['POM_GROUPID', '', 'Maven artifact Group ID'],
+  ['POM_ARTIFACTID', '', 'Maven artifact ID'],
+  ['POM_PACKAGING', 'jar', 'Maven artifact packaging type'],
+  ['PIPELINE_VERSION', '', 'Pipeline version']
+]
 //Deploy in dev job
 job (deployDevJobName) {
   out.println "JOB: " + deployDevJobName
@@ -435,8 +459,13 @@ job (deployDevJobName) {
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
     (it / builders).children().add(0, new XmlParser().parseText(envnode))
     (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-  }  
+  }
 }
+
+// pre approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployPreCheckJobName, false, '${POM_ARTIFACTID}:${PIPELINE_VERSION}',
+  approvalJobArgs, deployPreJobName)
 
 //Deploy in pre job
 job (deployPreJobName) {
@@ -449,24 +478,30 @@ job (deployPreJobName) {
     stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
     stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
   }
+
   properties {
     promotions {
       promotion {
-        name('Promote-Shadow')
-        icon('star-gold-e')
+        name('PRO-Check')
+        icon('star-purple')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getPrePromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
-            trigger(deployHideJobName) {
+            trigger(deployProCheckJobName) {
               parameters {
-                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}'])
+                predefinedProps([
+                  'POM_GROUPID':'${POM_GROUPID}',
+                  'POM_ARTIFACTID':'${POM_ARTIFACTID}',
+                  'POM_PACKAGING':'${POM_PACKAGING}',
+                  'PIPELINE_VERSION':'${PIPELINE_VERSION}'])
               }
-            }
-          }
-        }
-      }
+            }  //trigger deployPreCheckJobName
+          }  // end downstreamParameterized
+        } // end actions pre-check
+      } // en promotion
+
     }
   }
   publishers {
@@ -485,7 +520,7 @@ job (deployPreJobName) {
     removeParam(it, 'OSE3_TEMPLATE_PARAMS')
     removeParam(it, 'CERTIFICATE')
     removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')    
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it, 'OSE3_URL', OSE3_URL)
     updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
     updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
@@ -496,71 +531,12 @@ job (deployPreJobName) {
   }
 }
 
-//Deploy in hide environment job
-job (deployHideJobName) {
-  out.println "JOB: $deployHideJobName"
-  using('TJ-ose3-deploy')
-  disabled(false)
-  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
-  parameters {
-    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
-    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
-    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
-  }
-    properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProps(['POM_GROUPID':'${POM_GROUPID}','POM_ARTIFACTID':'${POM_ARTIFACTID}','POM_PACKAGING':'${POM_PACKAGING}','PIPELINE_VERSION':'${PIPELINE_VERSION}', 'OSE3_TOKEN_PROJECT':'${OSE3_TOKEN_PROJECT}'])
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  configure {
-    removeParam(it, 'OSE3_TEMPLATE_PARAMS')
-    updateParam(it, 'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TEMPLATE_NAME','javase')
-    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
-    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-  }
-}
-
-
-//Deploy in pro job
-job (deployProJobName) {
-  out.println "JOB: $deployProJobName"
-  using('TJ-ose3-switch')
-  disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')
-  parameters {
-    stringParam('POM_GROUPID', '', 'Maven artifact Group ID')
-    stringParam('POM_ARTIFACTID', '', 'Maven artifact ID')
-    stringParam('POM_PACKAGING', 'jar', 'Maven artifact packaging type')
-  }
-
-  configure {
-    updateParam(it, 'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it, 'OSE3_APP_NAME',  APP_NAME_OSE3)
-    updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-    (it / builders).children().add(0, new XmlParser().parseText(envnode))
-    (it / builders).children().add(0, new XmlParser().parseText(shellnode))
-  }
-}
+// pro deployment Jobs
+OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
+  '${POM_ARTIFACTID}:${PIPELINE_VERSION}',
+    approvalJobArgs, GITLAB_PROJECT,
+    OSE3_URL, OSE3_PROJECT_NAME + '-pro', APP_NAME_OSE3, 'javase', '',
+    [envnode, shellnode]
+    )
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

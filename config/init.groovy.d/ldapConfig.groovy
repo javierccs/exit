@@ -8,7 +8,7 @@ import hudson.util.Secret
  def addRoles(roleBasedStrategy, roleBasedType, arrayGroups, arrayRoles) {
    def logger = Logger.getLogger('hudson.security.LDAPSecurityRealm')
    arrayRoles.each { roleName ->
-	
+
      def role = roleBasedStrategy.getGrantedRoles(roleBasedType).keySet().find() {roleName.equals(it.getName())}
      assert (role != null) : logger.severe("Role $roleName not found.")
      arrayGroups.split(',').each {
@@ -25,6 +25,7 @@ def logger = Logger.getLogger('hudson.security.LDAPSecurityRealm')
 String adminGroups = System.getenv('LDAP_ADMIN_GROUPS') ?: 'jenkins-administrators-tenant'
 String userGroups = System.getenv('LDAP_USER_GROUPS') ?: System.getenv('LDAP_GROUPS')
 String promoterGroups = System.getenv('LDAP_PROMOTER_GROUPS') ?: 'impes-product-owner,impes-technical-lead,impes-developer'
+String proPromoterGroups=  System.getenv('LDAP_PRO_PROMOTER_GROUPS') ?: promoterGroups
 
 String server = System.getenv('LDAP_SERVER')
 String userSearchBase = System.getenv('LDAP_BASE')
@@ -59,14 +60,16 @@ SecurityRealm ldap_realm = new LDAPSecurityRealm(server, '', userSearchBase, use
 Jenkins.instance.setSecurityRealm(ldap_realm)
 
 logger.info("LDAP environment variables are set. Using LDAP security realm.")
- 
+
+logger.info ("Configuring roles...")
 def realm = Jenkins.instance.getAuthorizationStrategy()
 assert (realm instanceof RoleBasedAuthorizationStrategy) : logger.severe("RoleBasedAuthorizationStrategy not found")
- 
+logger.info ("Adding role 'admin' to " + adminGroups)
 addRoles(realm, realm.GLOBAL, adminGroups, ['admin'])
-addRoles(realm, realm.GLOBAL, promoterGroups, ['promoter'])
+logger.info ("Adding role 'user' to " + userGroups)
 addRoles(realm, realm.GLOBAL, userGroups, ['user'])
 addRoles(realm, realm.PROJECT, userGroups, ['ci_user','dev_user','tl_user','utl_user'])
-addRoles(realm, realm.PROJECT, promoterGroups, ['pre_user','pro_user','tl_token-management'])
-
+addRoles(realm, realm.PROJECT, promoterGroups, ['pre_user','tl_token-management'])
+addRoles(realm, realm.PROJECT, proPromoterGroups, ['pro_user','tl_token-management'])
+println ("Roles added")
 Jenkins.instance.save()

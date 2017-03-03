@@ -1,6 +1,9 @@
 import jenkins.model.*
-import java.util.regex.*;
-import util.Utilities;
+import java.util.regex.*
+import util.Utilities
+import util.AuthorizationJobFactory
+import util.OSE3DeployJobFactory
+
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -14,7 +17,8 @@ def OSE3_PROJECT_NAME = "${OSE3_PROJECT_NAME}".trim().toLowerCase()
 def OSE3_APP_NAME="${OSE3_APP_NAME}".trim().toLowerCase()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
 
-// Static values
+// if true generates blue green deployment jobs
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 //checks gitlab url
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
@@ -31,9 +35,11 @@ GITLAB_PROJECT = GROUP_NAME + '/' + REPOSITORY_NAME
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def dockerJobName = GITLAB_PROJECT+'-ci-docker'
 def deployDevJobName = GITLAB_PROJECT+'-dev-ose3-deploy'
+def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
+def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-pre-ose3-deploy'
-def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
-def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
+def deployHideJobName = OSE3DeployJobFactory.getHideJobName(GITLAB_PROJECT)
+def deployProJobName = OSE3DeployJobFactory.getProJobName(blueGreenDeployment, GITLAB_PROJECT)
 
 //DEV
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
@@ -171,27 +177,27 @@ def buildJob = job (buildJobName) {
   properties{
     promotions{
       promotion {
-        name('Promote-pre')
-        icon('star-silver-w')
+        name('DEV')
+       icon('star-blue')
+       conditions {
+         downstream(false, deployDevJobName)
+       }
+     }
+     promotion {
+       name('PRE-Check')
+       icon('star-purple')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          selfPromotion(false)
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName) {
+            trigger(deployPreCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${WORDPRESS_IMAGE_VERSION}')
               }
             }
           }
-        }
-      }
-      promotion {
-        name('DEV')
-        icon('star-blue')
-        conditions {
-          downstream(false, deployDevJobName)
         }
       }
       promotion {
@@ -201,6 +207,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployPreJobName)
         }
       }
+if (blueGreenDeployment) {
       promotion {
         name('Shadow')
         icon('star-gold-w')
@@ -208,7 +215,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployHideJobName)
         }
      }
-
+}
       promotion {
         name('PRO')
         icon('star-gold')
@@ -397,15 +404,25 @@ job (deployDevJobName) {
   configure {
     removeParam(it, 'CERTIFICATE')
     removeParam(it, 'PRIVATE_KEY_CERTIFICATE')
-    removeParam(it, 'CA_CERTIFICATE')    
+    removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-dev')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV) 
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_DEV)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
+
+
+def approvalJobArgs = [
+  ['PIPELINE_VERSION','${PIPELINE_VERSION}']
+]
+def approvalJobBuildName = '${ENV,var="PIPELINE_VERSION_TEST"}-${BUILD_NUMBER}'
+// pre approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployPreCheckJobName, false, approvalJobBuildName,
+  approvalJobArgs, deployPreJobName)
 
 //Deploy in pre job
 job (deployPreJobName) {
@@ -416,14 +433,14 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-Shadow')
-        icon('star-gold-e')
+        name('PRO-Check')
+        icon('star-purple')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getPrePromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
-            trigger(deployHideJobName) {
+            trigger(deployProCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
               }
@@ -439,68 +456,18 @@ job (deployPreJobName) {
     removeParam(it, 'CA_CERTIFICATE')
     updateParam(it,'OSE3_URL', OSE3_URL)
     updateParam(it,'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pre')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME) 
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE) 
+    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
+    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
+    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRE)
     updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRE)
 
   }
 }
 
-//Deploy in hide job
-job (deployHideJobName) {
-  out.println "JOB: " + deployHideJobName
-  using('TJ-ose3-deploy')
-  disabled(false)
-  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
-   properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-                 predefinedProp('OSE3_TOKEN_PROJECT','${OSE3_TOKEN_PROJECT}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  configure {
-    updateParam(it,'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME)
-    updateParam(it,'OSE3_TEMPLATE_NAME',OSE3_TEMPLATE_NAME)
-    updateParam(it,'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS_PRO)
-    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
-  }
-}
-
-
-
-//Deploy in pro job
-job (deployProJobName) {
-  out.println "JOB: " + deployProJobName
-  using('TJ-ose3-switch')
-  disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Deploy')
-  configure {
-    updateParam(it,'OSE3_URL', OSE3_URL)
-    updateParam(it, 'OSE3_PROJECT_NAME', OSE3_PROJECT_NAME+'-pro')
-    updateParam(it,'OSE3_APP_NAME',OSE3_APP_NAME) 
-    updateParam(it,'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_PRO)
-  
-  }
-}
+// pro deployment Jobs
+OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
+  approvalJobBuildName,
+  approvalJobArgs, GITLAB_PROJECT, OSE3_URL, OSE3_PROJECT_NAME + "-pro",
+  OSE3_APP_NAME, OSE3_TEMPLATE_NAME, OSE3_TEMPLATE_PARAMS_PRO)
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

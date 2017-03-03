@@ -1,6 +1,8 @@
 import jenkins.model.*
 import groovy.json.JsonSlurper
 import util.Utilities
+import util.AuthorizationJobFactory
+import util.OSE3DeployJobFactory
 
 // Shared functions
 def gitlabHooks = evaluate(new File("$JENKINS_HOME/userContent/dsl-scripts/util/GitLabWebHooks.groovy"))
@@ -9,6 +11,7 @@ def updateParam(node, String paramName, String defaultValue) {
   def aux = node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions.'*'.find {
     it.name != null && it.name.text() == paramName
   }
+  assert aux != null : "Param name '$paramName' not found in node '$node'"
   aux.defaultValue[0].value = defaultValue
 }
 
@@ -29,10 +32,10 @@ def slurper = new JsonSlurper()
 def buildProps = slurper.parseText("${FRONT_BUILD}".trim())
 def ose3props = slurper.parseText("${OPENSHIFT3}".trim())
 def OSE3_TOKEN_PROJECT_DEV="${OSE3_TOKEN_PROJECT_DEV}".trim()
+def NEXUS_BASE_URL = System.getenv('NEXUS_BASE_URL') ?: 'https://nexus.alm.gsnetcloud.corp'
+//Nexus repository for web SNAPSHOTS
+def WEB_REGISTRY_DEV  =  System.getenv('WEB_REPOSITORY') ?: NEXUS_BASE_URL + '/repository/web/'
 
-//checks gitlab url
-def webRepository = System.getenv('WEB_REPOSITORY')
-assert webRepository != null: "[SEVERE] WEB_REPOSITORY env variable not found."
 //checks openshift params
 assert ose3props.name?.trim() : "[ERROR] OpenShift3 project name (OPENSHIFT3.name) not provided! "
 assert OSE3_TOKEN_PROJECT_DEV?.trim() : "[ERROR] OpenShift3 dev token (OSE3_TOKEN_PROJECT_DEV) not provided! "
@@ -42,7 +45,8 @@ if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
 out.println ("GitLab credential type " + gitlabCredsType );
-
+// if true generates blue green deployment jobs
+boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 // Static values
 def gitLabMap = Utilities.parseGitlabUrl(GITLAB_PROJECT);
 def GROUP_NAME = gitLabMap.groupName
@@ -58,9 +62,11 @@ out.println("GitLab Project: " + REPOSITORY_NAME);
 
 def buildJobName = GITLAB_PROJECT+'-ci-build'
 def deployDevJobName = GITLAB_PROJECT+'-ose3-dev-deploy'
+def deployPreCheckJobName = GITLAB_PROJECT+'-ose3-pre-check-deploy'
+def deployProCheckJobName = GITLAB_PROJECT+'-ose3-pro-check-deploy'
 def deployPreJobName = GITLAB_PROJECT+'-ose3-pre-deploy'
-def deployHideJobName = GITLAB_PROJECT+'-ose3-pro-deploy-shadow'
-def deployProJobName = GITLAB_PROJECT+'-ose3-pro-route-switch'
+def deployHideJobName = OSE3DeployJobFactory.getHideJobName(GITLAB_PROJECT)
+def deployProJobName = OSE3DeployJobFactory.getProJobName(blueGreenDeployment, GITLAB_PROJECT)
 
 def COMPILER = buildProps.COMPILER.trim()
 def CONFIG_DIRECTORY = buildProps.CONFIG_DIRECTORY.trim()
@@ -68,8 +74,8 @@ def DIST_DIR = buildProps.DIST_DIR.trim()
 def DIST_INCLUDE = buildProps.DIST_INCLUDE.trim()
 def DIST_EXCLUDE= buildProps.DIST_EXCLUDE.trim()
 
-def ARTIFACT_URL = "\${WEB_REGISTRY_DEV}$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
-def ARTIFACTCONF_URL = "\${WEB_REGISTRY_DEV}$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
+def ARTIFACT_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
+def ARTIFACTCONF_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
 
 //OSE3 TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS = ose3props.environments.collect { it.parameters.collectEntries { p -> [p.name, p.value] } }
@@ -101,15 +107,15 @@ def buildJob = job (buildJobName) {
   properties{
     promotions{
       promotion {
-        name('Promote-pre')
-        icon('star-gold-w')
+        name('PRE-Check')
+        icon('star-purple')
         conditions {
           releaseBuild()
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          selfPromotion(false)
         }
         actions {
           downstreamParameterized {
-            trigger(deployPreJobName) {
+            trigger(deployPreCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
                 predefinedProp('ARTIFACT_URL',ARTIFACT_URL)
@@ -133,6 +139,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployPreJobName)
         }
       }
+if (blueGreenDeployment) {
       promotion {
         name('Shadow')
         icon('star-gold-w')
@@ -140,8 +147,7 @@ def buildJob = job (buildJobName) {
           downstream(false, deployHideJobName)
         }
       }
-
-      
+}
       promotion {
         name('PRO')
         icon('star-gold-w')
@@ -219,15 +225,15 @@ if ( COMPILER.equals ( "None" )) {
   steps {
 if ( COMPILER.equals ( "None" )) {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then application_yaml_git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
-} else {	
+} else {
     shell("if [ \"\${IS_RELEASE}\" = true ]; then git-flow-release-start.sh ${GIT_INTEGRATION_BRANCH} ${GIT_RELEASE_BRANCH}; fi")
-}       
+}
     shell(
       "generate-env-properties.sh " + REPOSITORY_NAME.toLowerCase() + " 'env.properties' '${COMPILER}'" + ' "${IS_RELEASE}" "${BUILD_NUMBER}"'
 		)
     environmentVariables {
       propertiesFile('env.properties')
-    }	 
+    }
     shell("front-compiler.sh '${REPOSITORY_NAME}' '${DIST_DIR}' '${DIST_INCLUDE}' '${DIST_EXCLUDE}' '${COMPILER}' '${CONFIG_DIRECTORY}'")
   }
   configure {
@@ -237,7 +243,7 @@ if ( COMPILER.equals ( "None" )) {
     } else {
         auxFrontImageName = '$FRONT_IMAGE_NAME';
     }
-	
+
     it / buildWrappers / 'hudson.plugins.sonar.SonarBuildWrapper'
     it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
       properties ('sonar.sourceEncoding=UTF-8\n'+
@@ -248,16 +254,19 @@ if ( COMPILER.equals ( "None" )) {
     }
   }
   steps {
-    shell ("set +x\n"+
-           "curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {\n"+
-           "  echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "  exit 1; }\n" + 
-           "if [ -f config.zip ]; then\n"+
-           "  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {\n"+
-           "    echo \"[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}.\"\n"+
-           "    exit 1; }\n"+
-           "else echo \"[WARN] No config.zip file found!\"; fi\n")
+    shell ("""
+curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file ${REPOSITORY_NAME}.zip ${ARTIFACT_URL} || {
+  echo "[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}."
+  exit 1;
+}
+if [ -f config.zip ]; then
+  curl -ku \$NEXUS_DEPLOYMENT_USERNAME:\$NEXUS_DEPLOYMENT_PASSWORD --upload-file config.zip ${ARTIFACTCONF_URL} || {
+    echo "[ERROR] Failed to deploy ${REPOSITORY_NAME}.zip to url ${ARTIFACT_URL}."
+    exit 1;
   }
+  else echo \"[WARN] No config.zip file found!"; fi
+"""
+  )}
 
   publishers {
 if (buildProps.JUNIT_TESTS_PATTERN?.trim()) {
@@ -319,13 +328,25 @@ job (deployDevJobName) {
   }
 }
 
+def approvalJobArgs = [
+  ['PIPELINE_VERSION','${PIPELINE_VERSION}'],
+  ['ARTIFACT_URL','${ARTIFACT_URL}'],
+  ['ARTIFACTCONF_URL','${ARTIFACTCONF_URL}']
+]
+def approvalJobBuildName = REPOSITORY_NAME + ':${ENV,var="FRONT_IMAGE_VERSION"}'
+// pre approval job
+AuthorizationJobFactory.createApprovalJob(this,
+  deployPreCheckJobName, false, approvalJobBuildName,
+  approvalJobArgs, deployPreJobName)
+
+
 //Deploy in pre job
 job (deployPreJobName) {
   out.println "JOB: " + deployPreJobName
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
-  
+
   parameters {
     stringParam('ARTIFACT_URL', '', '')
     stringParam('ARTIFACTCONF_URL', '', '')
@@ -334,14 +355,14 @@ job (deployPreJobName) {
   properties {
     promotions {
       promotion {
-        name('Promote-Shadow')
-        icon('star-gold-e')
+        name('PRO-Check')
+        icon('star-purple')
         conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
+          manual(Utilities.getPrePromotionRoleGroups())
         }
         actions {
           downstreamParameterized {
-            trigger(deployHideJobName) {
+            trigger(deployProCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
                 predefinedProp('ARTIFACT_URL','${ARTIFACT_URL}')
@@ -365,71 +386,16 @@ job (deployPreJobName) {
   }
 }
 
-//Deploy in hide environment jo
-job (deployHideJobName) {
-  out.println "JOB: $deployHideJobName"
-  using('TJ-ose3-deploy')
-  disabled(false)
-  deliveryPipelineConfiguration('Shadow', 'Deploy to shadow')
-
-  parameters {
-    stringParam('ARTIFACT_URL', '', '')
-    stringParam('ARTIFACTCONF_URL', '', '')
-  }
-
-   properties {
-    promotions {
-      promotion {
-        name('Promote-PRO')
-        icon('star-gold-e')
-        conditions {
-          manual('impes-product-owner,impes-technical-lead,impes-developer')
-        }
-        actions {
-          downstreamParameterized {
-            trigger(deployProJobName) {
-              parameters {
-                predefinedProp('PIPELINE_VERSION','${PIPELINE_VERSION}')
-                predefinedProp('ARTIFACT_URL','${ARTIFACT_URL}')
-                predefinedProp('ARTIFACTCONF_URL','${ARTIFACTCONF_URL}')
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  configure {
-    updateParam(it, 'OSE3_URL', ose3props.region)
-    updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[2].name)
-    updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[2].APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[2].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
-    updateParam(it, 'OSE3_BLUE_GREEN', 'ON')
-  }
-}
-
-
-//Deploy in pro job
-job (deployProJobName) {
-  out.println "JOB: $deployProJobName"
-  using('TJ-ose3-switch')
-  disabled(false)
-  deliveryPipelineConfiguration('PRO', 'Switch from Shadow to PRO')
-
-  parameters {
-    stringParam('ARTIFACT_URL', '', '')
-    stringParam('ARTIFACTCONF_URL', '', '')
-  }
-
-  configure {
-    updateParam(it, 'OSE3_URL', ose3props.region)
-    updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[2].name)
-    updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[2].APP_NAME)
-    updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[2].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(","))
-  }
-}
+// pro approval and deployment Jobs
+def ose3ProTemplateParams = OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(",")
+out.println ("Pro template params = " + ose3ProTemplateParams);
+OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
+  deployProCheckJobName,
+    approvalJobArgs, GITLAB_PROJECT,
+    ose3props.region,
+    ose3props.name+'-'+ose3props.environments[2].name,
+    OSE3_TEMPLATE_PARAMS[2].APP_NAME,
+    ose3props.environments[2].template,
+    ose3ProTemplateParams)
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)

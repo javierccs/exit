@@ -59,6 +59,11 @@
           <propertyKey>regions</propertyKey>
           <multiSelectDelimiter>,</multiSelectDelimiter>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>OSE3_BLUE_GREEN_DEPLOYMENT</name>
+          <description>If enabled, deploy to shadow and switch from shadow to pro jobs will be generated to use blue/green deployment in production environment</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
         <hudson.model.PasswordParameterDefinition>
           <name>OSE3_TOKEN_PROJECT_DEV</name>
           <description>A valid OSE3 token for dev project</description>
@@ -115,7 +120,7 @@ def OSE3_TEMPLATE_PARAMS_PRE= &quot;${OSE3_TEMPLATE_PARAMS_PRE}&quot;.trim()
 def OSE3_TEMPLATE_PARAMS_PRO= &quot;${OSE3_TEMPLATE_PARAMS_PRO}&quot;.trim()
 
 def slurperOSE3_PARAMS_DEV = new JsonSlurper()
-def listOSE3_PARAMS_DEV = 
+def listOSE3_PARAMS_DEV =
 slurperOSE3_PARAMS_DEV.parseText(OSE3_TEMPLATE_PARAMS_DEV)
 
 def slurperOSE3_PARAMS_PRE = new JsonSlurper()
@@ -155,7 +160,7 @@ return listOSE3_PARAMS_DEV+listOSE3_PARAMS_PRE+listOSE3_PARAMS_PRO</groovyScript
   <publishers/>
   <buildWrappers>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>dsl-scripts/LiferayRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/Utilities.groovy</includes>
+      <includes>dsl-scripts/LiferayRelease.groovy,dsl-scripts/DeliveryPipeline.groovy,dsl-scripts/util/InjectBuildParameters.groovy,dsl-scripts/util/Utilities.groovy,dsl-scripts/util/AuthorizationJobFactory.groovy,dsl-scripts/util/OSE3DeployJobFactory.groovy</includes>
       <excludes></excludes>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
