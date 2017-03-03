@@ -11,7 +11,7 @@ def jsonEditorOptions = JSONObject.fromObject(/{
         iconlib:"foundation3",
 		schema: {
 	  "title": "JAVASE OSE3 Template parameters",
-	  "description" : "Customizable JAVASE OSE3 tempalte parameters (Do not use quotes). <br>The parameters in blank are leave with the PAAS's default values(consult PAAS page for more information)",
+	  "description" : "Customizable JAVASE OSE3 template parameters (Do not use quotes). <br>Leave empty if PaaS default value if desired (see PaaS page for more information)",
 	  "type": "object",
 		 "options": {
 			  "collapsed": true
