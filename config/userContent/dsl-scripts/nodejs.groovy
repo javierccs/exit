@@ -77,6 +77,8 @@ def DIST_EXCLUDE= buildProps.DIST_EXCLUDE.trim()
 def ARTIFACT_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
 def ARTIFACTCONF_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
 
+def ARTIFACT_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
+def ARTIFACTCONF_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
 //OSE3 TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS = ose3props.environments.collect { it.parameters.collectEntries { p -> [p.name, p.value] } }
 OSE3_TEMPLATE_PARAMS.each { env ->
@@ -118,8 +120,8 @@ def buildJob = job (buildJobName) {
             trigger(deployPreCheckJobName) {
               parameters {
                 predefinedProp('PIPELINE_VERSION','${FRONT_IMAGE_VERSION}')
-                predefinedProp('ARTIFACT_URL',ARTIFACT_URL)
-                predefinedProp('ARTIFACTCONF_URL',ARTIFACTCONF_URL)
+                predefinedProp('ARTIFACT_URL',ARTIFACT_URL_RELEASE)
+                predefinedProp('ARTIFACTCONF_URL',ARTIFACTCONF_URL_RELEASE)
               }
             }
           }
