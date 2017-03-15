@@ -1,4 +1,5 @@
 Jenkins server for Serenity ALM
+Important: Docker min version 1.9
 
 Build:
 
