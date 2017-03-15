@@ -67,7 +67,7 @@ if (mavenDeployerLogin?.trim() && mavenDeployerPasswd?.trim()){
     "Serenity Maven Settings", "Custom Maven settings for Serenity framework", text, true, serverCredentialMappings);
   
   for (ConfigProvider provider : ConfigProvider.all()) {
-      if (provider.isResponsibleFor(mavenSettingsConfig.id)) {
+      if (mavenSettingsConfig.id.startsWith(provider.getProviderId())) {
           provider.save(mavenSettingsConfig);
           logger.info("Created maven settings file \"Serenity Maven Settings\" from \"$settingsFile\"")
       }

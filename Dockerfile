@@ -1,4 +1,4 @@
-FROM jenkins:2.32.1
+FROM jenkins:2.32.3
 MAINTAINER serenity-alm <serenity-alm@isban.com>
 
 ARG HTTP_PROXY
