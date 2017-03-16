@@ -248,10 +248,10 @@ if ( COMPILER.equals ( "None" )) {
 
     it / buildWrappers / 'hudson.plugins.sonar.SonarBuildWrapper'
     it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
-      properties ('sonar.sourceEncoding=UTF-8\n'+
+      properties ('sonar.sourceEncoding=UTF-8\nsonar.links.ci=$JOB_URL\n'+
         ["sonar.sources" : "." , "sonar.exclusions" : "pdf/**, node_modules/**,bower_components/**,${DIST_DIR}/**",
-         "sonar.projectKey" : 'serenity:nodejs:' + auxFrontImageName , "sonar.projectName" : auxFrontImageName ,
-         "sonar.projectVersion" : '$FRONT_IMAGE_VERSION'].collect { /$it.key=$it.value/ }.join("\n"))
+         "sonar.projectKey" : 'serenity:nodejs:' + auxFrontImageName , "sonar.projectName" : auxFrontImageName , "sonar.projectVersion" : '$FRONT_IMAGE_VERSION',
+         "sonar.links.scm" : GITLAB_SERVER+GITLAB_PROJECT, "sonar.links.ci" : '$JOB_URL'].collect { /$it.key=$it.value/ }.join("\n"))
       jdk('JDK8')
     }
   }
