@@ -50,7 +50,7 @@ def GIT_SOURCE_REPO = "origin";
 def buildJobName = GITLAB_PROJECT + '-ci-build';
 
 //creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
 if (gitlabCredsType == null) {
     throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }

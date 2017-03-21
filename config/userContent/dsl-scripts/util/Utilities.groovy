@@ -12,7 +12,7 @@ class Utilities {
    * if it is a User password credential otherwise it throws IllegalArgumentException
    * if credential does not exist returns null
    */
-  static String getCredentialType(def credentialId) {
+  static String getCredentialType(String credentialId, def gitUrl) {
     def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
       com.cloudbees.plugins.credentials.common.StandardUsernameCredentials.class,
       Jenkins.instance,
@@ -27,12 +27,18 @@ class Utilities {
         }else if ( c.class.getName() ==  'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl'){
           gitlabCredsType = CREDENTIAL_USERPASSWORD
         }else{
-          throw new javaposse.jobdsl.dsl.DslException ("ERROR: GitLab '" + credentialId  + "' credentials  type '" + c.class.getName() + "' not supported! ")
+          throw new javaposse.jobdsl.dsl.DslException ("GitLab '" + credentialId  + "' credentials  type '" + c.class.getName() + "' not supported! ")
         }
       }
     }
-    return gitlabCredsType;
+      // Check that the credential type matches the gitUrl type
+    if ((gitlabCredsType != CREDENTIAL_SSH || !gitUrl.startsWith("ssh")) &&
+        (gitlabCredsType != CREDENTIAL_USERPASSWORD || !gitUrl.startsWith("http"))) {
+      throw new javaposse.jobdsl.dsl.DslException ("git url '$gitUrl' doesn't match the credential type '$gitlabCredsType'.")
+    }
+    return gitlabCredsType
   }
+
   //Return GitLab group and project 
   //from URL. If given URL is not valid
   //Assertion fails
