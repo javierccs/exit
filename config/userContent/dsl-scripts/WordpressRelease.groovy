@@ -146,7 +146,7 @@ if (VOLUME_CAPACITY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",VOLUME_CAPACITY
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
 //creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }

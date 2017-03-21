@@ -23,7 +23,7 @@ def publishPreJobName = GITLAB_PROJECT + '-ose3-pre-publish'
 def publishProJobName = GITLAB_PROJECT + '-ose3-pro-publish'
 
 //creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
 if (gitlabCredsType == null) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
