@@ -39,12 +39,6 @@ def WEB_REGISTRY_DEV  =  System.getenv('WEB_REPOSITORY') ?: NEXUS_BASE_URL + '/r
 //checks openshift params
 assert ose3props.name?.trim() : "[ERROR] OpenShift3 project name (OPENSHIFT3.name) not provided! "
 assert OSE3_TOKEN_PROJECT_DEV?.trim() : "[ERROR] OpenShift3 dev token (OSE3_TOKEN_PROJECT_DEV) not provided! "
-//creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
-if ( gitlabCredsType == null ) {
-  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
-}
-out.println ("GitLab credential type " + gitlabCredsType );
 // if true generates blue green deployment jobs
 boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 // Static values
@@ -79,6 +73,12 @@ def ARTIFACTCONF_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/config-\${FRONT_IMAGE
 
 def ARTIFACT_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
 def ARTIFACTCONF_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+out.println ("GitLab credential type " + gitlabCredsType );
 //OSE3 TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS = ose3props.environments.collect { it.parameters.collectEntries { p -> [p.name, p.value] } }
 OSE3_TEMPLATE_PARAMS.each { env ->
@@ -294,15 +294,29 @@ if (buildProps.JUNIT_TESTS_PATTERN?.trim()) {
         }
       }
     }
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
+    extendedEmail {
+      defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+      contentType('text/html')
+      triggers {
+        always()
+        failure {
+          sendTo {
+            culprits()
+          }
+        }
+        unstable {
+          sendTo {
+            culprits()
+          }
+        }
+        fixedUnhealthy {
+          sendTo {
+            developers()
+          }
+        }
       }
     } //extendedEmail
+
   } //publishers
 } //job
 
