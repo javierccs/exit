@@ -4,3 +4,4 @@ docker-compose.yml
 run.sh
 run-local.sh
 do.sh
+target/
