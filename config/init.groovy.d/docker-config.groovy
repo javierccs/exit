@@ -103,7 +103,8 @@ docker_settings =
       version: '',
       templates: [
        [
-          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-docker-image-builder:latest',
+          image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-docker-image-builder:' + 
+            (dockerCloudProperties["registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-docker-image-builder"] ?: "latest"),
           labelString: 'liferay-docker',
           environmentsString: "MVN_REPO_URL=${nexusRepositoryUrl}\nMVN_REPO_PATH=${mavenGroupRepository}",
           remoteFs: '/home/jenkins',
