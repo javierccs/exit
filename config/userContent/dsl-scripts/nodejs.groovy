@@ -23,6 +23,17 @@ def removeParam(node, String paramName) {
   node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 
+// Gets no empty values as value1,value2... 
+String getTemplateNoEmptyValues(def arrMap){
+  def templateParams = ''
+  arrMap.collect { param ->
+    if (param.value) {
+      templateParams ? (templateParams += ',' + param.value) : (templateParams += param.value)
+    }
+  }
+  return templateParams
+}
+
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
@@ -322,6 +333,7 @@ if (buildProps.JUNIT_TESTS_PATTERN?.trim()) {
 
 job (deployDevJobName) {
   out.println "JOB: " + deployDevJobName
+  
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -339,7 +351,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[0].name)
     updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[0].APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[0].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[0].collect { /$it.key=$it.value/ }.join(","))
+    updateParam(it, 'OSE3_TEMPLATE_PARAMS', getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[0]))
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
@@ -359,6 +371,7 @@ AuthorizationJobFactory.createApprovalJob(this,
 //Deploy in pre job
 job (deployPreJobName) {
   out.println "JOB: " + deployPreJobName
+  
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -398,12 +411,12 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[1].name)
     updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[1].APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[1].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS', OSE3_TEMPLATE_PARAMS[1].collect { /$it.key=$it.value/ }.join(","))
+    updateParam(it, 'OSE3_TEMPLATE_PARAMS', getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[1]))
   }
 }
 
 // pro approval and deployment Jobs
-def ose3ProTemplateParams = OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(",")
+  
 OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
   deployProCheckJobName,
     approvalJobArgs, GITLAB_PROJECT,
@@ -411,6 +424,6 @@ OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
     ose3props.name+'-'+ose3props.environments[2].name,
     OSE3_TEMPLATE_PARAMS[2].APP_NAME,
     ose3props.environments[2].template,
-    ose3ProTemplateParams)
+    getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[2])) 
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
