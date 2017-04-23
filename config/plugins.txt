@@ -1,149 +1,52 @@
-#plugin_id:version
-
-# Suggested Jenkins2 Plugins
-ace-editor:1.1 (JavaScript GUI Lib: ACE Editor bundle plugin)
-ant:1.4 (Ant Plugin)
-structs:1.6 (Structs plugin, required by ant)
-antisamy-markup-formatter:1.5 (OWASP Markup Formatter Plugin)
-branch-api:2.0.8 (Branch API Plugin)
-cloudbees-folder:6.0.2 (Folders Plugin)
-credentials:2.1.13 (Credentials Plugin)
-build-timeout:1.18 (build timeout plugin)
-naginator:1.17.2 (Permits reschedule build after failure)
-token-macro:2.0 (Token Macro Plugin)
-credentials-binding:1.10 (Credentials Binding Plugin)
-workflow-step-api:2.9 (Pipeline: Step API)
-plain-credentials:1.4 (Plain Credentials Plugin)
-durable-task:1.13 (Durable Task Plugin)
-email-ext:2.57 (Email Extension Plugin)
-config-file-provider:2.15.6 (configuration files)
-ssh-credentials:1.13 (SSH Credentials Plugin)
-matrix-project:1.8 (Matrix Project Plugin)
-junit:1.20 (JUnit Plugin)
-script-security:1.27 (Script Security Plugin)
-analysis-core:1.82 (This plug-in provides utilities for the static code analysis plug-ins)
-maven-plugin:2.15.1 (Maven plugin)
-javadoc:1.4 (Java doc)
-mailer:1.19 (Mailer Plugin)
-display-url-api:1.1.1 (Required by mailer)
-dashboard-view:2.9.10 (Dashboard)
-workflow-job:2.10 (Pipeline: Job)
-#end email-ext
-
-
-#revisar 
-external-monitor-job:1.7 (External Monitor Job Type Plugin)
-git:3.1.0 (Git plugin)
-git-client:2.3.0 (Git client plugin)
-promoted-builds:2.28.1 (promote)
-rebuild:1.25
-job-dsl:1.58
-parameterized-trigger:2.33
-conditional-buildstep:1.3.5
-run-condition:1.0
-workflow-scm-step:2.4 (Pipeline: SCM Step)
-scm-api:2.1.0 (SCM API Plugin)
-#end git
-git-server:1.7 (GIT server Plugin)
-workflow-cps:2.29 (Pipeline: Groovy)
-workflow-support:2.13 (Pipeline: Supporting APIs)
-workflow-api:2.12 (Pipeline: API)
-jquery-detached:1.2.1 (JavaScript GUI Lib: jQuery bundles (jQuery and jQuery UI) plugin)
-#end workflow-cps
-workflow-multibranch:2.13 (Pipeline: Multibranch)
-workflow-cps-global-lib:2.7 (Pipeline: Shared Groovy Libraries)
-#end github-organization-folder
-gradle:1.26 (Gradle Plugin)
-handlebars:1.1.1 (JavaScript GUI Lib: Handlebars bundle plugin)
-icon-shim:2.0.3 (Icon Shim Plugin)
-
-ldap:1.14 (LDAP Plugin)
-mapdb-api:1.0.9.0 (MapDB API Plugin)
-matrix-auth:1.4 (Matrix Authorization Strategy Plugin)
-momentjs:1.1.1 (JavaScript GUI Lib: Moment.js bundle plugin)
-pam-auth:1.3 (PAM Authentication plugin)
-pipeline-build-step:2.4 (Pipeline: Build Step)
-pipeline-input-step:2.5 (Pipeline: Input Step)
-pipeline-rest-api:2.6 (Pipeline: REST API Plugin)
-pipeline-graph-analysis:1.3 (Required by rest-api)
-pipeline-stage-step:2.2 (Pipeline: Stage Step)
-pipeline-stage-view:2.6 (Pipeline: Stage View Plugin)
-
-ssh-slaves:1.13 (SSH Slaves plugin)
-subversion:2.7.2 (Subversion Plug-in)
-timestamper:1.8.8 (Timestamper)
-windows-slaves:1.2 (Windows Slaves Plugin)
-workflow-aggregator:2.5 (Pipeline)
-pipeline-model-definition:1.0.2 (Pipeline required by workflow-aggregator)
-workflow-basic-steps:2.4 (Pipeline: Basic Steps)
-pipeline-milestone-step:1.3 
-workflow-durable-task-step:2.10 (Pipeline: Nodes and Processes)
-
-ws-cleanup:0.32 (Workspace Cleanup Plugin)
-resource-disposer:0.6 (required by ws-cleanup)
-
-sidebar-link:1.7
-copy-to-slave:1.4.4
-copyartifact:1.38.1
-
-groovy:1.30
-release:2.6.1
-htmlpublisher:1.12
-
-#common
-authentication-tokens:1.3
-monitoring:1.63.0
-
-# delivery pipeline
-jquery:1.11.2-0
+Parameterized-Remote-Trigger:2.2.2
+analysis-core:1.82
+ansicolor:0.4.3
+ant:1.4
+antisamy-markup-formatter:1.5build-timeout:1.18
 build-name-setter:1.6.5
 build-pipeline-plugin:1.5.6
+conditional-buildstep:1.3.5
+config-file-provider:2.15.6
+copy-to-slave:1.4.4
+copyartifact:1.38.1
+dashboard-view:2.9.10
 delivery-pipeline-plugin:0.10.3
-
-#job dsl
-managed-scripts:1.3
-
-#Integrations
-docker-plugin:0.16.2 (Docker Plugin)
-gitlab-plugin:1.4.5
-sonar:2.6 (SonarQube plugin)
-
-greenballs:1.15 (Green Balls)
-
-#disk-usage:0.28
-
+docker-plugin:0.16.2
+email-ext:2.57
 envinject:1.93.1
-role-strategy:2.3.2
-
-#Extended Choice Parameter plugin
-#To update this plugin to recent version
-#A groovy authorization is required
 extended-choice-parameter:0.56
-validating-string-parameter:2.3
-
-#Flexible Publish Plugin
+external-monitor-job:1.7
 flexible-publish:0.15.2
-
-ssh-agent:1.14
-bouncycastle-api:2.16.0
-
-ansicolor:0.4.3
-#jenkins themes
-simple-theme-plugin:0.3
-#for jenkins-atlasian theme
+gitlab-plugin:1.4.5
+gradle:1.26
 gravatar:2.1
-
-pipeline-utility-steps:1.3.0
-mask-passwords:2.9
+greenballs:1.15
+groovy:1.30
+htmlpublisher:1.12
+job-dsl:1.58
+ldap:1.14
 lockable-resources:1.11.1
+managed-scripts:1.3
+mask-passwords:2.9
+matrix-auth:1.4
+monitoring:1.63.0
+naginator:1.17.2
+nexus-artifact-uploader:2.9
+pam-auth:1.3
+pipeline-graph-analysis:1.3
+pipeline-utility-steps:1.3.0
+promoted-builds:2.28.1
+rebuild:1.25
+release:2.6.1
+role-strategy:2.3.2
+sidebar-link:1.7
+simple-theme-plugin:0.3
 skip-certificate-check:1.0
-#execute parametrized jobs
-Parameterized-Remote-Trigger:2.2.2
-nexus-artifact-uploader:2.9 (Cordova template)
-
-#required by pipeline-model-definition
-docker-workflow:1.10
-docker-commons:1.6
-pipeline-model-api:1.0.2
-pipeline-model-declarative-agent:1.0.2
-pipeline-stage-tags-metadata:1.0.2
+sonar:2.6
+ssh-agent:1.14
+subversion:2.7.2
+timestamper:1.8.8
+validating-string-parameter:2.3
+windows-slaves:1.2
+workflow-aggregator:2.5
+ws-cleanup:0.32

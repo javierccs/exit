@@ -1,4 +1,4 @@
-FROM jenkins:2.32.3
+FROM jenkins:2.46.1
 MAINTAINER serenity-alm <serenity-alm@isban.com>
 
 ARG HTTP_PROXY
@@ -13,12 +13,13 @@ ENV com.serenity.imageowner="Serenity-ALM" \
     SERENITYALM_JS=scripts/serenity-alm/serenity-alm.js \
     SERENITYALM_PORTAL=http://serenity.gs.corp/web/alm \
     GIT_SSL_NO_VERIFY=1 \
-    JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true -Djenkins.install.runSetupWizard=false"
+    JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true -Djenkins.install.runSetupWizard=false" \
+    CURL_CONNECTION_TIMEOUT=10
 
 # Install plugins
-COPY config/plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY config/plugins.txt /usr/share/jenkins/plugins.txt
 RUN export http_proxy=$HTTP_PROXY; export https_proxy=$HTTPS_PROXY; export no_proxy=$NO_PROXY \
-    && /usr/local/bin/plugins.sh /usr/share/jenkins/ref/plugins.txt
+    && /usr/local/bin/install-plugins.sh $(cat /usr/share/jenkins/plugins.txt | tr '\n' ' ')
 #Copies static config files
 
 USER root
@@ -34,7 +35,7 @@ RUN export http_proxy=$HTTP_PROXY; export https_proxy=$HTTPS_PROXY; export no_pr
  && sed -i 's/TD_AGENT_USER=td-agent/TD_AGENT_USER=jenkins/g' /etc/init.d/td-agent \
  && sed -i 's/TD_AGENT_GROUP=td-agent/TD_AGENT_GROUP=jenkins/g' /etc/init.d/td-agent \
  && chown -R jenkins:jenkins /etc/td-agent /opt/td-agent /var/log/td-agent /var/run/td-agent \
- && rm -rf /var/lib/apt 
+ && rm -rf /var/lib/apt
 #Copies td-agent configuration file
 COPY td-agent/td-agent.conf /etc/td-agent/td-agent.conf
 
@@ -47,4 +48,3 @@ COPY theme /opt/theme
 COPY config/ /usr/share/jenkins/ref/
 
 ENTRYPOINT [ "/usr/local/bin/jenkins-entry-point.sh" ]
-
