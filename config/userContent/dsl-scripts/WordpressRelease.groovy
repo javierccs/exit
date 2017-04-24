@@ -146,7 +146,7 @@ if (VOLUME_CAPACITY_PRO != "") OTHER_OSE3_TEMPLATE_PARAMS_PRO+=",VOLUME_CAPACITY
 def OSE3_TEMPLATE_PARAMS_PRO="APP_NAME=${OSE3_APP_NAME},DOCKER_IMAGE=registry.lvtc.gsnet.corp/"+GITLAB_PROJECT+':${PIPELINE_VERSION}'+"${OTHER_OSE3_TEMPLATE_PARAMS_PRO}"
 
 //creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
 if ( gitlabCredsType == null ) {
   throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
 }
@@ -335,7 +335,8 @@ String NAME="Serenity SonarQube"
 def sqd = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
 boolean sq = (sqd != null) && sqd.getInstallations().find {NAME.equals(it.getName())}
 if (sq) sonarqube.addSonarQubeAnalysis(buildJob, ["sonar.sources" : "wp-content" , "sonar.projectKey" : "serenity:wp:$GROUP_NAME-$REPOSITORY_NAME" ,
-  "sonar.projectName" : '$WORDPRESS_DESCRIPTION' , "sonar.projectVersion" : '$WORDPRESS_IMAGE_VERSION'])
+  "sonar.projectName" : '$WORDPRESS_DESCRIPTION' , "sonar.projectVersion" : '$WORDPRESS_IMAGE_VERSION',
+  "sonar.links.scm" : GITLAB_SERVER+GITLAB_PROJECT, "sonar.links.ci" : '$JOB_URL'])
 
 // Docker job
 job (dockerJobName) {

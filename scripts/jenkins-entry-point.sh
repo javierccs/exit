@@ -24,12 +24,8 @@ chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 #Starts jenkins with jenkins user
 su jenkins /usr/local/bin/jenkins-start.sh
 echo Error starting jenkins!
-if [ -z "$SERENITY_FLUENTD_SERVER" ]; then
-  echo "Done."
-else
   #prints jenkins log file
-  echo Jenkins log file
-  echo ###############
-  cat $JENKINS_LOG_FILE  
-  echo ###############
-fi
+echo Jenkins log file
+echo ###############
+cat $JENKINS_LOG_FILE  
+echo ###############

@@ -23,6 +23,17 @@ def removeParam(node, String paramName) {
   node.properties.'hudson.model.ParametersDefinitionProperty'.parameterDefinitions[0].remove(aux)
 }
 
+// Gets no empty values as value1,value2... 
+String getTemplateNoEmptyValues(def arrMap){
+  def templateParams = ''
+  arrMap.collect { param ->
+    if (param.value) {
+      templateParams ? (templateParams += ',' + param.value) : (templateParams += param.value)
+    }
+  }
+  return templateParams
+}
+
 // Input parameters
 def GITLAB_PROJECT = "${GITLAB_PROJECT}".trim()
 def GITLAB_CREDENTIAL = "${GITLAB_CREDENTIAL}"
@@ -39,12 +50,6 @@ def WEB_REGISTRY_DEV  =  System.getenv('WEB_REPOSITORY') ?: NEXUS_BASE_URL + '/r
 //checks openshift params
 assert ose3props.name?.trim() : "[ERROR] OpenShift3 project name (OPENSHIFT3.name) not provided! "
 assert OSE3_TOKEN_PROJECT_DEV?.trim() : "[ERROR] OpenShift3 dev token (OSE3_TOKEN_PROJECT_DEV) not provided! "
-//creck gitlab credentials
-def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL)
-if ( gitlabCredsType == null ) {
-  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
-}
-out.println ("GitLab credential type " + gitlabCredsType );
 // if true generates blue green deployment jobs
 boolean blueGreenDeployment = OSE3_BLUE_GREEN_DEPLOYMENT.toBoolean()
 // Static values
@@ -79,6 +84,12 @@ def ARTIFACTCONF_URL = WEB_REGISTRY_DEV + "$GITLAB_PROJECT/config-\${FRONT_IMAGE
 
 def ARTIFACT_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/\$front_image_name-\${FRONT_IMAGE_VERSION}.zip"
 def ARTIFACTCONF_URL_RELEASE = "\${WEB_REGISTRY}/$GITLAB_PROJECT/config-\${FRONT_IMAGE_VERSION}.zip"
+//creck gitlab credentials
+def gitlabCredsType = Utilities.getCredentialType(GITLAB_CREDENTIAL, GITLAB_URL)
+if ( gitlabCredsType == null ) {
+  throw new IllegalArgumentException("ERROR: GitLab credentials ( GITLAB_CREDENTIAL ) not provided! ")
+}
+out.println ("GitLab credential type " + gitlabCredsType );
 //OSE3 TEMPLATE VARS
 def OSE3_TEMPLATE_PARAMS = ose3props.environments.collect { it.parameters.collectEntries { p -> [p.name, p.value] } }
 OSE3_TEMPLATE_PARAMS.each { env ->
@@ -248,10 +259,10 @@ if ( COMPILER.equals ( "None" )) {
 
     it / buildWrappers / 'hudson.plugins.sonar.SonarBuildWrapper'
     it / builders / 'hudson.plugins.sonar.SonarRunnerBuilder' {
-      properties ('sonar.sourceEncoding=UTF-8\n'+
+      properties ('sonar.sourceEncoding=UTF-8\nsonar.links.ci=$JOB_URL\n'+
         ["sonar.sources" : "." , "sonar.exclusions" : "pdf/**, node_modules/**,bower_components/**,${DIST_DIR}/**",
-         "sonar.projectKey" : 'serenity:nodejs:' + auxFrontImageName , "sonar.projectName" : auxFrontImageName ,
-         "sonar.projectVersion" : '$FRONT_IMAGE_VERSION'].collect { /$it.key=$it.value/ }.join("\n"))
+         "sonar.projectKey" : 'serenity:nodejs:' + auxFrontImageName , "sonar.projectName" : auxFrontImageName , "sonar.projectVersion" : '$FRONT_IMAGE_VERSION',
+         "sonar.links.scm" : GITLAB_SERVER+GITLAB_PROJECT, "sonar.links.ci" : '$JOB_URL'].collect { /$it.key=$it.value/ }.join("\n"))
       jdk('JDK8')
     }
   }
@@ -294,20 +305,35 @@ if (buildProps.JUNIT_TESTS_PATTERN?.trim()) {
         }
       }
     }
-    extendedEmail('$DEFAULT_RECIPIENTS', '$DEFAULT_SUBJECT', '${JELLY_SCRIPT, template="static-analysis.jelly"}') {
-      trigger(triggerName: 'Always')
-      trigger(triggerName: 'Failure', includeCulprits: true)
-      trigger(triggerName: 'Unstable', includeCulprits: true)
-      trigger(triggerName: 'FixedUnhealthy', sendToDevelopers: true)
-      configure {
-        it/contentType('text/html')
+    extendedEmail {
+      defaultContent('${JELLY_SCRIPT, template="static-analysis.jelly"}')
+      contentType('text/html')
+      triggers {
+        always()
+        failure {
+          sendTo {
+            culprits()
+          }
+        }
+        unstable {
+          sendTo {
+            culprits()
+          }
+        }
+        fixedUnhealthy {
+          sendTo {
+            developers()
+          }
+        }
       }
     } //extendedEmail
+
   } //publishers
 } //job
 
 job (deployDevJobName) {
   out.println "JOB: " + deployDevJobName
+  
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('DEV', 'Deploy')
@@ -325,7 +351,7 @@ job (deployDevJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[0].name)
     updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[0].APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[0].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS',OSE3_TEMPLATE_PARAMS[0].collect { /$it.key=$it.value/ }.join(","))
+    updateParam(it, 'OSE3_TEMPLATE_PARAMS', getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[0]))
     updateParam(it, 'OSE3_TOKEN_PROJECT',OSE3_TOKEN_PROJECT_DEV)
   }
 }
@@ -345,6 +371,7 @@ AuthorizationJobFactory.createApprovalJob(this,
 //Deploy in pre job
 job (deployPreJobName) {
   out.println "JOB: " + deployPreJobName
+  
   using('TJ-ose3-deploy')
   disabled(false)
   deliveryPipelineConfiguration('PRE', 'Deploy')
@@ -384,12 +411,12 @@ job (deployPreJobName) {
     updateParam(it, 'OSE3_PROJECT_NAME', ose3props.name+'-'+ose3props.environments[1].name)
     updateParam(it, 'OSE3_APP_NAME', OSE3_TEMPLATE_PARAMS[1].APP_NAME)
     updateParam(it, 'OSE3_TEMPLATE_NAME', ose3props.environments[1].template)
-    updateParam(it, 'OSE3_TEMPLATE_PARAMS', OSE3_TEMPLATE_PARAMS[1].collect { /$it.key=$it.value/ }.join(","))
+    updateParam(it, 'OSE3_TEMPLATE_PARAMS', getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[1]))
   }
 }
 
 // pro approval and deployment Jobs
-def ose3ProTemplateParams = OSE3_TEMPLATE_PARAMS[2].collect { /$it.key=$it.value/ }.join(",")
+  
 OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
   deployProCheckJobName,
     approvalJobArgs, GITLAB_PROJECT,
@@ -397,6 +424,6 @@ OSE3DeployJobFactory.createOse3ProJobs (this, blueGreenDeployment,
     ose3props.name+'-'+ose3props.environments[2].name,
     OSE3_TEMPLATE_PARAMS[2].APP_NAME,
     ose3props.environments[2].template,
-    ose3ProTemplateParams)
+    getTemplateNoEmptyValues(OSE3_TEMPLATE_PARAMS[2])) 
 
 gitlabHooks.GitLabWebHooks(GITLAB_SERVER, GITLAB_API_TOKEN, GITLAB_PROJECT, buildJobName)
