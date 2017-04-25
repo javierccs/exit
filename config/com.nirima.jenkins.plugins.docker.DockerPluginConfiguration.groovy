@@ -19,7 +19,7 @@ def nodeJSDataContainer = System.getenv("NODEJS_DATA") ?: ''
    [
      name: 'name', // Provide a name for this Docker Cloud (required)
      serverUrl: 'tcp://localhost:2345', // The URL to use to access your Docker server API (required)
-     containerCap: 2147483643, // max containers that is allowed to run (optional) 
+     containerCap: 2147483643, // max containers that is allowed to run (optional)
      connectionTimeout: 10, // Timeout for opening connection to Docker API (optional)
      readTimeout: 60, // Read timeout to Docker API (optional)
      credentialsId: '', // Docker server credential ID (optional),
@@ -39,7 +39,7 @@ def nodeJSDataContainer = System.getenv("NODEJS_DATA") ?: ''
        network: null, // (optional)
 	   dockerCommand: 'start' , // command to run for this image, defaults to "start" (optional)
 	   volumesString: '', // New line separated list of volume mounts : <host/path>[<container/path>[:<ro|rw>]] (optional)
-	   volumesFromString: '', // New line separated list of containers to inherit volume mounts : <container name>[:<ro|rw>] (optional) 
+	   volumesFromString: '', // New line separated list of containers to inherit volume mounts : <container name>[:<ro|rw>] (optional)
 	   lxcConfString: null, // (optional)
 	   hostname: '', // (optional)
 	   memoryLimit: null, // constrain the memory available to a container in MB (optional)
@@ -56,7 +56,7 @@ def nodeJSDataContainer = System.getenv("NODEJS_DATA") ?: ''
    ],
    []
  ]
- 
+
  */
 
 cloud = [
@@ -67,35 +67,8 @@ cloud = [
     readTimeout: 60,
     templates: [
       [
-        image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-liferay-docker-image-builder:1.1.0',
-        labelString: 'liferay-docker',
-        environmentsString: "MVN_REPO_URL=${nexusRepositoryUrl}\nMVN_REPO_PATH=${mavenGroupRepository}",
-        volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
-		mode: EXCLUSIVE
-      ],
-      [
-        image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-builder:1.4.0',
-        labelString: 'wordpress-build',
-        volumesString: "$defaultRootPathForVolumes/sonar:/tmp/.sonar",
-      ],
-      [
-        image: 'registry.lvtc.gsnet.corp/almcloud/jslave-ansible:1.0',
-        labelString: 'ansible',
-        volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
-      ],
-      [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.4.1',
         labelString: 'docker',
-        volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
-      ],
-      [
-        image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-front-docker-image-builder:1.5.0',
-        labelString: 'front-build-docker',
-        volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
-      ],
-      [
-        image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-wordpress-docker-image-builder:1.5.0',
-        labelString: 'wordpress-docker',
         volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
       ],
       [
@@ -110,12 +83,6 @@ cloud = [
         environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
         volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2\n$defaultRootPathForVolumes/sonar:/tmp/.sonar",
 		volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:''
-      ],
-      [
-        image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-hpalm-bridge:1.4.1',
-        labelString: 'hpalm_bridge',
-        volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2",
-        volumesFromString: (mavenDataContainer?.trim())? mavenDataContainer:''
       ],
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.4.1',
@@ -139,4 +106,3 @@ cloud = [
     ]
   ]
 ]
-
