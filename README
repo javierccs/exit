@@ -59,22 +59,6 @@ docker run -d \
  --name jenkinsdev -p 8080:8080 -p 50000:50000
  -v /var/jenkins_home registry.lvtc.gsnet.corp/serenity-alm/jenkins:[version]   #Jenkins volume
 
- If log aggregation is desired SERENITY_FLUENTD_SERVER variable must be set, also this variables can be set:
-
- -e HOSTNAME=$(hostname) -> Server hostanme
- -e SERENITY_FLUENTD_SERVER=<Fluentd aggregation server> (like srnalmboae202.eng.gsnetcloud.corp )
- -e SERENITY_FLUENTD_PORT=<Fluentd aggregation port> (24224 by default)
- -e SERENITY_TENANT=<Tenant name> (default-tenant by default)
-
- Additional optional environment can be set to change Jenkins Theme:
-
- -e SERENITYALM_CSS=<CSS to apply> by default 'css/serenity-alm/serenity-alm.css'
- -e SERENITYALM_JS=<JS to apply to theme> by default 'scripts/serenity-alm/serenity-alm.js'
- -e SERENITYALM_PORTAL=<ALM Serenity portal URL> by default 'http://portalserenity.eng.gsnetcloud.corp:8080/web/alm'
-
 
 IMPORTANT NOTE: Environment variable JAVA_OPTS="-Dhudson.model.ParametersAction.keepUndefinedParameters=true" must be set in order to backward compatibility this jenkins version with release plugin and inject variables plugin.
 
-Testing:
-unit test: mvn clean test
-integration test: mvn clean intregration-test -Dskip.unit.tests=true if you don't want to execute unit tests)
