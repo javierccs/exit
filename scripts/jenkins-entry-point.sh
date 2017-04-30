@@ -16,16 +16,11 @@
 #Starts fluentd if fluentd server variable is set
 #installs certificates
 . /usr/local/bin/install-certificates.sh
-#Includes jenkins styles
-. /usr/local/bin/include-styles.sh
 
-#Jenkins war will be modified by entrypoint to add serenity-alm.css
-chown jenkins:jenkins /usr/share/jenkins/jenkins.war
 #Starts jenkins with jenkins user
 su jenkins /usr/local/bin/jenkins-start.sh
-echo Error starting jenkins!
-  #prints jenkins log file
+#prints jenkins log file
 echo Jenkins log file
 echo ###############
-cat $JENKINS_LOG_FILE  
+cat $JENKINS_LOG_FILE
 echo ###############

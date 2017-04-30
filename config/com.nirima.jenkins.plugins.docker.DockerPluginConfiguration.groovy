@@ -68,17 +68,17 @@ cloud = [
     templates: [
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-docker-socket:1.4.1',
-        labelString: 'docker',
+        labelString: 'docker-serenity',
         volumesString: '/var/run/docker.sock:/var/run/docker.sock\n/usr/bin/docker:/usr/bin/docker\n/usr/lib/x86_64-linux-gnu/libapparmor.so.1.1.0:/usr/lib/x86_64-linux-gnu/libapparmor.so.1\n/lib64/libdevmapper.so.1.02:/usr/lib/libdevmapper.so.1.02',
       ],
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-deployer:1.4.0',
-        labelString: 'ose3-deploy',
+        labelString: 'ose3-deploy-serenity',
         environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
       ],
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-maven:1.4.1',
-        labelString: 'maven',
+        labelString: 'maven-serenity',
 		idleMinutes: 15,
         environmentsString: "NEXUS_BASE_URL=${nexusRepositoryUrl}\nNEXUS_MAVEN_GROUP=${mavenGroupRepository}",
         volumesString: (mavenDataContainer?.trim())? '':"$defaultRootPathForVolumes/jslave-maven:/tmp/jslave-maven/m2\n$defaultRootPathForVolumes/sonar:/tmp/.sonar",
@@ -86,7 +86,7 @@ cloud = [
       ],
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-nodejs:1.4.1',
-        labelString: 'nodejs',
+        labelString: 'nodejs-serenity',
         environmentsString: "WEB_REGISTRY=$webRepository\nWEB_REGISTRY_DEV=$webRepositoryDev" +
               ((npmGroupRepository == null)? '':"\nNPM_REGISTRY=$npmGroupRepository")+
               ((bowerGroupRepository == null)? '':"\nBOWER_REGISTRY=$bowerGroupRepository"),
@@ -101,7 +101,7 @@ cloud = [
       ],
       [
         image: 'registry.lvtc.gsnet.corp/serenity-alm/jslave-apic:latest',
-        labelString: 'apic'
+        labelString: 'apic-serenity'
       ]
     ]
   ]
